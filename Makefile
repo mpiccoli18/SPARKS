@@ -1,0 +1,44 @@
+# Compiler
+CXX = g++
+CXXFLAGS = -Wall -Wextra -O2 -std=c++11 -g
+
+# Directories
+SRC_DIR = src
+BIN_DIR = bin
+
+# Files
+CPPS := $(SRC_DIR)/UAV.cpp $(SRC_DIR)/puf.cpp $(SRC_DIR)/utils.cpp 
+OBJS := $(patsubst $(SRC_DIR)/%.cpp, $(BIN_DIR)/%.o, $(CPPS))
+
+# Default target (currently does nothing)
+all:
+	@echo "Run 'make test' to compile the test executable."
+
+# Rule to compile the test program
+test: tests
+
+tests : $(OBJS) $(SRC_DIR)/test.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+
+# Rule to compile the scenarios
+scenarii: scenario1 scenario2
+
+scenario1 : $(OBJS) $(SRC_DIR)/scenario1.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+
+scenario2 : $(OBJS) $(SRC_DIR)/scenario2.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+
+scenario3 : $(OBJS) $(SRC_DIR)/scenario3.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+
+$(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Ensure bin/ directory exists
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
+
+# Clean up all compiled files
+clean:
+	rm -f $(BIN_DIR)/*.o tests scenario*
