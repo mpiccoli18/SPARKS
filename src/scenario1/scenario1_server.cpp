@@ -180,7 +180,7 @@ int autentication_server(UAV * B){
 
 int main(){
 
-    // Creation of the two drones
+    // Creation of the UAV
 
     UAV B = UAV(idB);
 

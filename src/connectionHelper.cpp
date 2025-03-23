@@ -13,6 +13,13 @@ bool SocketModule::initiateConnection(const std::string& ip, int port) {
         return false;
     }
 
+    struct timeval timeout;      
+    timeout.tv_sec = TIMEOUT_VALUE;  // Timeout after 5 seconds
+    timeout.tv_usec = 0; 
+
+    // Set the timeout
+    setsockopt(socket_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+
     address.sin_family = AF_INET;
     address.sin_port = htons(port);
     
@@ -41,6 +48,12 @@ bool SocketModule::waitForConnection(int port) {
         return false;
     }
 
+    struct timeval timeout;      
+    timeout.tv_sec = TIMEOUT_VALUE;  // Timeout after 5 seconds
+    timeout.tv_usec = 0; 
+
+    setsockopt(socket_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+
     // Setup server address
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -68,6 +81,9 @@ bool SocketModule::waitForConnection(int port) {
     }
 
     std::cout << "Client connected!\n";
+
+    // Set the timeout
+    setsockopt(connection_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
     return true;
 }
 
@@ -79,16 +95,39 @@ void SocketModule::sendMessage(const json& message) {
 
 // Read a message from the socket
 json SocketModule::receiveMessage() {
+    static std::string dataBuffer = "";  // Store partial data between calls
     char buffer[1024] = {0};
-    int bytesReceived = read(this->connection_fd, buffer, 1024);
-    std::cout << "Bytes received: " << bytesReceived << std::endl;
-    
-    if (bytesReceived > 0) {
-        std::string jsonString(buffer, bytesReceived);
-        return json::parse(jsonString); // Parse and return JSON object
-    }
+    int bytesReceived = read(this->connection_fd, buffer, sizeof(buffer));
 
-    return json(); // Return empty JSON object if no data
+    std::cout << "Bytes received: " << bytesReceived << std::endl;
+
+    if (bytesReceived > 0) {
+        // Append new data to buffer
+        dataBuffer += std::string(buffer, bytesReceived);
+
+        try {
+            // Attempt to parse JSON
+            json parsedJson = json::parse(dataBuffer);
+            dataBuffer.clear();  // Clear buffer after successful parsing
+            return parsedJson;
+        } catch (json::parse_error&) {
+            std::cerr << "Partial JSON received, waiting for more data..." << std::endl;
+            return json({{"error", "partial_json"}});
+        }
+    } 
+    else if (bytesReceived == 0) {
+        std::cerr << "Connection closed by peer." << std::endl;
+        return json({{"error", "connection_closed"}});
+    } 
+    else {
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            std::cerr << "Receive timeout!" << std::endl;
+            return json({{"error", "timeout"}});
+        } else {
+            perror("Receive failed");
+            return json({{"error", "read_failed"}});
+        }
+    }
 }
 
 // Close the connection

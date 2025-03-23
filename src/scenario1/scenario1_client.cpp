@@ -82,6 +82,12 @@ int autentication_client(UAV * A){
     json rsp = A->socketModule.receiveMessage();
     printJSON(rsp);
 
+    // Check if an error occurred
+    if (rsp.contains("error")) {
+        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+        return -1;
+    }
+
     // A recover M1 and the hash
     unsigned char M1[PUF_SIZE];
     fromHexString(rsp["M1"].get<std::string>(), M1, PUF_SIZE);
@@ -139,10 +145,12 @@ int autentication_client(UAV * A){
         // A will calculate the old response 
         unsigned char RAOld[PUF_SIZE];
         A->callPUF(CAOld, RAOld);
+        std::cout << "RAOld : "; print_hex(RAOld, PUF_SIZE);
 
         // A will deduce NB from the old response
         unsigned char NBOld[PUF_SIZE];
         xor_buffers(M1, RAOld, PUF_SIZE, NBOld);
+        std::cout << "NBOld : "; print_hex(NBOld, PUF_SIZE);
 
         // A now tries to verify the hash with this value
         ctx = initHash();
@@ -151,6 +159,7 @@ int autentication_client(UAV * A){
         addToHash(ctx, RAOld, PUF_SIZE);
         addToHash(ctx, NA, PUF_SIZE);
         calculateHash(ctx, hash1Check);
+        std::cout << "hash1Check : "; print_hex(hash1Check, PUF_SIZE);
 
         res = memcmp(hash1, hash1Check, PUF_SIZE) == 0;
         if (res == 0){
@@ -166,7 +175,7 @@ int autentication_client(UAV * A){
 
     }
 
-    std::cout << "B's hash has been verified. B is autenticated to A.";
+    std::cout << "B's hash has been verified. B is autenticated to A.\n";
 
     // A will now conputes the new challenge and M2
     unsigned char RAp[PUF_SIZE];
@@ -199,37 +208,45 @@ int autentication_client(UAV * A){
     // A waits for B's ACK
     rsp = A->socketModule.receiveMessage();
     printJSON(rsp);
-    if (rsp.empty()) {
+
+    // Check if an error occurred
+    if (rsp.contains("error")) {
+        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+
         // A reach a timeout or didn't received the ACK 
         std::cout << "Received an empty JSON message!" << std::endl;
-
+    
         // A will save concealed current CA in CAOld
         unsigned char xLock[PUF_SIZE];
         generate_random_bytes(xLock);
-
+    
         unsigned char lock[PUF_SIZE];
         A->callPUF(xLock, lock);
-
+    
         unsigned char concealedCA[PUF_SIZE];
         xor_buffers(CA,lock,PUF_SIZE,concealedCA);
-
+    
         A->getUAVData(idB)->setXLock(xLock);
         A->getUAVData(idB)->setSecret(concealedCA);
 
-        
+        // Then A saves the new challenge in CA
+        A->getUAVData(idB)->setC(NB);
+
+        return 1;
     }
+
     // Then A saves the new challenge in CA
     A->getUAVData(idB)->setC(NB);
 
     // Finished
-
+    std::cout << "\nThe two UAV autenticated each other.\n";
+    
     return 0;
 }
 
-
 int main(){
 
-    // Creation of the two drones
+    // Creation of the UAV
 
     UAV A = UAV(idA);
 

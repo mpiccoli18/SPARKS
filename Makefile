@@ -25,10 +25,26 @@ scenarii: scenario1 scenario2
 
 scenario1: scenario1_client scenario1_server
 
+scenario2: scenario2_client scenario2_server
+
+scenario3: scenario3_client scenario3_server
+
 scenario1_client: $(OBJS) $(SRC_DIR)/scenario1/scenario1_client.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
 scenario1_server: $(OBJS) $(SRC_DIR)/scenario1/scenario1_server.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+
+scenario2_client: $(OBJS) $(SRC_DIR)/scenario2/scenario2_client.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+
+scenario2_server: $(OBJS) $(SRC_DIR)/scenario2/scenario2_server.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+
+scenario3_client: $(OBJS) $(SRC_DIR)/scenario3/scenario3_client.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+
+scenario3_server: $(OBJS) $(SRC_DIR)/scenario3/scenario3_server.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
 # scenario2 : $(OBJS) $(SRC_DIR)/scenario2.cpp | $(BIN_DIR)

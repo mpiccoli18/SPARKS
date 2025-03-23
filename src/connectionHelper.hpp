@@ -8,6 +8,7 @@
 #include <nlohmann/json.hpp> 
 
 using json = nlohmann::json;
+#define TIMEOUT_VALUE  5
 
 class SocketModule {
 private:
