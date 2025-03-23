@@ -66,3 +66,31 @@ void calculateHash(EVP_MD_CTX* ctx, unsigned char * output){
     EVP_DigestFinal_ex(ctx, output, NULL); 
     EVP_MD_CTX_free(ctx); 
 }
+
+void printJSON(json msg){
+    if (msg.empty()) {
+        std::cerr << "Error: JSON object is empty!" << std::endl;
+    } else {
+        std::cout << msg.dump(4) << std::endl;
+    }
+}
+
+std::string toHexString(const unsigned char* data, size_t length) {
+    std::ostringstream oss;
+    oss << std::hex << std::setfill('0');
+    for (size_t i = 0; i < length; i++) {
+        oss << std::setw(2) << static_cast<int>(data[i]);
+    }
+    return oss.str();
+}
+
+// Converts hex string back to unsigned char array
+void fromHexString(const std::string& hex, unsigned char* output, size_t maxLength) {
+    size_t length = hex.length() / 2;
+    if (length > maxLength) length = maxLength; // Prevent buffer overflow
+
+    for (size_t i = 0; i < length; i++) {
+        std::string byteString = hex.substr(i * 2, 2);
+        output[i] = static_cast<unsigned char>(std::stoi(byteString, nullptr, 16));
+    }
+}

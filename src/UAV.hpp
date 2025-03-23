@@ -8,6 +8,7 @@
 
 #include "utils.hpp"
 #include "puf.hpp"
+#include "connectionHelper.hpp"
 
 #define PUF_SIZE 32  // 256 bits = 32 bytes
 
@@ -66,6 +67,7 @@ private:
     const puf PUF;
 
 public:
+    SocketModule socketModule = SocketModule(); 
     UAV(std::string id);
     std::string getId();
     

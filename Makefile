@@ -3,11 +3,11 @@ CXX = g++
 CXXFLAGS = -Wall -Wextra -O2 -std=c++11 -g
 
 # Directories
-SRC_DIR = src
-BIN_DIR = bin
+SRC_DIR := src
+BIN_DIR := bin
 
 # Files
-CPPS := $(SRC_DIR)/UAV.cpp $(SRC_DIR)/puf.cpp $(SRC_DIR)/utils.cpp 
+CPPS := $(SRC_DIR)/UAV.cpp $(SRC_DIR)/puf.cpp $(SRC_DIR)/utils.cpp $(SRC_DIR)/connectionHelper.cpp 
 OBJS := $(patsubst $(SRC_DIR)/%.cpp, $(BIN_DIR)/%.o, $(CPPS))
 
 # Default target (currently does nothing)
@@ -23,14 +23,19 @@ tests : $(OBJS) $(SRC_DIR)/test.cpp | $(BIN_DIR)
 # Rule to compile the scenarios
 scenarii: scenario1 scenario2
 
-scenario1 : $(OBJS) $(SRC_DIR)/scenario1.cpp | $(BIN_DIR)
+scenario1: scenario1_client scenario1_server
+
+scenario1_client: $(OBJS) $(SRC_DIR)/scenario1/scenario1_client.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
-scenario2 : $(OBJS) $(SRC_DIR)/scenario2.cpp | $(BIN_DIR)
+scenario1_server: $(OBJS) $(SRC_DIR)/scenario1/scenario1_server.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
-scenario3 : $(OBJS) $(SRC_DIR)/scenario3.cpp | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+# scenario2 : $(OBJS) $(SRC_DIR)/scenario2.cpp | $(BIN_DIR)
+# 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+
+# scenario3 : $(OBJS) $(SRC_DIR)/scenario3.cpp | $(BIN_DIR)
+# 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
 $(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@

@@ -96,13 +96,13 @@ int main() {
     // Computes and save xB
     unsigned char xB[PUF_SIZE];
     generate_random_bytes(xB, PUF_SIZE);
-    A.addUAV(idB, UAVData(xB));
+    A.addUAV(idB, xB);
 
 
     // Computes and save xA
     unsigned char xA[PUF_SIZE];
     generate_random_bytes(xA, PUF_SIZE);
-    B.addUAV(idA, UAVData(xA));
+    B.addUAV(idA, xA);
 
     // Print
     std::cout << "Lets print the Xs : \n";

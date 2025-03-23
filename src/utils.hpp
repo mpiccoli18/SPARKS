@@ -6,6 +6,9 @@
 #include <random>
 #include <iomanip>
 #include <cstring> 
+#include <nlohmann/json.hpp> 
+
+using json = nlohmann::json;
 
 #define PUF_SIZE 32 // 256 bits = 32 bytes
 
@@ -36,5 +39,11 @@ void addToHash(EVP_MD_CTX* ctx, const std::string& str);
 
 // Function that actually calculates the hash
 void calculateHash(EVP_MD_CTX* ctx, unsigned char * output);
+
+void printJSON(json msg);
+
+std::string toHexString(const unsigned char* data, size_t length);
+
+void fromHexString(const std::string& hex, unsigned char* output, size_t maxLength);
 
 #endif
