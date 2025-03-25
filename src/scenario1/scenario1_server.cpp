@@ -17,8 +17,18 @@ int enrolment_server(UAV * B){
     json rsp = B->socketModule.receiveMessage();
     printJSON(rsp);
 
+    // Check if an error occurred
+    if (rsp.contains("error")) {
+        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+        return -1;
+    }
+
     // B receive CB. It creates A in the memory of B and save CB.
     unsigned char CB[PUF_SIZE];
+    if(!rsp.contains("CB")){
+        std::cerr << "Error occurred: no member CB" << std::endl;
+        return 1;
+    }
     fromHexString(rsp["CB"].get<std::string>(), CB, PUF_SIZE);
     B->addUAV(idA, nullptr, CB);
 
@@ -54,7 +64,18 @@ int enrolment_server(UAV * B){
     // B receive RA and saves it. 
     rsp = B->socketModule.receiveMessage();
     printJSON(rsp);
+
+    // Check if an error occurred
+    if (rsp.contains("error")) {
+        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+        return -1;
+    }
+
     unsigned char RA[PUF_SIZE];
+    if(!rsp.contains("RA")){
+        std::cerr << "Error occurred: no member RA" << std::endl;
+        return 1;
+    }
     fromHexString(rsp["RA"].get<std::string>(), RA, PUF_SIZE);
     B->getUAVData(idA)->setR(RA);
     
@@ -69,8 +90,18 @@ int autentication_server(UAV * B){
     json rsp = B->socketModule.receiveMessage();
     printJSON(rsp);
 
+    // Check if an error occurred
+    if (rsp.contains("error")) {
+        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+        return -1;
+    }
+
     // B recover NA
     unsigned char NA[PUF_SIZE];
+    if(!rsp.contains("NA")){
+        std::cerr << "Error occurred: no member NA" << std::endl;
+        return 1;
+    }
     fromHexString(rsp["NA"].get<std::string>(), NA, PUF_SIZE);
 
     // B retrieve xA from memory and computes CA
@@ -124,10 +155,24 @@ int autentication_server(UAV * B){
     rsp = B->socketModule.receiveMessage();
     printJSON(rsp);
 
+    // Check if an error occurred
+    if (rsp.contains("error")) {
+        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+        return -1;
+    }
+
     // B recovers M2 and hash2
     unsigned char M2[PUF_SIZE];
+    if(!rsp.contains("M2")){
+        std::cerr << "Error occurred: no member M2" << std::endl;
+        return 1;
+    }
     fromHexString(rsp["M2"].get<std::string>(), M2, PUF_SIZE);
     unsigned char hash2[PUF_SIZE];
+    if(!rsp.contains("hash2")){
+        std::cerr << "Error occurred: no member hash2" << std::endl;
+        return 1;
+    }
     fromHexString(rsp["hash2"].get<std::string>(), hash2, PUF_SIZE);
 
     // B retrieve RAp from M2

@@ -44,6 +44,10 @@ int enrolment_client(UAV * A){
     }
 
     unsigned char RB[PUF_SIZE];
+    if(!rsp.contains("RB")){
+        std::cerr << "Error occurred: no member RB" << std::endl;
+        return 1;
+    }
     fromHexString(rsp["RB"].get<std::string>(), RB, PUF_SIZE);
 
     A->getUAVData(idB)->setR(RB);
@@ -62,6 +66,10 @@ int enrolment_client(UAV * A){
     }
 
     unsigned char CA[PUF_SIZE];
+    if(!rsp.contains("CA")){
+        std::cerr << "Error occurred: no member CA" << std::endl;
+        return 1;
+    }
     fromHexString(rsp["CA"].get<std::string>(), CA, PUF_SIZE);
     A->getUAVData(idB)->setC(CA);
 
@@ -104,8 +112,16 @@ int failed_autentication_client(UAV * A){
 
     // A recover M1 and the hash
     unsigned char M1[PUF_SIZE];
+    if(!rsp.contains("M1")){
+        std::cerr << "Error occurred: no member M1" << std::endl;
+        return 1;
+    }
     fromHexString(rsp["M1"].get<std::string>(), M1, PUF_SIZE);
     unsigned char hash1[PUF_SIZE];
+    if(!rsp.contains("hash1")){
+        std::cerr << "Error occurred: no member hash1" << std::endl;
+        return 1;
+    }
     fromHexString(rsp["hash1"].get<std::string>(), hash1, PUF_SIZE);
 
     // A computes RA using CA in memory
@@ -285,8 +301,16 @@ int autentication_client(UAV * A){
 
     // A recover M1 and the hash
     unsigned char M1[PUF_SIZE];
+    if(!rsp.contains("M1")){
+        std::cerr << "Error occurred: no member M1" << std::endl;
+        return 1;
+    }
     fromHexString(rsp["M1"].get<std::string>(), M1, PUF_SIZE);
     unsigned char hash1[PUF_SIZE];
+    if(!rsp.contains("hash1")){
+        std::cerr << "Error occurred: no member hash1" << std::endl;
+        return 1;
+    }
     fromHexString(rsp["hash1"].get<std::string>(), hash1, PUF_SIZE);
 
     // A computes RA using CA in memory

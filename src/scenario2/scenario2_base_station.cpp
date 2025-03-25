@@ -61,6 +61,10 @@ int main(){
         return -1;
     }
 
+    if(!rsp.contains("data")){
+        std::cerr << "Error occurred: no member data" << std::endl;
+        return 1;
+    }
     std::vector<std::string> receivedHexList = rsp["data"];
 
     // Convert each hex string back to unsigned char arrays

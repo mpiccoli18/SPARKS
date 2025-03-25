@@ -21,6 +21,10 @@ int preEnrolment(UAV * A){
         return -1;
     }
 
+    if(!rsp.contains("data")){
+        std::cerr << "Error occurred: no member data" << std::endl;
+        return 1;
+    }
     std::vector<std::string> receivedHexList = rsp["data"];
 
     // Convert each hex string back to unsigned char arrays
@@ -97,10 +101,22 @@ int supplementaryAuthenticationInitial(UAV * A){
 
     // A recover M1, CA and the hash
     unsigned char CA[PUF_SIZE];
+    if(!rsp.contains("CA")){
+        std::cerr << "Error occurred: no member CA" << std::endl;
+        return 1;
+    }
     fromHexString(rsp["C"].get<std::string>(), CA, PUF_SIZE);    
     unsigned char M1[PUF_SIZE];
+    if(!rsp.contains("M1")){
+        std::cerr << "Error occurred: no member M1" << std::endl;
+        return 1;
+    }
     fromHexString(rsp["M1"].get<std::string>(), M1, PUF_SIZE);
     unsigned char hash1[PUF_SIZE];
+    if(!rsp.contains("hash1")){
+        std::cerr << "Error occurred: no member hash1" << std::endl;
+        return 1;
+    }
     fromHexString(rsp["hash1"].get<std::string>(), hash1, PUF_SIZE);
 
     // A computes RA using transmitted CA
