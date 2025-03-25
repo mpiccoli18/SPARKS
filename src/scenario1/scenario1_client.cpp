@@ -303,8 +303,7 @@ int main(int argc, char* argv[]) {
         return ret;
     }
 
-    // Finished
-    std::cout << "\nThe two UAV autenticated each other.\n";
-    
+    A.socketModule.closeConnection();
+
     return 0;
 }

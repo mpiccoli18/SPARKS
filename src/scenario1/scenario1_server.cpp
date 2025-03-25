@@ -245,5 +245,7 @@ int main(){
         return ret;
     }
     
+    B.socketModule.closeConnection();
+
     return 0;
 }

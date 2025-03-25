@@ -1,5 +1,6 @@
 #include <string>
 #include <chrono> 
+#include <thread>
 
 #include "../UAV.hpp"
 #include "../puf.hpp"
@@ -207,14 +208,16 @@ int supplementaryAuthenticationSup(UAV * C){
 }
 
 int main(int argc, char* argv[]) {
-    if (argc < 2) {
-        std::cerr << "Error: No IP address provided. Please provide the IP as an argument." << std::endl;
+    if (argc < 3) {
+        std::cerr << "Error: No IPs addresses provided. Please provide the IPs as arguments." << std::endl;
         return 1;  // Exit with an error code
     }
 
-    const char* ip = argv[1];  // Read IP from command-line argument
+    const char* ipBS = argv[1];  // Read IP from command-line argument
+    const char* ipUAV = argv[2];  // Read IP from command-line argument
 
-    std::cout << "Using IP: " << ip << std::endl;
+    std::cout << "Using IP BS: " << ipBS << std::endl;
+    std::cout << "Using IP UAV: " << ipUAV << std::endl;
 
     // Creation of the UAV
 
@@ -223,7 +226,7 @@ int main(int argc, char* argv[]) {
     std::cout << "The supplementary drone id is : " <<C.getId() << ".\n"; 
 
     // Connect to the BS to retrieve A's credentials
-    C.socketModule.initiateConnection(ip, 8080);
+    C.socketModule.initiateConnection(ipBS, 8080);
 
     // A's credential retrieval
     int ret = preEnrolmentRetrival(&C);
@@ -233,8 +236,11 @@ int main(int argc, char* argv[]) {
 
     C.socketModule.closeConnection();
 
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
     // C will now try to connect to A
-    C.socketModule.initiateConnection(ip,8085);
+
+    C.socketModule.initiateConnection(ipUAV,8085);
 
     ret = supplementaryAuthenticationSup(&C);
     if (ret == 1){

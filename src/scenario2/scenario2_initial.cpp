@@ -101,8 +101,8 @@ int supplementaryAuthenticationInitial(UAV * A){
 
     // A recover M1, CA and the hash
     unsigned char CA[PUF_SIZE];
-    if(!rsp.contains("CA")){
-        std::cerr << "Error occurred: no member CA" << std::endl;
+    if(!rsp.contains("C")){
+        std::cerr << "Error occurred: no member C" << std::endl;
         return 1;
     }
     fromHexString(rsp["C"].get<std::string>(), CA, PUF_SIZE);    
