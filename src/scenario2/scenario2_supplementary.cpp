@@ -27,17 +27,17 @@ int preEnrolmentRetrival(UAV * C){
 
     // Retrieve CA and RA from the msg
     unsigned char CA[PUF_SIZE];
-    if(!rsp.contains("C")){
-        std::cerr << "Error occurred: no member C" << std::endl;
+    if(!rsp.contains("CA")){
+        std::cerr << "Error occurred: no member CA" << std::endl;
         return 1;
     }
-    fromHexString(rsp["C"].get<std::string>(), CA, PUF_SIZE);
+    fromHexString(rsp["CA"].get<std::string>(), CA, PUF_SIZE);
     unsigned char RA[PUF_SIZE];
-    if(!rsp.contains("R")){
-        std::cerr << "Error occurred: no member R" << std::endl;
+    if(!rsp.contains("RA")){
+        std::cerr << "Error occurred: no member RA" << std::endl;
         return 1;
     }
-    fromHexString(rsp["R"].get<std::string>(), RA, PUF_SIZE);
+    fromHexString(rsp["RA"].get<std::string>(), RA, PUF_SIZE);
     std::cout << "CA : "; print_hex(CA, PUF_SIZE);
     std::cout << "RA : "; print_hex(RA, PUF_SIZE);
 
@@ -128,7 +128,7 @@ int supplementaryAuthenticationSup(UAV * C){
     
     msg = {
         {"id", idC}, 
-        {"C", toHexString(CA, PUF_SIZE)}, 
+        {"CA", toHexString(CA, PUF_SIZE)}, 
         {"M1", toHexString(M1, PUF_SIZE)}, 
         {"hash1", toHexString(hash1, PUF_SIZE)}
     };

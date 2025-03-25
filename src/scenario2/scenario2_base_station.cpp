@@ -97,8 +97,8 @@ int main(){
     msg = {
         {"id", idBS}, 
         {"idUAV", idA}, 
-        {"C", toHexString(CA, PUF_SIZE)}, 
-        {"R", toHexString(RA, PUF_SIZE)}
+        {"CA", toHexString(CA, PUF_SIZE)}, 
+        {"RA", toHexString(RA, PUF_SIZE)}
     };
     sm.sendMessage(msg);
 

@@ -1,0 +1,23 @@
+# Ignore compiled binaries and object files
+bin/
+tests
+scenario*
+
+# Ignore temporary files and editor backups
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Ignore dependency and cache files
+*.d
+*.o
+*.obj
+*.out
+*.log
+
+# Ignore CMake and build artifacts (if applicable)
+CMakeFiles/
+CMakeCache.txt
+Makefile
+cmake_install.cmake
