@@ -1,5 +1,6 @@
 #include <string>
 #include <chrono> 
+#include <thread>
 
 #include "../UAV.hpp"
 #include "../puf.hpp"
@@ -225,8 +226,8 @@ int main(){
 
     // Expected output is a fail
     // The client timed out. The next autentication should still work tho.
-    B.socketModule.closeConnection();
-    B.socketModule.waitForConnection(8080);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     ret = autentication_server(&B);
     if (ret != 0){
