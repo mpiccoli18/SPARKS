@@ -225,6 +225,8 @@ int main(){
 
     // Expected output is a fail
     // The client timed out. The next autentication should still work tho.
+    B.socketModule.closeConnection();
+    B.socketModule.waitForConnection(8080);
 
     ret = autentication_server(&B);
     if (ret != 0){

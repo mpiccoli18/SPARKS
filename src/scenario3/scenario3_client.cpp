@@ -470,6 +470,8 @@ int main(int argc, char* argv[]) {
 
     // Expected output is a fail
     // A will just retry an autentication later (and it should work)
+    A.socketModule.closeConnection();
+    A.socketModule.initiateConnection(ip, 8080);
 
     ret = autentication_client(&A);
     if (ret != 0){
