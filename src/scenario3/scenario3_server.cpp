@@ -228,7 +228,6 @@ int main(){
     // The client timed out. The next autentication should still work tho.
     
     B.socketModule.closeConnection();
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     B.socketModule.waitForConnection(8080);
 
     ret = autentication_server(&B);
