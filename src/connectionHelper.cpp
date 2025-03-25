@@ -13,6 +13,9 @@ bool SocketModule::initiateConnection(const std::string& ip, int port) {
         return false;
     }
 
+    int opt = 1;
+    setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
     struct timeval timeout;      
     timeout.tv_sec = TIMEOUT_VALUE;  // Timeout after 5 seconds
     timeout.tv_usec = 0; 
@@ -48,11 +51,14 @@ bool SocketModule::waitForConnection(int port) {
         return false;
     }
 
+    int opt = 1;
+    setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
     struct timeval timeout;      
     timeout.tv_sec = TIMEOUT_VALUE;  // Timeout after 5 seconds
     timeout.tv_usec = 0; 
 
-    setsockopt(socket_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+    // setsockopt(socket_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
 
     // Setup server address
     address.sin_family = AF_INET;
@@ -83,6 +89,7 @@ bool SocketModule::waitForConnection(int port) {
     std::cout << "Client connected!\n";
 
     // Set the timeout
+    setsockopt(connection_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
     setsockopt(connection_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
     return true;
 }
@@ -93,42 +100,44 @@ void SocketModule::sendMessage(const json& message) {
     send(this->connection_fd, jsonString.c_str(), jsonString.size(), 0);
 }
 
-// Read a message from the socket
 json SocketModule::receiveMessage() {
     static std::string dataBuffer = "";  // Store partial data between calls
     char buffer[1024] = {0};
-    int bytesReceived = read(this->connection_fd, buffer, sizeof(buffer));
+    
+    while (true) {
+        int bytesReceived = read(this->connection_fd, buffer, sizeof(buffer));
+        std::cout << "Bytes received: " << bytesReceived << std::endl;
 
-    std::cout << "Bytes received: " << bytesReceived << std::endl;
+        if (bytesReceived > 0) {
+            // Append new data to buffer
+            dataBuffer += std::string(buffer, bytesReceived);
 
-    if (bytesReceived > 0) {
-        // Append new data to buffer
-        dataBuffer += std::string(buffer, bytesReceived);
-
-        try {
-            // Attempt to parse JSON
-            json parsedJson = json::parse(dataBuffer);
-            dataBuffer.clear();  // Clear buffer after successful parsing
-            return parsedJson;
-        } catch (json::parse_error&) {
-            std::cerr << "Partial JSON received, waiting for more data..." << std::endl;
-            return json({{"error", "partial_json"}});
-        }
-    } 
-    else if (bytesReceived == 0) {
-        std::cerr << "Connection closed by peer." << std::endl;
-        return json({{"error", "connection_closed"}});
-    } 
-    else {
-        if (errno == EAGAIN || errno == EWOULDBLOCK) {
-            std::cerr << "Receive timeout!" << std::endl;
-            return json({{"error", "timeout"}});
-        } else {
-            perror("Receive failed");
-            return json({{"error", "read_failed"}});
+            try {
+                // Attempt to parse JSON
+                json parsedJson = json::parse(dataBuffer);
+                dataBuffer.clear();  // Clear buffer after successful parsing
+                return parsedJson;
+            } catch (json::parse_error&) {
+                std::cerr << "Partial JSON received, waiting for more data..." << std::endl;
+                continue;  // Keep reading until we get a full JSON
+            }
+        } 
+        else if (bytesReceived == 0) {
+            std::cerr << "Connection closed by peer." << std::endl;
+            return json({{"error", "connection_closed"}});
+        } 
+        else {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                std::cerr << "Receive timeout!" << std::endl;
+                return json({{"error", "timeout"}});
+            } else {
+                perror("Receive failed");
+                return json({{"error", "read_failed"}});
+            }
         }
     }
 }
+
 
 // Close the connection
 void SocketModule::closeConnection() {

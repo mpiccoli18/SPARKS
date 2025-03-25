@@ -11,6 +11,7 @@
 using json = nlohmann::json;
 
 #define PUF_SIZE 32 // 256 bits = 32 bytes
+#define CHALLENGE_SIZE 5
 
 void generate_random_bytes(unsigned char* buffer, size_t size = 32);
 
