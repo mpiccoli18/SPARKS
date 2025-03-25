@@ -1,6 +1,7 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
+#include <sstream>  // For std::ostringstream for rasp pi 4
 #include <openssl/evp.h>
 #include <iostream>
 #include <random>
