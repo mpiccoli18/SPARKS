@@ -21,7 +21,7 @@ tests : $(OBJS) $(SRC_DIR)/test.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
 # Rule to compile the scenarios
-scenarii: scenario1 scenario2
+scenarii: scenario1 scenario2 scenario3
 
 scenario1: scenario1_client scenario1_server
 
