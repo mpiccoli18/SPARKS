@@ -439,11 +439,12 @@ int autentication_client(UAV * A){
 }
 
 int main(int argc, char* argv[]) {
-    const char* ip = "127.0.0.1"; // Default IP
-
-    if (argc > 1) {
-        ip = argv[1]; // Override IP from command-line argument
+    if (argc < 2) {
+        std::cerr << "Error: No IP address provided. Please provide the IP as an argument." << std::endl;
+        return 1;  // Exit with an error code
     }
+
+    const char* ip = argv[1];  // Read IP from command-line argument
 
     std::cout << "Using IP: " << ip << std::endl;
 
