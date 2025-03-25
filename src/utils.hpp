@@ -5,6 +5,7 @@
 #include <iostream>
 #include <random>
 #include <iomanip>
+#include <sstream>  // For std::ostringstream
 #include <cstring> 
 #include <nlohmann/json.hpp> 
 
