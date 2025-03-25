@@ -1,6 +1,5 @@
 #include <string>
 #include <chrono> 
-#include <thread>
 
 #include "../UAV.hpp"
 #include "../puf.hpp"
@@ -471,8 +470,8 @@ int main(int argc, char* argv[]) {
 
     // Expected output is a fail
     // A will just retry an autentication later (and it should work)
-    
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    A.socketModule.closeConnection();
+    A.socketModule.initiateConnection(ip, 8080);
 
     ret = autentication_client(&A);
     if (ret != 0){
