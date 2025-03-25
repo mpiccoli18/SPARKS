@@ -229,7 +229,9 @@ int main(){
     ret = autentication_server(&B);
     if (ret != 0){
         return ret;
-    }    
+    }   
+    
+    B.socketModule.closeConnection();
 
     return 0;
 }

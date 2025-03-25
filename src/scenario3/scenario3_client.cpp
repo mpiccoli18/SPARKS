@@ -476,5 +476,7 @@ int main(int argc, char* argv[]) {
         return ret;
     }    
 
+    A.socketModule.closeConnection();
+
     return 0;
 }
