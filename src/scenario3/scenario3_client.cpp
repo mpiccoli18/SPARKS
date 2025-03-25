@@ -474,7 +474,7 @@ int main(int argc, char* argv[]) {
     
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     A.socketModule.closeConnection();
-    A.socketModule.waitForConnection(8080);
+    A.socketModule.initiateConnection(ip,8080);
 
     ret = autentication_client(&A);
     if (ret != 0){
