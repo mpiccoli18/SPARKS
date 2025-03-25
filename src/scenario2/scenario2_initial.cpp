@@ -208,7 +208,14 @@ int supplementaryAuthenticationInitial(UAV * A){
     return 0;
 }
 
-int main(){
+int main(int argc, char* argv[]) {
+    const char* ip = "127.0.0.1"; // Default IP
+
+    if (argc > 1) {
+        ip = argv[1]; // Override IP from command-line argument
+    }
+
+    std::cout << "Using IP: " << ip << std::endl;
 
     // Creation of the UAV
 
@@ -218,7 +225,7 @@ int main(){
 
     // Initiate connection
 
-    A.socketModule.initiateConnection("127.0.0.1",8080);
+    A.socketModule.initiateConnection(ip,8080);
 
     // When the programm reaches this point, the UAV are connected
 
