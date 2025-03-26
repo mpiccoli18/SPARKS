@@ -20,6 +20,15 @@ test: tests
 tests : $(OBJS) $(SRC_DIR)/test.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
+# Rules to compile the attack scenarios
+attack: attack_client attack_server
+
+attack_client: $(OBJS) $(SRC_DIR)/attack_test/attack_client.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+
+attack_server: $(OBJS) $(SRC_DIR)/attack_test/attack_server.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+
 # Rule to compile the scenarios
 scenarii: scenario1 scenario2 scenario3
 
@@ -65,4 +74,4 @@ $(BIN_DIR):
 
 # Clean up all compiled files
 clean:
-	rm -f $(BIN_DIR)/*.o tests scenario*
+	rm -f $(BIN_DIR)/*.o tests scenario* attack*

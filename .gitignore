@@ -2,6 +2,7 @@
 bin/
 tests
 scenario*
+attack*
 
 # Ignore temporary files and editor backups
 *.swp
