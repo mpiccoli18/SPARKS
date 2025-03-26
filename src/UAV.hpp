@@ -1,3 +1,11 @@
+/**
+ * @file UAV.hpp
+ * @brief UAV class header.
+ * 
+ * This file is the UAV class header. 
+ * 
+ */
+
 #ifndef UAV_HPP
 #define UAV_HPP
 
@@ -8,10 +16,11 @@
 
 #include "utils.hpp"
 #include "puf.hpp"
-#include "connectionHelper.hpp"
+#include "SocketModule.hpp"
 
 #define PUF_SIZE 32  // 256 bits = 32 bytes
 
+/// @brief This class defines the data structure holded by UAVs' table to describe other UAVs.
 class UAVData {
 private:
     unsigned char* x;
@@ -50,16 +59,7 @@ public:
     void print() const;
 };
 
-void print_hex(const unsigned char* data, size_t size);
-
-
-/**};
- * @struct UAV
- * @brief Represents and holds UAV data
- * 
- * This class represents a UAV. It provides methods to manage its neighbours and access its PUF.
- * 
- */
+/// @brief This class represents a UAV. It provides methods to manage its neighbours and access its PUF.
 class UAV {
 private:
     std::string id;
@@ -86,10 +86,6 @@ public:
 
     void callPUF(const unsigned char * input, unsigned char * response);
 
-    // TODO : remove 
-    void printSalt(){
-        PUF.printSalt();
-    }
 };
 
 #endif // UAV_HPP

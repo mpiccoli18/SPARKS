@@ -1,3 +1,11 @@
+/**
+ * @file puf.hpp
+ * @brief Puf class header
+ * 
+ * This file holds the puf class header.
+ * 
+ */
+
 #ifndef PUF_HPP
 #define PUF_HPP
 
@@ -6,6 +14,7 @@
 #include "utils.hpp"
 #include "puf.hpp"
 
+/// @brief This class models a PUF.
 class puf
 {
 private:

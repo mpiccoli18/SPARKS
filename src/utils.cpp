@@ -1,3 +1,12 @@
+/**
+ * @file utils.cpp
+ * @brief Helper functions implementation
+ * 
+ * This file is the header for useful functions throughout this project.
+ * 
+ */
+
+
 #include "utils.hpp"
 
 void generate_random_bytes(unsigned char* buffer, size_t size) {

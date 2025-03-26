@@ -1,9 +1,17 @@
-#include "connectionHelper.hpp"
+/**
+ * @file SocketModule.cpp
+ * @brief SocketModule implementation
+ * 
+ * This file holds the SocketModules class implementation.
+ * 
+ */
 
-// Constructor: Initializes socket
+#include "SocketModule.hpp"
+
+/// @brief Constructor: Initializes socket
 SocketModule::SocketModule() : socket_fd(-1), connection_fd(-1) {}
 
-// Initiates a client connection
+/// @brief Initiates a client connection
 bool SocketModule::initiateConnection(const std::string& ip, int port) {
     
     // Create a socket
@@ -41,7 +49,7 @@ bool SocketModule::initiateConnection(const std::string& ip, int port) {
     return true;
 }
 
-// Waits for a client to connect (acts as a server)
+/// @brief Waits for a client to connect (acts as a server)
 bool SocketModule::waitForConnection(int port) {
     
     // Create socket
@@ -94,12 +102,13 @@ bool SocketModule::waitForConnection(int port) {
     return true;
 }
 
-// Send a message over the socket
+/// @brief Send a message over the socket
 void SocketModule::sendMessage(const json& message) {
     std::string jsonString = message.dump(); // Convert JSON to string
     send(this->connection_fd, jsonString.c_str(), jsonString.size(), 0);
 }
 
+/// @brief Receive a message on the connection socket.
 json SocketModule::receiveMessage() {
     static std::string dataBuffer = "";  // Store partial data between calls
     char buffer[1024] = {0};
@@ -139,13 +148,13 @@ json SocketModule::receiveMessage() {
 }
 
 
-// Close the connection
+/// @brief Close the connection
 void SocketModule::closeConnection() {
     if (connection_fd != -1) close(connection_fd);
     if (socket_fd != -1) close(socket_fd);
 }
 
-// Destructor ensures the connection is closed
+/// @brief Destructor ensures the connection is closed
 SocketModule::~SocketModule() {
     closeConnection();
 }
