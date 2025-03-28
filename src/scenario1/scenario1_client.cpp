@@ -293,15 +293,26 @@ int main(int argc, char* argv[]) {
 
     // When the programm reaches this point, the UAV are connected
 
+    auto start = std::chrono::high_resolution_clock::now(); 
+    
     int ret = enrolment_client(&A);
     if (ret == 1){
         return ret;
     }
-
+    
+    start = std::chrono::high_resolution_clock::now(); 
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    std::cout << "Execution time for enrolment : " << duration.count() << " microseconds" << std::endl;
+    
     ret = autentication_client(&A);
     if (ret == 1){
         return ret;
     }
+    
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    std::cout << "Execution time for authentication : " << duration.count() << " microseconds" << std::endl;
 
     A.socketModule.closeConnection();
 
