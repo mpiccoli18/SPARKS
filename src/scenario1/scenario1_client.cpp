@@ -11,13 +11,13 @@ std::string idB = "B";
 bool server = false;
 
 int enrolment_client(UAV * A){
-    std::cout << "\nEnrolment process begins.\n";
+    // std::cout << "\nEnrolment process begins.\n";
 
     // A enroll with B
     // A computes the challenge for B
     unsigned char xB[PUF_SIZE];
     generate_random_bytes(xB, PUF_SIZE);
-    std::cout << "xB : "; print_hex(xB, PUF_SIZE);
+    // std::cout << "xB : "; print_hex(xB, PUF_SIZE);
 
     // Creates B in the memory of A and save xB 
     A->addUAV(idB, xB);
@@ -25,16 +25,16 @@ int enrolment_client(UAV * A){
     // Creates the challenge for B
     unsigned char CB[PUF_SIZE];
     A->callPUF(xB, CB);
-    std::cout << "CB : "; print_hex(CB, PUF_SIZE);
+    // std::cout << "CB : "; print_hex(CB, PUF_SIZE);
 
     // Sends CB
     json msg = {{"id", idA}, {"CB", toHexString(CB, PUF_SIZE)}};
     A->socketModule.sendMessage(msg);
-    std::cout << "Sent CB.\n";
+    // std::cout << "Sent CB.\n";
 
     // Wait for B's response (with RB)
     json rsp = A->socketModule.receiveMessage();
-    printJSON(rsp);
+    // printJSON(rsp);
 
     // Check if an error occurred
     if (rsp.contains("error")) {
@@ -51,12 +51,12 @@ int enrolment_client(UAV * A){
 
     A->getUAVData(idB)->setR(RB);
 
-    std::cout << "\nB is enroled to A\n";
+    // std::cout << "\nB is enroled to A\n";
 
     // B enroll with A
     // A receive CA. It saves CA.
     rsp = A->socketModule.receiveMessage();
-    printJSON(rsp);
+    // printJSON(rsp);
 
     // Check if an error occurred
     if (rsp.contains("error")) {
@@ -75,29 +75,29 @@ int enrolment_client(UAV * A){
     // A computes RA
     unsigned char RA[PUF_SIZE];
     A->callPUF(CA, RA);
-    std::cout << "RA : "; print_hex(RA, PUF_SIZE);
+    // std::cout << "RA : "; print_hex(RA, PUF_SIZE);
 
     // A sends RA
     msg = {{"id", idA}, {"RA", toHexString(RA, PUF_SIZE)}};
     A->socketModule.sendMessage(msg);
-    std::cout << "Sent RA.\n";
+    // std::cout << "Sent RA.\n";
 
     return 0;
 }
 
 int autentication_client(UAV * A){
     // The client initiate the authentication process
-    std::cout << "\nAutentication process begins.\n";
+    // std::cout << "\nAutentication process begins.\n";
 
     // A generates a nonce NA 
     unsigned char NA[PUF_SIZE];
     generate_random_bytes(NA);
-    std::cout << "NA : "; print_hex(NA, PUF_SIZE);
+    // std::cout << "NA : "; print_hex(NA, PUF_SIZE);
 
     // A sends its ID and NA to B 
     json msg = {{"id", idA}, {"NA", toHexString(NA, PUF_SIZE)}};
     A->socketModule.sendMessage(msg);
-    std::cout << "Sent ID and NA.\n";
+    // std::cout << "Sent ID and NA.\n";
 
     // A waits for the answer
     json rsp = A->socketModule.receiveMessage();
@@ -129,15 +129,15 @@ int autentication_client(UAV * A){
         std::cout << "No expected challenge in memory for this UAV.\n";
         return 1;
     }
-    std::cout << "CA : "; print_hex(CA, PUF_SIZE);
+    // std::cout << "CA : "; print_hex(CA, PUF_SIZE);
     unsigned char RA[PUF_SIZE];
     A->callPUF(CA,RA);
-    std::cout << "RA : "; print_hex(RA, PUF_SIZE);
+    // std::cout << "RA : "; print_hex(RA, PUF_SIZE);
     
     // A retrieve NB from M1 
     unsigned char NB[PUF_SIZE];
     xor_buffers(M1, RA, PUF_SIZE, NB);
-    std::cout << "NB : "; print_hex(NB, PUF_SIZE);
+    // std::cout << "NB : "; print_hex(NB, PUF_SIZE);
 
     // A verify the hash
     unsigned char hash1Check[PUF_SIZE];
@@ -147,10 +147,10 @@ int autentication_client(UAV * A){
     addToHash(ctx, RA, PUF_SIZE);
     addToHash(ctx, NA, PUF_SIZE);
     calculateHash(ctx, hash1Check);
-    std::cout << "hash1Check : "; print_hex(hash1Check, PUF_SIZE);
+    // std::cout << "hash1Check : "; print_hex(hash1Check, PUF_SIZE);
 
     bool res = memcmp(hash1, hash1Check, PUF_SIZE) == 0;
-    std::cout << "A verify B's hash : " << res << "\n";
+    // std::cout << "A verify B's hash : " << res << "\n";
 
     if(res == 0){
         std::cout << "The autentication failed. A will try to verify the hash with an old challenge if it exists.\n";
@@ -204,16 +204,16 @@ int autentication_client(UAV * A){
 
     }
 
-    std::cout << "B's hash has been verified. B is autenticated to A.\n";
+    // std::cout << "B's hash has been verified. B is autenticated to A.\n";
 
     // A will now conputes the new challenge and M2
     unsigned char RAp[PUF_SIZE];
     A->callPUF(NB,RAp);
-    std::cout << "RAp : "; print_hex(RAp, PUF_SIZE);
+    // std::cout << "RAp : "; print_hex(RAp, PUF_SIZE);
 
     unsigned char M2[PUF_SIZE];
     xor_buffers(NB,RAp,PUF_SIZE,M2);
-    std::cout << "M2 : "; print_hex(M2, PUF_SIZE);
+    // std::cout << "M2 : "; print_hex(M2, PUF_SIZE);
 
     // A sends M2, and a hash of NB, RA, RAp, NA
     unsigned char hash2[PUF_SIZE];
@@ -223,7 +223,7 @@ int autentication_client(UAV * A){
     addToHash(ctx, RAp, PUF_SIZE);
     addToHash(ctx, NA, PUF_SIZE);
     calculateHash(ctx, hash2);
-    std::cout << "hash2 : "; print_hex(hash2, PUF_SIZE);
+    // std::cout << "hash2 : "; print_hex(hash2, PUF_SIZE);
 
     // TODO : send M2, and a hash of NB, RA, RAp, NA
     msg = {
@@ -232,7 +232,7 @@ int autentication_client(UAV * A){
         {"hash2", toHexString(hash2, PUF_SIZE)}
     };
     A->socketModule.sendMessage(msg);
-    std::cout << "Sent ID, M2 and hash2.\n";
+    // std::cout << "Sent ID, M2 and hash2.\n";
 
     // A waits for B's ACK
     rsp = A->socketModule.receiveMessage();
@@ -268,7 +268,7 @@ int autentication_client(UAV * A){
     A->getUAVData(idB)->setC(NB);
 
     // Finished
-    std::cout << "\nThe two UAV autenticated each other.\n";
+    // std::cout << "\nThe two UAV autenticated each other.\n";
     
     return 0;
 }
