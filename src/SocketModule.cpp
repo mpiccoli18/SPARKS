@@ -115,8 +115,8 @@ json SocketModule::receiveMessage() {
     
     while (true) {
         int bytesReceived = read(this->connection_fd, buffer, sizeof(buffer));
-        // std::cout << "Bytes received: " << bytesReceived << std::endl;
-
+        std::cout << "Bytes received: " << bytesReceived << std::endl;
+        std::cout << "Received data: " << buffer << std::endl;
         if (bytesReceived > 0) {
             // Append new data to buffer
             dataBuffer += std::string(buffer, bytesReceived);
@@ -126,7 +126,8 @@ json SocketModule::receiveMessage() {
                 json parsedJson = json::parse(dataBuffer);
                 dataBuffer.clear();  // Clear buffer after successful parsing
                 return parsedJson;
-            } catch (json::parse_error&) {
+            } catch (json::parse_error& e) {
+                std::cerr << "Parse error: " << e.what() << std::endl;
                 std::cerr << "Partial JSON received, waiting for more data..." << std::endl;
                 continue;  // Keep reading until we get a full JSON
             }

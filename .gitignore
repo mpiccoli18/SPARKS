@@ -3,6 +3,7 @@ bin/
 tests
 scenario*
 attack*
+measure_*
 
 # Ignore temporary files and editor backups
 *.swp

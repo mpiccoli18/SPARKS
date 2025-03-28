@@ -20,6 +20,15 @@ test: tests
 tests : $(OBJS) $(SRC_DIR)/test.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
+# Rule to compile measurement
+measure : measure_client measure_server
+
+measure_client : $(OBJS) $(SRC_DIR)/measurement/enrol_client.cpp | $(BIN_DIR)
+	$(CXX) -Wall -Wextra -O0 -std=c++11 -g $^ -o $@ -lcrypto
+
+measure_server : $(OBJS) $(SRC_DIR)/measurement/enrol_server.cpp | $(BIN_DIR)
+	$(CXX) -Wall -Wextra -O0 -std=c++11 -g $^ -o $@ -lcrypto
+
 # Rules to compile the attack scenarios
 attack: attack_client attack_server
 

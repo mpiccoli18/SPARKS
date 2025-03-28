@@ -1,5 +1,6 @@
 #include <string>
 #include <chrono> 
+#include <x86intrin.h>
 
 #include "../UAV.hpp"
 #include "../puf.hpp"
@@ -10,32 +11,41 @@ std::string idA = "A";
 std::string idB = "B";
 bool server = false;
 
-int enrolment_client(UAV * A){
-    // std::cout << "\nEnrolment process begins.\n";
+void warmup(UAV * A){
+    unsigned char rand[PUF_SIZE];
+    generate_random_bytes(rand);
+    unsigned char out[PUF_SIZE];
+    A->callPUF(rand, out);
+    print_hex(out, PUF_SIZE);
+}
 
+int enrolment_client(UAV * A){
+    
+    // std::cout << "\nEnrolment process begins.\n";
+    
     // A enroll with B
     // A computes the challenge for B
     unsigned char xB[PUF_SIZE];
     generate_random_bytes(xB, PUF_SIZE);
     // std::cout << "xB : "; print_hex(xB, PUF_SIZE);
-
+    
     // Creates B in the memory of A and save xB 
     A->addUAV(idB, xB);
-
+    
     // Creates the challenge for B
     unsigned char CB[PUF_SIZE];
     A->callPUF(xB, CB);
     // std::cout << "CB : "; print_hex(CB, PUF_SIZE);
-
+    
     // Sends CB
     json msg = {{"id", idA}, {"CB", toHexString(CB, PUF_SIZE)}};
     A->socketModule.sendMessage(msg);
     // std::cout << "Sent CB.\n";
-
+    
     // Wait for B's response (with RB)
     json rsp = A->socketModule.receiveMessage();
     // printJSON(rsp);
-
+    
     // Check if an error occurred
     if (rsp.contains("error")) {
         std::cerr << "Error occurred: " << rsp["error"] << std::endl;
@@ -48,11 +58,10 @@ int enrolment_client(UAV * A){
         return 1;
     }
     fromHexString(rsp["RB"].get<std::string>(), RB, PUF_SIZE);
-
+    
     A->getUAVData(idB)->setR(RB);
-
     // std::cout << "\nB is enroled to A\n";
-
+    
     // B enroll with A
     // A receive CA. It saves CA.
     rsp = A->socketModule.receiveMessage();
@@ -288,34 +297,59 @@ int main(int argc, char* argv[]) {
     UAV A = UAV(idA);
 
     std::cout << "The client drone id is : " <<A.getId() << ".\n"; 
-
-    A.socketModule.initiateConnection(ip, 8080);
-
-    // When the programm reaches this point, the UAV are connected
-
-    auto start = std::chrono::high_resolution_clock::now(); 
     
+    A.socketModule.initiateConnection(ip, 8080);
+    
+    // When the programm reaches this point, the UAV are connected
+    
+    // We now warm up the functions 
+    uint64_t start = __rdtsc();
+    warmup(&A);
+    uint64_t end = __rdtsc();
+    uint64_t m1 = end - start;
+    std::cout << "Elapsed CPU cycles: " << m1 << " cycles" << std::endl;
+    
+    
+    std::cout << "Started enrolment" << std::endl;
+    start = __rdtsc();
     int ret = enrolment_client(&A);
     if (ret == 1){
         return ret;
     }
+    end = __rdtsc();
+    uint64_t m2 = end - start;
+    std::cout << "Elapsed CPU cycles: " << m2 << " cycles" << std::endl;
+    std::cout << "Finished enrolment" << std::endl;
     
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    std::cout << "Execution time for enrolment : " << duration.count() << " microseconds" << std::endl;
-    
-    start = std::chrono::high_resolution_clock::now(); 
-    
+    std::cout << "Started authentication" << std::endl;
+    start = __rdtsc();
     ret = autentication_client(&A);
     if (ret == 1){
         return ret;
     }
+    end = __rdtsc();
+    uint64_t m3 = end - start;
+    std::cout << "Elapsed CPU cycles: " << m3 << " cycles" << std::endl;
+    std::cout << "Finished authentication" << std::endl;
     
-    end = std::chrono::high_resolution_clock::now();
-    duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    std::cout << "Execution time for authentication : " << duration.count() << " microseconds" << std::endl;
-
     A.socketModule.closeConnection();
 
     return 0;
 }
+
+// auto start = std::chrono::high_resolution_clock::now(); 
+// auto end = std::chrono::high_resolution_clock::now();
+// auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+// std::cout << "Execution time for enrolment : " << duration.count() << " microseconds" << std::endl;
+
+
+// start = std::chrono::high_resolution_clock::now(); 
+// end = std::chrono::high_resolution_clock::now();
+// duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+// std::cout << "Execution time for authentication : " << duration.count() << " microseconds" << std::endl;
+
+// uint64_t start = rdtsc();
+        
+// uint64_t end = rdtsc();
+
+// std::cout << "Execution time (in CPU cycles): " << (end - start) << " cycles\n";
