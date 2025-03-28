@@ -1,6 +1,5 @@
 #include <string>
 #include <chrono> 
-#include <x86intrin.h>
 #include <thread>
 
 #include "../UAV.hpp"
@@ -11,16 +10,15 @@
 std::string idA = "A";
 std::string idB = "B";
 bool server = false;
-unsigned int pid;
-uint64_t start;
-uint64_t end;
-uint64_t m1;
-uint64_t m2;
-uint64_t m3;
-uint64_t m4;
-uint64_t m5;
-uint64_t m6;
-uint64_t m7;
+std::chrono::time_point<std::chrono::high_resolution_clock> start;
+std::chrono::time_point<std::chrono::high_resolution_clock> end;
+std::chrono::microseconds m1;
+std::chrono::microseconds m2;
+std::chrono::microseconds m3;
+std::chrono::microseconds m4;
+std::chrono::microseconds m5;
+std::chrono::microseconds m6;
+std::chrono::microseconds m7;
 
 
 void warmup(UAV * A){
@@ -37,7 +35,7 @@ int enrolment_client_1(UAV * A){
     
     // A enroll with B
     // A computes the challenge for B
-    start = __rdtscp(&pid);
+    start = std::chrono::high_resolution_clock::now();
     unsigned char xB[PUF_SIZE];
     generate_random_bytes(xB, PUF_SIZE);
     // std::cout << "xB : "; print_hex(xB, PUF_SIZE);
@@ -52,9 +50,9 @@ int enrolment_client_1(UAV * A){
     
     // Sends CB
     json msg = {{"id", idA}, {"C", toHexString(CB, PUF_SIZE)}};
-    end = __rdtscp(&pid);
-    m1 = end - start;
-    start = __rdtscp(&pid);
+    end = std::chrono::high_resolution_clock::now();
+    m1 = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    start = std::chrono::high_resolution_clock::now();
     A->socketModule.sendMessage(msg);
     // std::cout << "Sent CB.\n";
     
@@ -74,19 +72,19 @@ int enrolment_client_1(UAV * A){
         return 1;
     }
     fromHexString(rsp["R"].get<std::string>(), RB, PUF_SIZE);
-    end = __rdtscp(&pid);
-    m2 = end - start;
-    start = __rdtscp(&pid);
+    end = std::chrono::high_resolution_clock::now();
+    m2 = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    start = std::chrono::high_resolution_clock::now();
     A->getUAVData(idB)->setR(RB);
-    end = __rdtscp(&pid);
-    m3 = end - start;
+    end = std::chrono::high_resolution_clock::now();
+    m3 = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     // std::cout << "\nB is enroled to A\n";
    
     return 0;
 }
 
 int enrolment_client_2(UAV * A){
-    start = __rdtsc();
+    start = std::chrono::high_resolution_clock::now();
     // B enroll with A
     // A receive CA. It saves CA.
     json rsp = A->socketModule.receiveMessage();
@@ -104,10 +102,10 @@ int enrolment_client_2(UAV * A){
         return 1;
     }
     fromHexString(rsp["C"].get<std::string>(), CA, PUF_SIZE);
-    end = __rdtsc();
-    m4 = end - start;
+    end = std::chrono::high_resolution_clock::now();
+    m4 = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
-    start = __rdtsc();
+    start = std::chrono::high_resolution_clock::now();
     A->getUAVData(idB)->setC(CA);
 
     // A computes RA
@@ -115,8 +113,8 @@ int enrolment_client_2(UAV * A){
     A->callPUF(CA, RA);
     // std::cout << "RA : "; print_hex(RA, PUF_SIZE);
 
-    end = __rdtsc();
-    m5 = end - start;
+    end = std::chrono::high_resolution_clock::now();
+    m5 = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     // A sends RA
     json msg = {{"id", idA}, {"R", toHexString(RA, PUF_SIZE)}};
     A->socketModule.sendMessage(msg);
@@ -142,38 +140,39 @@ int main() {
     warmup(&A);    
     
     std::cout << "Started enrolment one side" << std::endl;
-    start = __rdtsc();
+    start = std::chrono::high_resolution_clock::now();
     int ret = enrolment_client_2(&A);
     if (ret == 1){
         return ret;
     }
-    end = __rdtsc();
-    m6 = end - start;
+    end = std::chrono::high_resolution_clock::now();
+    m6 = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    start = __rdtsc();
+    start = std::chrono::high_resolution_clock::now();
     ret = enrolment_client_1(&A);
     if (ret == 1){
         return ret;
     }
-    end = __rdtsc();
-    m7 = end - start;
+    end = std::chrono::high_resolution_clock::now();
+    m7 = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     
     std::cout << "Finished enrolment" << std::endl;
 
-    std::cout << "m1 Elapsed CPU cycles: " << m1 << " cycles" << std::endl;
-    std::cout << "m2 Elapsed CPU cycles: " << m2 << " cycles" << std::endl;
-    std::cout << "m3 Elapsed CPU cycles: " << m3 << " cycles" << std::endl;
-    std::cout << "m4 Elapsed CPU cycles: " << m4 << " cycles" << std::endl;
-    std::cout << "m5 Elapsed CPU cycles: " << m5 << " cycles" << std::endl;
-    std::cout << "m6 Elapsed CPU cycles: " << m6 << " cycles" << std::endl;
-    std::cout << "m7 Elapsed CPU cycles: " << m6 << " cycles" << std::endl;
+    std::cout << "m1 Elapsed CPU cycles: " << m1.count() << " cycles" << std::endl;
+    std::cout << "m2 Elapsed CPU cycles: " << m2.count() << " cycles" << std::endl;
+    std::cout << "m3 Elapsed CPU cycles: " << m3.count() << " cycles" << std::endl;
+    std::cout << "m4 Elapsed CPU cycles: " << m4.count() << " cycles" << std::endl;
+    std::cout << "m5 Elapsed CPU cycles: " << m5.count() << " cycles" << std::endl;
+    std::cout << "m6 Elapsed CPU cycles: " << m6.count() << " cycles" << std::endl;
+    std::cout << "m7 Elapsed CPU cycles: " << m6.count() << " cycles" << std::endl;
     A.socketModule.closeConnection();
 
     return 0;
 }
 
-// auto start = std::chrono::high_resolution_clock::now(); 
+
+auto start = std::chrono::high_resolution_clock::now(); 
 // auto end = std::chrono::high_resolution_clock::now();
 // auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 // std::cout << "Execution time for enrolment : " << duration.count() << " microseconds" << std::endl;
