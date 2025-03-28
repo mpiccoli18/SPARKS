@@ -3,14 +3,14 @@
 #include "../UAV.hpp"
 #include "../puf.hpp"
 #include "../utils.hpp"
-#include "../connectionHelper.hpp"
+#include "../SocketModule.hpp"
 
 std::string idW = "B";
 
 /**
- * @brief B tries to impersonate a trusted drone B.
+ * @brief W tries to impersonate a trusted drone B.
  * 
- * @param B 
+ * @param W 
  * @return int 
  */
 int impersonation_server(UAV * W){

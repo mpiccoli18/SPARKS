@@ -4,7 +4,7 @@
 #include "../UAV.hpp"
 #include "../puf.hpp"
 #include "../utils.hpp"
-#include "../connectionHelper.hpp"
+#include "../SocketModule.hpp"
 
 std::string idA = "A";
 std::string idC = "C";
