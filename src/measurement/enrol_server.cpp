@@ -159,13 +159,13 @@ int main() {
     
     std::cout << "Finished enrolment" << std::endl;
 
-    std::cout << "m1 Elapsed CPU cycles: " << m1.count() << " cycles" << std::endl;
-    std::cout << "m2 Elapsed CPU cycles: " << m2.count() << " cycles" << std::endl;
-    std::cout << "m3 Elapsed CPU cycles: " << m3.count() << " cycles" << std::endl;
-    std::cout << "m4 Elapsed CPU cycles: " << m4.count() << " cycles" << std::endl;
-    std::cout << "m5 Elapsed CPU cycles: " << m5.count() << " cycles" << std::endl;
-    std::cout << "m6 Elapsed CPU cycles: " << m6.count() << " cycles" << std::endl;
-    std::cout << "m7 Elapsed CPU cycles: " << m6.count() << " cycles" << std::endl;
+    std::cout << "m1 Elapsed CPU cycles: " << m1.count() << " microseconds" << std::endl;
+    std::cout << "m2 Elapsed CPU cycles: " << m2.count() << " microseconds" << std::endl;
+    std::cout << "m3 Elapsed CPU cycles: " << m3.count() << " microseconds" << std::endl;
+    std::cout << "m4 Elapsed CPU cycles: " << m4.count() << " microseconds" << std::endl;
+    std::cout << "m5 Elapsed CPU cycles: " << m5.count() << " microseconds" << std::endl;
+    std::cout << "m6 Elapsed CPU cycles: " << m6.count() << " microseconds" << std::endl;
+    std::cout << "m7 Elapsed CPU cycles: " << m6.count() << " microseconds" << std::endl;
     A.socketModule.closeConnection();
 
     return 0;
