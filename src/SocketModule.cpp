@@ -115,7 +115,7 @@ json SocketModule::receiveMessage() {
     
     while (true) {
         int bytesReceived = read(this->connection_fd, buffer, sizeof(buffer));
-        std::cout << "Bytes received: " << bytesReceived << std::endl;
+        // std::cout << "Bytes received: " << bytesReceived << std::endl;
 
         if (bytesReceived > 0) {
             // Append new data to buffer

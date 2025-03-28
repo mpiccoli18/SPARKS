@@ -101,7 +101,7 @@ int autentication_client(UAV * A){
 
     // A waits for the answer
     json rsp = A->socketModule.receiveMessage();
-    printJSON(rsp);
+    // printJSON(rsp);
 
     // Check if an error occurred
     if (rsp.contains("error")) {
@@ -153,7 +153,7 @@ int autentication_client(UAV * A){
     // std::cout << "A verify B's hash : " << res << "\n";
 
     if(res == 0){
-        std::cout << "The autentication failed. A will try to verify the hash with an old challenge if it exists.\n";
+        // std::cout << "The autentication failed. A will try to verify the hash with an old challenge if it exists.\n";
 
         // A will recover the old challenge 
         const unsigned char * xLock = A->getUAVData(idB)->getXLock();
@@ -174,12 +174,12 @@ int autentication_client(UAV * A){
         // A will calculate the old response 
         unsigned char RAOld[PUF_SIZE];
         A->callPUF(CAOld, RAOld);
-        std::cout << "RAOld : "; print_hex(RAOld, PUF_SIZE);
+        // std::cout << "RAOld : "; print_hex(RAOld, PUF_SIZE);
 
         // A will deduce NB from the old response
         unsigned char NBOld[PUF_SIZE];
         xor_buffers(M1, RAOld, PUF_SIZE, NBOld);
-        std::cout << "NBOld : "; print_hex(NBOld, PUF_SIZE);
+        // std::cout << "NBOld : "; print_hex(NBOld, PUF_SIZE);
 
         // A now tries to verify the hash with this value
         ctx = initHash();
@@ -188,14 +188,14 @@ int autentication_client(UAV * A){
         addToHash(ctx, RAOld, PUF_SIZE);
         addToHash(ctx, NA, PUF_SIZE);
         calculateHash(ctx, hash1Check);
-        std::cout << "hash1Check : "; print_hex(hash1Check, PUF_SIZE);
+        // std::cout << "hash1Check : "; print_hex(hash1Check, PUF_SIZE);
 
         res = memcmp(hash1, hash1Check, PUF_SIZE) == 0;
         if (res == 0){
             std::cout << "Even with the old challenge, autentication has failed.\n";
             return 1;
         }
-        std::cout << "B has been autenticated by A with the old challenge.\n";
+        // std::cout << "B has been autenticated by A with the old challenge.\n";
 
         // A will now change the values to be the one obtained of the old challenge
         A->getUAVData(idB)->setC(CAOld);
@@ -236,7 +236,7 @@ int autentication_client(UAV * A){
 
     // A waits for B's ACK
     rsp = A->socketModule.receiveMessage();
-    printJSON(rsp);
+    // printJSON(rsp);
 
     // Check if an error occurred
     if (rsp.contains("error")) {
