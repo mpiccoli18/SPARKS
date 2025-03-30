@@ -57,6 +57,20 @@ double getCpuFrequency() {
             }
         }
     }
+    
+    if (frequency == 0.0) {
+        // If no frequency was found, try reading from cpufreq
+        std::ifstream freqFile("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq");
+        if (freqFile.is_open()) {
+            freqFile >> frequency;
+            freqFile.close();
+        }
+    }
+
+    // If still no frequency, return a default value (fallback)
+    if (frequency == 0.0) {
+        frequency = 1.0;  // Default to 1 GHz if nothing is found
+    }
 
     return frequency / 1000.0;  // Convert MHz to GHz
 }
