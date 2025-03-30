@@ -119,16 +119,24 @@ int main() {
     }
 
     long long end = counter.getCycles();
-
-    std::cout << "Measured CPU cycles: " << (end - start) << " cycles" << std::endl;
-    std::cout << "Difference from expected cycles: " << (end - start - expected_cycles) << " cycles" << std::endl;
-
-    // Calculate the time difference in microseconds
+    
     long long cycle_difference = end - start;
+
+    std::cout << "Measured CPU cycles: " << cycle_difference << " cycles" << std::endl;
+    
+    // Calculate the time difference in microseconds
     double time_in_seconds = cycle_difference / (cpuFrequencyGHz * 1e9);  // Time in seconds
     double time_in_microseconds = time_in_seconds * 1e6;  // Convert time from seconds to microseconds
-
-    std::cout << "Time difference (in microseconds): " << time_in_microseconds << " microseconds" << std::endl;
+    
+    std::cout << "Time (in microseconds): " << time_in_microseconds << " microseconds" << std::endl;
+    
+    // Calculate the distance with expected in microseconds
+    long long cycle_difference_dist = end - start - expected_cycles;
+    time_in_seconds = cycle_difference_dist / (cpuFrequencyGHz * 1e9);  // Time in seconds
+    time_in_microseconds = time_in_seconds * 1e6;  // Convert time from seconds to microseconds
+    
+    std::cout << "Distance from expected cycles: " << cycle_difference_dist << " cycles" << std::endl;
+    std::cout << "Distance from expected cycles: " << time_in_microseconds << " microseconds" << std::endl;
     
     return 0;
 }
