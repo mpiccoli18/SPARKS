@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <string>
 #include <linux/perf_event.h>
 #include <sys/syscall.h>
 #include <unistd.h>
@@ -39,13 +41,56 @@ public:
     }
 };
 
+// Function to read the CPU frequency from /proc/cpuinfo
+double getCpuFrequency() {
+    std::ifstream cpuinfo("/proc/cpuinfo");
+    std::string line;
+    double frequency = 0.0;
+
+    while (std::getline(cpuinfo, line)) {
+        if (line.find("cpu MHz") != std::string::npos) {
+            // Extract the frequency (in MHz) from the line
+            size_t pos = line.find(":");
+            if (pos != std::string::npos) {
+                frequency = std::stod(line.substr(pos + 1));
+                break;
+            }
+        }
+    }
+
+    return frequency / 1000.0;  // Convert MHz to GHz
+}
+
 int main() {
-    // Define the expected number of cycles for 1 second at 2.4 GHz (2.4 billion cycles)
-    const long long expected_cycles = 2.4e9;  // 2.4 GHz * 1 second
+    // Get CPU frequency from user input or auto-detect
+    double cpuFrequencyGHz;
+    std::cout << "Enter CPU frequency in GHz (leave empty for auto-detection): ";
+    std::string input;
+    std::getline(std::cin, input);
+
+    if (input.empty()) {
+        // Get the CPU frequency in GHz (use getCpuFrequency function)
+        cpuFrequencyGHz = getCpuFrequency();
+        std::cout << "Detected CPU frequency: " << cpuFrequencyGHz << " GHz" << std::endl;
+
+    } 
+    else {
+        // Parse user input if provided
+        try {
+            cpuFrequencyGHz = std::stod(input);
+        } catch (const std::exception& e) {
+            std::cerr << "Invalid input. Please enter a valid number." << std::endl;
+            return EXIT_FAILURE;
+        }
+    }
+    
+    // Calculate the expected number of cycles for 1 second
+    const long long expected_cycles = static_cast<long long>(cpuFrequencyGHz * 1e9);  // 1 second at the given frequency
+
+    std::cout << "Expected CPU cycles for 1 second at " << cpuFrequencyGHz << " GHz: " << expected_cycles << " cycles" << std::endl;
 
     CycleCounter counter;
 
-    // Start the cycle count
     long long start = counter.getCycles();
 
     // Create a known workload that runs for 1 second
@@ -58,16 +103,17 @@ int main() {
         }
     }
 
-    // End the cycle count
     long long end = counter.getCycles();
 
-    // Calculate the number of CPU cycles during the workload
-    long long measured_cycles = end - start;
-    std::cout << "Measured CPU cycles: " << measured_cycles << " cycles" << std::endl;
+    std::cout << "Measured CPU cycles: " << (end - start) << " cycles" << std::endl;
+    std::cout << "Difference from expected cycles: " << (end - start - expected_cycles) << " cycles" << std::endl;
 
-    // Compare with the expected cycles for 1 second at 2.4 GHz
-    std::cout << "Expected CPU cycles for 1 second (2.4 GHz): " << expected_cycles << " cycles" << std::endl;
-    std::cout << "Difference: " << (measured_cycles - expected_cycles) << " cycles" << std::endl;
+    // Calculate the time difference in microseconds
+    long long cycle_difference = end - start;
+    double time_in_seconds = cycle_difference / (cpuFrequencyGHz * 1e9);  // Time in seconds
+    double time_in_microseconds = time_in_seconds * 1e6;  // Convert time from seconds to microseconds
 
+    std::cout << "Time difference (in microseconds): " << time_in_microseconds << " microseconds" << std::endl;
+    
     return 0;
 }

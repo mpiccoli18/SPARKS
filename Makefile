@@ -15,18 +15,21 @@ all:
 	@echo "Run 'make test' to compile the test executable."
 
 # Rule to compile the test program
-test: tests
+test: tests test_pmc
 
 tests : $(OBJS) $(SRC_DIR)/test.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
-# Rule to compile measurement
-measure : measure_client measure_server
+test_pmc : $(SRC_DIR)/measurement/pmc_test.cpp 
+	$(CXX) $(CXXFLAGS) $^ -o $@ 
 
-measure_client : $(OBJS) $(SRC_DIR)/measurement/enrol_client.cpp | $(BIN_DIR)
+# Rule to compile measurement
+measure : measure_enrol_client measure_enrol_server
+
+measure_enrol_client : $(OBJS) $(SRC_DIR)/measurement/enrol_client.cpp | $(BIN_DIR)
 	$(CXX) -Wall -Wextra -O0 -std=c++11 -g $^ -o $@ -lcrypto
 
-measure_server : $(OBJS) $(SRC_DIR)/measurement/enrol_server.cpp | $(BIN_DIR)
+measure_enrol_server : $(OBJS) $(SRC_DIR)/measurement/enrol_server.cpp | $(BIN_DIR)
 	$(CXX) -Wall -Wextra -O0 -std=c++11 -g $^ -o $@ -lcrypto
 
 # Rules to compile the attack scenarios
