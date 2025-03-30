@@ -175,7 +175,7 @@ int main(int argc, char* argv[]) {
     std::cout << "m4 Elapsed CPU cycles: " << m4 << " cycles" << std::endl;
     std::cout << "m5 Elapsed CPU cycles: " << m5 << " cycles" << std::endl;
     std::cout << "m6 Elapsed CPU cycles: " << m6 << " cycles" << std::endl;
-    std::cout << "m7 Elapsed CPU cycles: " << m6 << " cycles" << std::endl;
+    std::cout << "m7 Elapsed CPU cycles: " << m7 << " cycles" << std::endl;
     A.socketModule.closeConnection();
 
     return 0;
