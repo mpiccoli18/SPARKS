@@ -7,7 +7,7 @@ SRC_DIR := src
 BIN_DIR := bin
 
 # Files
-CPPS := $(SRC_DIR)/UAV.cpp $(SRC_DIR)/puf.cpp $(SRC_DIR)/utils.cpp $(SRC_DIR)/SocketModule.cpp 
+CPPS := $(SRC_DIR)/UAV.cpp $(SRC_DIR)/puf.cpp $(SRC_DIR)/utils.cpp $(SRC_DIR)/SocketModule.cpp $(SRC_DIR)/CycleCounter.cpp 
 OBJS := $(patsubst $(SRC_DIR)/%.cpp, $(BIN_DIR)/%.o, $(CPPS))
 
 # Default target (currently does nothing)
@@ -20,8 +20,8 @@ test: tests test_pmc
 tests : $(OBJS) $(SRC_DIR)/test.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
-test_pmc : $(SRC_DIR)/measurement/pmc_test.cpp 
-	$(CXX) $(CXXFLAGS) $^ -o $@ 
+test_pmc : $(OBJS) $(SRC_DIR)/measurement/pmc_test.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
 # Rule to compile measurement
 measure : measure_enrol_client measure_enrol_server

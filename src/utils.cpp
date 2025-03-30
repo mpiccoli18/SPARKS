@@ -103,3 +103,38 @@ void fromHexString(const std::string& hex, unsigned char* output, size_t maxLeng
         output[i] = static_cast<unsigned char>(std::stoi(byteString, nullptr, 16));
     }
 }
+
+// Function to read the CPU frequency from /proc/cpuinfo
+double getCpuFrequency() {
+    std::ifstream cpuinfo("/proc/cpuinfo");
+    std::string line;
+    double frequency = 0.0;
+
+    while (std::getline(cpuinfo, line)) {
+        if (line.find("cpu MHz") != std::string::npos) {
+            // Extract the frequency (in MHz) from the line
+            size_t pos = line.find(":");
+            if (pos != std::string::npos) {
+                frequency = std::stod(line.substr(pos + 1));
+                break;
+            }
+        }
+    }
+
+    if (frequency == 0.0) {
+        // If no frequency was found, try reading from cpufreq
+        std::ifstream freqFile("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq");
+        if (freqFile.is_open()) {
+            freqFile >> frequency;
+            frequency /= 1000;
+            freqFile.close();
+        }
+    }
+
+    // If still no frequency, return a default value (fallback)
+    if (frequency == 0.0) {
+        frequency = 1.0;  // Default to 1 GHz if nothing is found
+    }
+
+    return frequency / 1000.0;  // Convert MHz to GHz
+}
