@@ -6,20 +6,22 @@
 #include "../puf.hpp"
 #include "../utils.hpp"
 #include "../SocketModule.hpp"
+#include "../CycleCounter.hpp"
 
 std::string idA = "A";
 std::string idB = "B";
 bool server = false;
-std::chrono::time_point<std::chrono::high_resolution_clock> start;
-std::chrono::time_point<std::chrono::high_resolution_clock> end;
-std::chrono::microseconds m1;
-std::chrono::microseconds m2;
-std::chrono::microseconds m3;
-std::chrono::microseconds m4;
-std::chrono::microseconds m5;
-std::chrono::microseconds m6;
-std::chrono::microseconds m7;
+long long start;
+long long end;
+long long m1;
+long long m2;
+long long m3;
+long long m4;
+long long m5;
+long long m6;
+long long m7;
 
+CycleCounter counter;
 
 void warmup(UAV * A){
     unsigned char rand[PUF_SIZE];
@@ -35,7 +37,7 @@ int enrolment_client_1(UAV * A){
     
     // A enroll with B
     // A computes the challenge for B
-    start = std::chrono::high_resolution_clock::now();
+    start = counter.getCycles();
     unsigned char xB[PUF_SIZE];
     generate_random_bytes(xB, PUF_SIZE);
     // std::cout << "xB : "; print_hex(xB, PUF_SIZE);
@@ -50,9 +52,9 @@ int enrolment_client_1(UAV * A){
     
     // Sends CB
     json msg = {{"id", idA}, {"C", toHexString(CB, PUF_SIZE)}};
-    end = std::chrono::high_resolution_clock::now();
-    m1 = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    start = std::chrono::high_resolution_clock::now();
+    end = counter.getCycles();
+    m1 = end - start;
+    start = counter.getCycles();
     A->socketModule.sendMessage(msg);
     // std::cout << "Sent CB.\n";
     
@@ -72,19 +74,19 @@ int enrolment_client_1(UAV * A){
         return 1;
     }
     fromHexString(rsp["R"].get<std::string>(), RB, PUF_SIZE);
-    end = std::chrono::high_resolution_clock::now();
-    m2 = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    start = std::chrono::high_resolution_clock::now();
+    end = counter.getCycles();
+    m2 = end - start;
+    start = counter.getCycles();
     A->getUAVData(idB)->setR(RB);
-    end = std::chrono::high_resolution_clock::now();
-    m3 = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    end = counter.getCycles();
+    m3 = end - start;
     // std::cout << "\nB is enroled to A\n";
    
     return 0;
 }
 
 int enrolment_client_2(UAV * A){
-    start = std::chrono::high_resolution_clock::now();
+    start = counter.getCycles();
     // B enroll with A
     // A receive CA. It saves CA.
     json rsp = A->socketModule.receiveMessage();
@@ -102,10 +104,10 @@ int enrolment_client_2(UAV * A){
         return 1;
     }
     fromHexString(rsp["C"].get<std::string>(), CA, PUF_SIZE);
-    end = std::chrono::high_resolution_clock::now();
-    m4 = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    end = counter.getCycles();
+    m4 = end - start;
 
-    start = std::chrono::high_resolution_clock::now();
+    start = counter.getCycles();
     A->getUAVData(idB)->setC(CA);
 
     // A computes RA
@@ -113,8 +115,8 @@ int enrolment_client_2(UAV * A){
     A->callPUF(CA, RA);
     // std::cout << "RA : "; print_hex(RA, PUF_SIZE);
 
-    end = std::chrono::high_resolution_clock::now();
-    m5 = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    end = counter.getCycles();
+    m5 = end - start;
     // A sends RA
     json msg = {{"id", idA}, {"R", toHexString(RA, PUF_SIZE)}};
     A->socketModule.sendMessage(msg);
@@ -148,46 +150,46 @@ int main(int argc, char* argv[]) {
     warmup(&A);    
     
     std::cout << "Started enrolment one side" << std::endl;
-    start = std::chrono::high_resolution_clock::now(); 
+    start = counter.getCycles(); 
     int ret = enrolment_client_1(&A);
     if (ret == 1){
         return ret;
     }
-    end = std::chrono::high_resolution_clock::now(); 
-    m6 = std::chrono::duration_cast<std::chrono::microseconds>(end - start);;
+    end = counter.getCycles(); 
+    m6 = end - start;;
 
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    start = std::chrono::high_resolution_clock::now(); 
+    start = counter.getCycles(); 
     ret = enrolment_client_2(&A);
     if (ret == 1){
         return ret;
     }
-    end = std::chrono::high_resolution_clock::now(); 
-    m7 = std::chrono::duration_cast<std::chrono::microseconds>(end - start);;
+    end = counter.getCycles(); 
+    m7 = end - start;;
     
     std::cout << "Finished enrolment" << std::endl;
 
-    std::cout << "m1 Elapsed CPU cycles: " << m1.count() << " microseconds" << std::endl;
-    std::cout << "m2 Elapsed CPU cycles: " << m2.count() << " microseconds" << std::endl;
-    std::cout << "m3 Elapsed CPU cycles: " << m3.count() << " microseconds" << std::endl;
-    std::cout << "m4 Elapsed CPU cycles: " << m4.count() << " microseconds" << std::endl;
-    std::cout << "m5 Elapsed CPU cycles: " << m5.count() << " microseconds" << std::endl;
-    std::cout << "m6 Elapsed CPU cycles: " << m6.count() << " microseconds" << std::endl;
-    std::cout << "m7 Elapsed CPU cycles: " << m6.count() << " microseconds" << std::endl;
+    std::cout << "m1 Elapsed CPU cycles: " << m1 << " cycles" << std::endl;
+    std::cout << "m2 Elapsed CPU cycles: " << m2 << " cycles" << std::endl;
+    std::cout << "m3 Elapsed CPU cycles: " << m3 << " cycles" << std::endl;
+    std::cout << "m4 Elapsed CPU cycles: " << m4 << " cycles" << std::endl;
+    std::cout << "m5 Elapsed CPU cycles: " << m5 << " cycles" << std::endl;
+    std::cout << "m6 Elapsed CPU cycles: " << m6 << " cycles" << std::endl;
+    std::cout << "m7 Elapsed CPU cycles: " << m6 << " cycles" << std::endl;
     A.socketModule.closeConnection();
 
     return 0;
 }
 
-// auto start = std::chrono::high_resolution_clock::now(); 
-// auto end = std::chrono::high_resolution_clock::now();
-// auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+// auto start = counter.getCycles(); 
+// auto end = counter.getCycles();
+// auto duration = end - start;
 // std::cout << "Execution time for enrolment : " << duration.count() << " microseconds" << std::endl;
 
 
-// start = std::chrono::high_resolution_clock::now(); 
-// end = std::chrono::high_resolution_clock::now();
-// duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+// start = counter.getCycles(); 
+// end = counter.getCycles();
+// duration = end - start;
 // std::cout << "Execution time for authentication : " << duration.count() << " microseconds" << std::endl;
 
 // uint64_t start = rdtsc();
