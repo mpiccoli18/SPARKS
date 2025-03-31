@@ -49,13 +49,13 @@ int main() {
     UAV A = UAV("A");
     
     unsigned char x[PUF_SIZE];
-    long long start = counter.getCycles();
     generate_random_bytes(x);
-    long long end = counter.getCycles();
     unsigned char C[PUF_SIZE];
-
-
+    
+    
+    long long start = counter.getCycles();
     A.callPUF(x,C);
+    long long end = counter.getCycles();
 
 
     
