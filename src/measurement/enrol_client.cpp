@@ -11,8 +11,7 @@
 std::string idA = "A";
 std::string idB = "B";
 bool server = false;
-long long start;
-long long end;
+
 long long m1;
 long long m2;
 long long m3;
@@ -32,6 +31,8 @@ void warmup(UAV * A){
 }
 
 int enrolment_client_1(UAV * A){
+    long long start;
+    long long end; 
     
     // std::cout << "\nEnrolment process begins.\n";
     
@@ -86,6 +87,8 @@ int enrolment_client_1(UAV * A){
 }
 
 int enrolment_client_2(UAV * A){
+    long long start;
+    long long end; 
     start = counter.getCycles();
     // B enroll with A
     // A receive CA. It saves CA.
@@ -130,6 +133,9 @@ int main(int argc, char* argv[]) {
         std::cerr << "Error: No IP address provided. Please provide the IP as an argument." << std::endl;
         return 1;  // Exit with an error code
     }
+
+    long long start;
+    long long end; 
 
     const char* ip = argv[1];  // Read IP from command-line argument
 

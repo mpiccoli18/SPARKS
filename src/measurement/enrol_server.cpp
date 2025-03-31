@@ -12,8 +12,6 @@ std::string idA = "A";
 std::string idB = "B";
 bool server = false;
 
-long long start;
-long long end;
 long long m1;
 long long m2;
 long long m3;
@@ -33,6 +31,8 @@ void warmup(UAV * A){
 }
 
 int enrolment_client_1(UAV * A){
+    long long start;
+    long long end;
     
     // std::cout << "\nEnrolment process begins.\n";
     
@@ -87,6 +87,8 @@ int enrolment_client_1(UAV * A){
 }
 
 int enrolment_client_2(UAV * A){
+    long long start;
+    long long end;
     start = counter.getCycles();
     // B enroll with A
     // A receive CA. It saves CA.
@@ -127,6 +129,8 @@ int enrolment_client_2(UAV * A){
 }
 
 int main() {
+    long long start;
+    long long end;
 
     // Creation of the UAV
 
