@@ -28,18 +28,18 @@ void warmup(UAV * A){
     generate_random_bytes(rand);
     unsigned char out[PUF_SIZE];
     A->callPUF(rand, out);
-    print_hex(out, PUF_SIZE);
+    // print_hex(out, PUF_SIZE);
 }
 
-int enrolment_client_1(UAV * A){
-    long long start;
-    long long end; 
+int enrolment_client_active(UAV * A){
+    // long long start;
+    // long long end;
     
     // std::cout << "\nEnrolment process begins.\n";
     
     // A enroll with B
     // A computes the challenge for B
-    start = counter.getCycles();
+    // start = counter.getCycles();
     unsigned char xB[PUF_SIZE];
     generate_random_bytes(xB, PUF_SIZE);
     // std::cout << "xB : "; print_hex(xB, PUF_SIZE);
@@ -54,9 +54,9 @@ int enrolment_client_1(UAV * A){
     
     // Sends CB
     json msg = {{"id", idA}, {"C", toHexString(CB, PUF_SIZE)}};
-    end = counter.getCycles();
-    m1 = end - start;
-    start = counter.getCycles();
+    // end = counter.getCycles();
+    // m1 = end - start;
+    // start = counter.getCycles();
     A->socketModule.sendMessage(msg);
     // std::cout << "Sent CB.\n";
     
@@ -76,21 +76,21 @@ int enrolment_client_1(UAV * A){
         return 1;
     }
     fromHexString(rsp["R"].get<std::string>(), RB, PUF_SIZE);
-    end = counter.getCycles();
-    m2 = end - start;
-    start = counter.getCycles();
+    // end = counter.getCycles();
+    // m2 = end - start;
+    // start = counter.getCycles();
     A->getUAVData(idB)->setR(RB);
-    end = counter.getCycles();
-    m3 = end - start;
+    // end = counter.getCycles();
+    // m3 = end - start;
     // std::cout << "\nB is enroled to A\n";
    
     return 0;
 }
 
-int enrolment_client_2(UAV * A){
-    long long start;
-    long long end; 
-    start = counter.getCycles();
+int enrolment_client_passive(UAV * A){
+    // long long start;
+    // long long end;
+    // start = counter.getCycles();
     // B enroll with A
     // A receive CA. It saves CA.
     json rsp = A->socketModule.receiveMessage();
@@ -108,28 +108,28 @@ int enrolment_client_2(UAV * A){
         return 1;
     }
     fromHexString(rsp["C"].get<std::string>(), CA, PUF_SIZE);
-    end = counter.getCycles();
-    m4 = end - start;
+    // end = counter.getCycles();
+    // m4 = end - start;
 
-    start = counter.getCycles();
+    // start = counter.getCycles();
     A->getUAVData(idB)->setC(CA);
-
+    
     // A computes RA
     unsigned char RA[PUF_SIZE];
     A->callPUF(CA, RA);
     // std::cout << "RA : "; print_hex(RA, PUF_SIZE);
-
-    end = counter.getCycles();
-    m5 = end - start;
     
-    start = counter.getCycles();
+    // end = counter.getCycles();
+    // m5 = end - start;
+
+    // start = counter.getCycles();
     // A sends RA
     json msg = {{"id", idA}, {"R", toHexString(RA, PUF_SIZE)}};
     A->socketModule.sendMessage(msg);
     // std::cout << "Sent RA.\n";
     
-    end = counter.getCycles();
-    m5a = end - start;
+    // end = counter.getCycles();
+    // m5a = end - start;
     return 0;
 }
 
@@ -144,14 +144,14 @@ int main(int argc, char* argv[]) {
 
     const char* ip = argv[1];  // Read IP from command-line argument
 
-    std::cout << "Using IP: " << ip << std::endl;
+    // std::cout << "Using IP: " << ip << std::endl;
 
     // Creation of the UAV
 
     UAV A = UAV(idA);
     A.addUAV(idB);
 
-    std::cout << "The client drone id is : " <<A.getId() << ".\n"; 
+    // std::cout << "The client drone id is : " <<A.getId() << ".\n"; 
     
     A.socketModule.initiateConnection(ip, 8080);
     
@@ -160,9 +160,9 @@ int main(int argc, char* argv[]) {
     // We now warm up the functions 
     warmup(&A);    
     
-    std::cout << "Started enrolment one side" << std::endl;
+    // std::cout << "Started enrolment one side" << std::endl;
     start = counter.getCycles(); 
-    int ret = enrolment_client_1(&A);
+    int ret = enrolment_client_active(&A);
     if (ret == 1){
         return ret;
     }
@@ -171,23 +171,23 @@ int main(int argc, char* argv[]) {
 
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     start = counter.getCycles(); 
-    ret = enrolment_client_2(&A);
+    ret = enrolment_client_passive(&A);
     if (ret == 1){
         return ret;
     }
     end = counter.getCycles(); 
     m7 = end - start;;
     
-    std::cout << "Finished enrolment" << std::endl;
+    // std::cout << "Finished enrolment" << std::endl;
 
-    std::cout << "m1 Elapsed CPU cycles: " << m1 << " cycles" << std::endl;
-    std::cout << "m2 Elapsed CPU cycles: " << m2 << " cycles" << std::endl;
-    std::cout << "m3 Elapsed CPU cycles: " << m3 << " cycles" << std::endl;
-    std::cout << "m4 Elapsed CPU cycles: " << m4 << " cycles" << std::endl;
-    std::cout << "m5 Elapsed CPU cycles: " << m5 << " cycles" << std::endl;
-    std::cout << "m5a Elapsed CPU cycles: " << m5a << " cycles" << std::endl;
-    std::cout << "m6 Elapsed CPU cycles: " << m6 << " cycles" << std::endl;
-    std::cout << "m7 Elapsed CPU cycles: " << m7 << " cycles" << std::endl;
+    // std::cout << "m1 Elapsed CPU cycles: " << m1 << " cycles" << std::endl;
+    // std::cout << "m2 Elapsed CPU cycles: " << m2 << " cycles" << std::endl;
+    // std::cout << "m3 Elapsed CPU cycles: " << m3 << " cycles" << std::endl;
+    // std::cout << "m4 Elapsed CPU cycles: " << m4 << " cycles" << std::endl;
+    // std::cout << "m5 Elapsed CPU cycles: " << m5 << " cycles" << std::endl;
+    // std::cout << "m5a Elapsed CPU cycles: " << m5a << " cycles" << std::endl;
+    std::cout << "m7 Elapsed CPU cycles passive enrolment: " << m7 << " cycles" << std::endl;
+    std::cout << "m6 Elapsed CPU cycles active enrolment: " << m6 << " cycles" << std::endl;
     A.socketModule.closeConnection();
 
     return 0;

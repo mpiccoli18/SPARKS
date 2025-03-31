@@ -85,7 +85,7 @@ bool SocketModule::waitForConnection(int port) {
         return false;
     }
 
-    std::cout << "Waiting for a connection on port " << port << "...\n";
+    // std::cout << "Waiting for a connection on port " << port << "...\n";
 
     socklen_t addr_len = sizeof(address);
     connection_fd = accept(socket_fd, (struct sockaddr*)&address, &addr_len);
@@ -94,7 +94,7 @@ bool SocketModule::waitForConnection(int port) {
         return false;
     }
 
-    std::cout << "Client connected!\n";
+    // std::cout << "Client connected!\n";
 
     // Set the timeout
     setsockopt(connection_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
@@ -115,8 +115,8 @@ json SocketModule::receiveMessage() {
     
     while (true) {
         int bytesReceived = read(this->connection_fd, buffer, sizeof(buffer));
-        std::cout << "Bytes received: " << bytesReceived << std::endl;
-        std::cout << "Received data: " << buffer << std::endl;
+        // std::cout << "Bytes received: " << bytesReceived << std::endl;
+        // std::cout << "Received data: " << buffer << std::endl;
         if (bytesReceived > 0) {
             // Append new data to buffer
             dataBuffer += std::string(buffer, bytesReceived);
