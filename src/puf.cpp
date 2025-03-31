@@ -25,6 +25,10 @@ puf::puf() : salt{} {
     generate_random_bytes(const_cast<unsigned char*>(salt), PUF_SIZE);
 }
 
+puf::puf(unsigned char * salt) : salt{} { 
+    memcpy(this->salt, salt, PUF_SIZE);
+}
+
 /// @brief Initiate the PUF computation.
 /// @param input 
 /// @param size 

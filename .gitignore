@@ -5,6 +5,7 @@ scenario*
 attack*
 measure_*
 test_*
+massif*
 
 # Ignore temporary files and editor backups
 *.swp
