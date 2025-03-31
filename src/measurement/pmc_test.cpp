@@ -4,6 +4,14 @@
 #include "../utils.hpp"
 #include "../CycleCounter.hpp"
 
+void warmup(UAV * A){
+    unsigned char rand[PUF_SIZE];
+    generate_random_bytes(rand);
+    unsigned char out[PUF_SIZE];
+    A->callPUF(rand, out);
+    print_hex(out, PUF_SIZE);
+}
+
 int main() {
     // Get CPU frequency from user input or auto-detect
     double cpuFrequencyGHz;
@@ -47,6 +55,8 @@ int main() {
 
     // Test a PUF computation t ocompare the two rpi
     UAV A = UAV("A");
+
+    warmup(&A);
     
     unsigned char x[PUF_SIZE];
     generate_random_bytes(x);
