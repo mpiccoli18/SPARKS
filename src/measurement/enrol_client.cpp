@@ -17,6 +17,7 @@ long long m2;
 long long m3;
 long long m4;
 long long m5;
+long long m5a;
 long long m6;
 long long m7;
 
@@ -120,11 +121,15 @@ int enrolment_client_2(UAV * A){
 
     end = counter.getCycles();
     m5 = end - start;
+    
+    start = counter.getCycles();
     // A sends RA
     json msg = {{"id", idA}, {"R", toHexString(RA, PUF_SIZE)}};
     A->socketModule.sendMessage(msg);
     // std::cout << "Sent RA.\n";
-
+    
+    end = counter.getCycles();
+    m5a = end - start;
     return 0;
 }
 
@@ -180,6 +185,7 @@ int main(int argc, char* argv[]) {
     std::cout << "m3 Elapsed CPU cycles: " << m3 << " cycles" << std::endl;
     std::cout << "m4 Elapsed CPU cycles: " << m4 << " cycles" << std::endl;
     std::cout << "m5 Elapsed CPU cycles: " << m5 << " cycles" << std::endl;
+    std::cout << "m5a Elapsed CPU cycles: " << m5a << " cycles" << std::endl;
     std::cout << "m6 Elapsed CPU cycles: " << m6 << " cycles" << std::endl;
     std::cout << "m7 Elapsed CPU cycles: " << m7 << " cycles" << std::endl;
     A.socketModule.closeConnection();
