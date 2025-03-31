@@ -1,6 +1,6 @@
 # Compiler
 CXX = g++
-CXXFLAGS = -Wall -Wextra -O2 -std=c++11 -g
+CXXFLAGS = -Wall -Wextra -O3 -std=c++11 -g
 
 # Directories
 SRC_DIR := src
@@ -27,16 +27,16 @@ test_pmc : $(OBJS) $(SRC_DIR)/measurement/pmc_test.cpp | $(BIN_DIR)
 measure : measure_enrol_client measure_enrol_server measure_auth_client measure_auth_server
 
 measure_auth_client : $(OBJS) $(SRC_DIR)/measurement/auth_client.cpp | $(BIN_DIR)
-	$(CXX) -Wall -Wextra -O0 -std=c++11 -g $^ -o $@ -lcrypto
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
 measure_auth_server : $(OBJS) $(SRC_DIR)/measurement/auth_server.cpp | $(BIN_DIR)
-	$(CXX) -Wall -Wextra -O0 -std=c++11 -g $^ -o $@ -lcrypto
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
 measure_enrol_client : $(OBJS) $(SRC_DIR)/measurement/enrol_client.cpp | $(BIN_DIR)
-	$(CXX) -Wall -Wextra -O0 -std=c++11 -g $^ -o $@ -lcrypto
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
 measure_enrol_server : $(OBJS) $(SRC_DIR)/measurement/enrol_server.cpp | $(BIN_DIR)
-	$(CXX) -Wall -Wextra -O0 -std=c++11 -g $^ -o $@ -lcrypto
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
 # Rules to compile the attack scenarios
 attack: attack_client attack_server
