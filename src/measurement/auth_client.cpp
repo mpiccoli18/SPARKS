@@ -332,7 +332,7 @@ int main(int argc, char* argv[]) {
         return ret;
     }
 
-    std::cout << "m1 Elapsed CPU cycles passive enrolment: " << m1 << " cycles" << std::endl;
+    std::cout << "m1 Elapsed CPU cycles client authentication: " << m1 << " cycles" << std::endl;
     A.socketModule.closeConnection();
 
     return 0;
