@@ -12,6 +12,14 @@ std::string idA = "A";
 std::string idB = "B";
 bool server = true;
 
+CycleCounter counter;
+
+long long start;
+long long end;
+long long m1;
+long long idlcycles = 0;
+long long opCycles = 0;
+
 void warmup(UAV * A){
     unsigned char rand[PUF_SIZE];
     generate_random_bytes(rand);
@@ -26,7 +34,6 @@ int enrolment_server(UAV * B){
     // B waits for B's message  (with CB)
     json rsp = B->socketModule.receiveMessage();
     // printJSON(rsp);
-
     // Check if an error occurred
     if (rsp.contains("error")) {
         std::cerr << "Error occurred: " << rsp["error"] << std::endl;
@@ -96,6 +103,7 @@ int enrolment_server(UAV * B){
 }
 
 int autentication_server(UAV * B){
+    start = counter.getCycles();
     // The client initiate the autentication process
     // std::cout << "\nAutentication process begins.\n";
 
@@ -103,6 +111,9 @@ int autentication_server(UAV * B){
     json rsp = B->socketModule.receiveMessage();
     // printJSON(rsp);
 
+    end = counter.getCycles();
+    idlcycles += end - start;
+    start = counter.getCycles();
     // Check if an error occurred
     if (rsp.contains("error")) {
         std::cerr << "Error occurred: " << rsp["error"] << std::endl;
@@ -163,11 +174,17 @@ int autentication_server(UAV * B){
     };
     B->socketModule.sendMessage(msg);
     // std::cout << "Sent ID, M1 and hash1.\n";
+    end = counter.getCycles();
+    opCycles += end - start;
+    start = counter.getCycles();
 
     // B waits for A response (M2)
     rsp = B->socketModule.receiveMessage();
     // printJSON(rsp);
 
+    end = counter.getCycles();
+    idlcycles += end - start;
+    start = counter.getCycles();
     // Check if an error occurred
     if (rsp.contains("error")) {
         std::cerr << "Error occurred: " << rsp["error"] << std::endl;
@@ -232,16 +249,12 @@ int autentication_server(UAV * B){
 
     // Finished
     // std::cout << "\nThe two UAV autenticated each other.\n";
-
+    end = counter.getCycles();
+    opCycles += end - start;
     return 0;
 }
 
 int main(){
-    long long start;
-    long long end;
-    long long m1;
-
-    CycleCounter counter;
 
     // Creation of the UAV
 
@@ -271,6 +284,8 @@ int main(){
     }
 
     std::cout << "m1 Elapsed CPU cycles server authentication: " << m1 << " cycles" << std::endl;
+    std::cout << "operational Elapsed CPU cycles server authentication: " << opCycles << " cycles" << std::endl;
+    std::cout << "idle Elapsed CPU cycles server authentication: " << idlcycles << " cycles" << std::endl;
     B.socketModule.closeConnection();
 
     return 0;

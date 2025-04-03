@@ -12,6 +12,14 @@ std::string idA = "A";
 std::string idB = "B";
 bool server = false;
 
+CycleCounter counter;
+
+long long start;
+long long end;
+long long m1;
+long long idlcycles = 0;
+long long opCycles = 0;
+
 void warmup(UAV * A){
     unsigned char rand[PUF_SIZE];
     generate_random_bytes(rand);
@@ -99,6 +107,7 @@ int enrolment_client(UAV * A){
 }
 
 int autentication_client(UAV * A){
+    start = counter.getCycles();
     // The client initiate the authentication process
     // std::cout << "\nAutentication process begins.\n";
 
@@ -111,10 +120,16 @@ int autentication_client(UAV * A){
     json msg = {{"id", idA}, {"NA", toHexString(NA, PUF_SIZE)}};
     A->socketModule.sendMessage(msg);
     // std::cout << "Sent ID and NA.\n";
-
+    end = counter.getCycles();
+    opCycles += end - start;
+    start = counter.getCycles();
+    
     // A waits for the answer
     json rsp = A->socketModule.receiveMessage();
     // printJSON(rsp);
+    end = counter.getCycles();
+    idlcycles += end - start;
+    start = counter.getCycles();
 
     // Check if an error occurred
     if (rsp.contains("error")) {
@@ -246,10 +261,16 @@ int autentication_client(UAV * A){
     };
     A->socketModule.sendMessage(msg);
     // std::cout << "Sent ID, M2 and hash2.\n";
+    end = counter.getCycles();
+    opCycles += end - start;
+    start = counter.getCycles();
 
     // A waits for B's ACK
     rsp = A->socketModule.receiveMessage();
     // printJSON(rsp);
+    end = counter.getCycles();
+    idlcycles = end - start;
+    start = counter.getCycles();
 
     // Check if an error occurred
     if (rsp.contains("error")) {
@@ -282,6 +303,8 @@ int autentication_client(UAV * A){
 
     // Finished
     // std::cout << "\nThe two UAV autenticated each other.\n";
+    end = counter.getCycles();
+    opCycles += end - start;
     
     return 0;
 }
@@ -300,12 +323,6 @@ int main(int argc, char* argv[]) {
     // Creation of the UAV
 
     UAV A = UAV(idA);
-
-    long long start;
-    long long end;
-    long long m1;
-
-    CycleCounter counter;
 
     // std::cout << "The client drone id is : " <<A.getId() << ".\n"; 
     
@@ -333,6 +350,8 @@ int main(int argc, char* argv[]) {
     }
 
     std::cout << "m1 Elapsed CPU cycles client authentication: " << m1 << " cycles" << std::endl;
+    std::cout << "operational Elapsed CPU cycles client authentication: " << opCycles << " cycles" << std::endl;
+    std::cout << "idle Elapsed CPU cycles client authentication: " << idlcycles << " cycles" << std::endl;
     A.socketModule.closeConnection();
 
     return 0;
