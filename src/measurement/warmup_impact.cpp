@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
     // Test a PUF computation t ocompare the two rpi
     UAV A = UAV("A");
     
-    if (std::getenv("WARMUP")) {
+    if (argc > 1 && std::string(argv[1]) == "--warmup") {
         warmup(&A);
     }    
     
