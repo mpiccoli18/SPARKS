@@ -42,17 +42,16 @@ int main() {
 
     CycleCounter counter;
 
+    
     // Create a known workload that runs for 1 second
     // auto start_time = std::chrono::high_resolution_clock::now();
-    // long long start = counter.getCycles();
     // while (true) {
-        //     auto now_time = std::chrono::high_resolution_clock::now();
-        //     std::chrono::duration<double> elapsed = now_time - start_time;
-        //     if (elapsed.count() >= 1.0) {  // Run for 1 second
-        //         break;
-        //     }
-        // }
-        // long long end = counter.getCycles();
+    //     auto now_time = std::chrono::high_resolution_clock::now();
+    //     std::chrono::duration<double> elapsed = now_time - start_time;
+    //     if (elapsed.count() >= 1.0) {  // Run for 1 second
+    //         break;
+    //     }
+    // }
     
     // Test a PUF computation t ocompare the two rpi
     UAV A = UAV("A");

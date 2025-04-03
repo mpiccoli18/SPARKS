@@ -24,8 +24,11 @@ test_pmc : $(OBJS) $(SRC_DIR)/measurement/pmc_test.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
 # Rule to compile measurement
-measure : measure_enrol_client measure_enrol_server measure_auth_client measure_auth_server measure_enrol_RAM_client measure_enrol_RAM_server
+measure : measure_enrol_client measure_enrol_server measure_auth_client measure_auth_server measure_enrol_RAM_client measure_enrol_RAM_server measure_warmup
 
+measure_warmup : $(OBJS) $(SRC_DIR)/measurement/warmup_impact.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+	
 measure_enrol_RAM_client : $(OBJS) $(SRC_DIR)/measurement/enrol_RAM_client.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 

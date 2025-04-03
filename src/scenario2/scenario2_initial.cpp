@@ -5,9 +5,18 @@
 #include "../puf.hpp"
 #include "../utils.hpp"
 #include "../SocketModule.hpp"
+#include "../CycleCounter.hpp"
 
 std::string idA = "A";
 std::string idBS = "BS";
+
+void warmup(UAV * A){
+    unsigned char rand[PUF_SIZE];
+    generate_random_bytes(rand);
+    unsigned char out[PUF_SIZE];
+    A->callPUF(rand, out);
+    // print_hex(out, PUF_SIZE);
+}
 
 int preEnrolment(UAV * A){
 
@@ -240,13 +249,26 @@ int main(int argc, char* argv[]) {
 
     std::cout << "The initial drone id is : " <<A.getId() << ".\n"; 
 
+    // Counters and warmup
+
+    warmup(&A);
+
+    CycleCounter counter;
+    long long start;
+    long long end;
+    long long m1;
+    long long m2;
+
     // Initiate connection
 
     A.socketModule.initiateConnection(ip,8080);
 
     // When the programm reaches this point, the UAV are connected
 
+    start = counter.getCycles();
     int ret = preEnrolment(&A);
+    end = counter.getCycles();
+    m1 = end - start;
     if (ret == 1){
         return ret;
     }
@@ -258,10 +280,16 @@ int main(int argc, char* argv[]) {
     A.socketModule.waitForConnection(8085);
 
     // C connected
+    start = counter.getCycles();
     ret = supplementaryAuthenticationInitial(&A);
+    end = counter.getCycles();
+    m2 = end - start;
     if (ret == 1){
         return ret;
     }    
+
+    std::cout << "m1 Elapsed CPU cycles pre-enrolment : " << m1 << " cycles" << std::endl;
+    std::cout << "m2 Elapsed CPU cycles supplementary authentication : " << m2 << " cycles" << std::endl;
 
     return 0;
 }
