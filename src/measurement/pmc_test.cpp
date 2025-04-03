@@ -43,31 +43,31 @@ int main() {
     CycleCounter counter;
 
     // Create a known workload that runs for 1 second
-    // auto start_time = std::chrono::high_resolution_clock::now();
-    // long long start = counter.getCycles();
-    // while (true) {
-        //     auto now_time = std::chrono::high_resolution_clock::now();
-        //     std::chrono::duration<double> elapsed = now_time - start_time;
-        //     if (elapsed.count() >= 1.0) {  // Run for 1 second
-        //         break;
-        //     }
-        // }
-        // long long end = counter.getCycles();
+    auto start_time = std::chrono::high_resolution_clock::now();
+    long long start = counter.getCycles();
+    while (true) {
+            auto now_time = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed = now_time - start_time;
+            if (elapsed.count() >= 1.0) {  // Run for 1 second
+                break;
+            }
+        }
+        long long end = counter.getCycles();
     
     // Test a PUF computation t ocompare the two rpi
-    UAV A = UAV("A");
+    // UAV A = UAV("A");
 
-    warmup(&A);
+    // warmup(&A);
     
-    long long start = counter.getCycles();
-    unsigned char x[PUF_SIZE];
-    generate_random_bytes(x);
-    unsigned char C[PUF_SIZE];
+    // long long start = counter.getCycles();
+    // unsigned char x[PUF_SIZE];
+    // generate_random_bytes(x);
+    // unsigned char C[PUF_SIZE];
     
     
-    A.callPUF(x,C);
+    // A.callPUF(x,C);
     
-    long long end = counter.getCycles();
+    // long long end = counter.getCycles();
 
     
     long long cycle_difference = end - start;
