@@ -204,12 +204,11 @@ int main(int argc, char* argv[]) {
     UAV C = UAV(idC, saltC);
     // C.printSalt();
 
-    warmup(&C);
     
     std::string CAstr = std::string("a47af74e3f14bb6a62b2268acf4cd538d82e57f53946d4dee11f69d3f2c0a3f5");
     unsigned char CA[PUF_SIZE];
     fromHexString(CAstr, CA, PUF_SIZE);
-
+    
     std::string xLstr = std::string("74228aa128afcecae551af5beb1ba0983fcb244ca7631e4f70be22b8732864dd");
     unsigned char xL[PUF_SIZE];
     fromHexString(xLstr, xL, PUF_SIZE);
@@ -219,12 +218,13 @@ int main(int argc, char* argv[]) {
     unsigned char secret[PUF_SIZE];
     fromHexString(secretStr, secret, PUF_SIZE);
     // std::cout << "secret : "; print_hex(secret, PUF_SIZE); std::cout << std::endl;
-
+    
     C.addUAV(idA, nullptr, CA, nullptr, xL, secret);
-
+    
+    warmup(&C);
     // Connect to the BS to retrieve A's credentials
     C.socketModule.initiateConnection(ip, 8080);
-
+    
     start_init = counter.getCycles();
     int ret = supplementaryAuthenticationSup(&C);
     end = counter.getCycles();
