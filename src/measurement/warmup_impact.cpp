@@ -56,7 +56,9 @@ int main() {
     // Test a PUF computation t ocompare the two rpi
     UAV A = UAV("A");
 
+    #ifdef WARMUP
     warmup(&A);
+    #endif
     
     long long start = counter.getCycles();
     unsigned char x[PUF_SIZE];
