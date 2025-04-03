@@ -12,13 +12,14 @@ void warmup(UAV * A){
     print_hex(out, PUF_SIZE);
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+
     // Get CPU frequency from user input or auto-detect
     double cpuFrequencyGHz;
     std::cout << "Enter CPU frequency in GHz (leave empty for auto-detection): ";
     std::string input;
     std::getline(std::cin, input);
-
+    
     if (input.empty()) {
         // Get the CPU frequency in GHz (use getCpuFrequency function)
         cpuFrequencyGHz = getCpuFrequency();
@@ -37,11 +38,11 @@ int main() {
     
     // Calculate the expected number of cycles for 1 second
     const long long expected_cycles = static_cast<long long>(cpuFrequencyGHz * 1e9);  // 1 second at the given frequency
-
+    
     std::cout << "Expected CPU cycles for 1 second at " << cpuFrequencyGHz << " GHz: " << expected_cycles << " cycles" << std::endl;
 
     CycleCounter counter;
-
+    
     
     // Create a known workload that runs for 1 second
     // auto start_time = std::chrono::high_resolution_clock::now();
@@ -55,10 +56,10 @@ int main() {
     
     // Test a PUF computation t ocompare the two rpi
     UAV A = UAV("A");
-
-    #ifdef WARMUP
-    warmup(&A);
-    #endif
+    
+    if (std::getenv("WARMUP")) {
+        warmup(&A);
+    }    
     
     long long start = counter.getCycles();
     unsigned char x[PUF_SIZE];
