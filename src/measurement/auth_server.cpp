@@ -15,6 +15,7 @@ bool server = true;
 CycleCounter counter;
 
 long long start;
+long long start_init;
 long long end;
 long long m1;
 long long idlcycles = 0;
@@ -272,12 +273,12 @@ int main(){
     }
 
     
-    start = counter.getCycles(); 
+    start_init = counter.getCycles(); 
     
     ret = autentication_server(&B);
     
     end = counter.getCycles(); 
-    m1 = end - start;
+    m1 = end - start_init;
 
     if (ret == 1){
         return ret;

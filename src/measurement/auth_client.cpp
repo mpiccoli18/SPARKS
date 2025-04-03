@@ -14,6 +14,7 @@ bool server = false;
 
 CycleCounter counter;
 
+long long start_init;
 long long start;
 long long end;
 long long m1;
@@ -338,12 +339,12 @@ int main(int argc, char* argv[]) {
         return ret;
     }
 
-    start = counter.getCycles(); 
+    start_init = counter.getCycles(); 
 
     ret = autentication_client(&A);
     
     end = counter.getCycles(); 
-    m1 = end - start;
+    m1 = end - start_init;
 
     if (ret == 1){
         return ret;
