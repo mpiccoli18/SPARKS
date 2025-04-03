@@ -12,6 +12,15 @@ std::string idA = "A";
 std::string idC = "C";
 std::string idBS = "BS";
 
+CycleCounter counter;
+
+long long start;
+long long start_init;
+long long end;
+long long m1;
+long long idlcycles = 0;
+long long opCycles = 0;
+
 void warmup(UAV * A){
     unsigned char rand[PUF_SIZE];
     generate_random_bytes(rand);
@@ -21,15 +30,21 @@ void warmup(UAV * A){
 }
 
 int supplementaryAuthenticationSup(UAV * C){
-
+    start = counter.getCycles();
     // C will now try to connect to A
     json msg = {{"id", idC}};
     C->socketModule.sendMessage(msg);
     // std::cout << "Sent ID.\n";
+    end = counter.getCycles();;
+    opCycles += end - start;
+    start = counter.getCycles();
 
     // Wait for answer
     json rsp = C->socketModule.receiveMessage();
     // printJSON(rsp);
+    end = counter.getCycles();
+    idlcycles += end - start;
+    start = counter.getCycles();
 
     // Check if an error occurred
     if (rsp.contains("error")) {
@@ -94,10 +109,16 @@ int supplementaryAuthenticationSup(UAV * C){
     };
     C->socketModule.sendMessage(msg);
     // std::cout << "Sent ID, CA, M1 and hash1.\n";
+    end = counter.getCycles();
+    opCycles += end - start;
+    start = counter.getCycles();
 
     // Wait for A's response 
     rsp = C->socketModule.receiveMessage();
     // printJSON(rsp);
+    end = counter.getCycles();
+    idlcycles += end - start;
+    start = counter.getCycles();
 
     // Check if an error occurred
     if (rsp.contains("error")) {
@@ -160,6 +181,8 @@ int supplementaryAuthenticationSup(UAV * C){
     msg = {{"id", idC}, {"hash3", toHexString(hash3, PUF_SIZE)}};
     C->socketModule.sendMessage(msg);
     // std::cout << "Sent ID and hash3.\n";
+    end = counter.getCycles();
+    opCycles += end - start;
 
     // Finished
     return 0;
@@ -170,11 +193,6 @@ int main(int argc, char* argv[]) {
         std::cerr << "Error: No IP address provided. Please provide the IP as argument." << std::endl;
         return 1;  // Exit with an error code
     }
-
-    CycleCounter counter;
-    long long start;
-    long long end;
-    long long m1;
 
     const char* ip = argv[1];  // Read IP from command-line argument
 
@@ -207,16 +225,18 @@ int main(int argc, char* argv[]) {
     // Connect to the BS to retrieve A's credentials
     C.socketModule.initiateConnection(ip, 8080);
 
-    start = counter.getCycles();
+    start_init = counter.getCycles();
     int ret = supplementaryAuthenticationSup(&C);
     end = counter.getCycles();
-    m1 = end - start;
+    m1 = end - start_init;
     if (ret != 0){
         return ret;
     }
 
     std::cout << "\nThe two UAV autenticated each other.\n";
     std::cout << "m1 Elapsed CPU cycles supp UAV supp authentication: " << m1 << " cycles" << std::endl;
+    std::cout << "operational Elapsed CPU cycles supp UAV supp authentication: " << opCycles << " cycles" << std::endl;
+    std::cout << "idle Elapsed CPU cycles supp UAV supp authentication: " << idlcycles << " cycles" << std::endl;
 
     return 0;
 }

@@ -10,6 +10,15 @@
 std::string idA = "A";
 std::string idBS = "BS";
 
+CycleCounter counter;
+
+long long start;
+long long start_init;
+long long end;
+long long m1;
+long long idlcycles = 0;
+long long opCycles = 0;
+
 void warmup(UAV * A){
     unsigned char rand[PUF_SIZE];
     generate_random_bytes(rand);
@@ -19,10 +28,13 @@ void warmup(UAV * A){
 }
 
 int supplementaryAuthenticationInitial(UAV * A){
-
+    start = counter.getCycles();
     // Waits for C demands
     json rsp = A->socketModule.receiveMessage();
     // printJSON(rsp);
+    end = counter.getCycles();
+    idlcycles += end - start;
+    start = counter.getCycles();
 
     // Check if an error occurred
     if (rsp.contains("error")) {
@@ -52,10 +64,16 @@ int supplementaryAuthenticationInitial(UAV * A){
     // A sends 
     A->socketModule.sendMessage(msg);
     // std::cout << "Sent ID and NA.\n";
+    end = counter.getCycles();
+    opCycles += end - start;
+    start = counter.getCycles();
 
     // Waits for C's response 
     rsp = A->socketModule.receiveMessage();
     // printJSON(rsp);
+    end  =counter.getCycles();
+    idlcycles += end - start;
+    start = counter.getCycles();
 
     // Check if an error occurred
     if (rsp.contains("error")) {
@@ -142,10 +160,16 @@ int supplementaryAuthenticationInitial(UAV * A){
     };
     A->socketModule.sendMessage(msg);
     // std::cout << "Sent ID, M2 and hash2.\n";
+    end = counter.getCycles();
+    opCycles += end - start;
+    start = counter.getCycles();
 
     // A waits for C's ACK
     rsp = A->socketModule.receiveMessage();
     // printJSON(rsp);
+    end = counter.getCycles();
+    idlcycles += end - start;
+    start = counter.getCycles();
 
     // Check if an error occurred
     if (rsp.contains("error")) {
@@ -181,17 +205,14 @@ int supplementaryAuthenticationInitial(UAV * A){
 
     // Then A saves the new challenge in CA
     A->addUAV(idC, nullptr, NC);
+    end = counter.getCycles();
+    opCycles += end - start;
 
     // Finished
     return 0;
 }
 
 int main() {
-
-    CycleCounter counter;
-    long long start;
-    long long end;
-    long long m1;
 
     // Creation of the UAV
 
@@ -217,16 +238,18 @@ int main() {
     A.socketModule.waitForConnection(8080);
     // When the programm reaches this point, the UAV are connected
 
-    start = counter.getCycles();
+    start_init = counter.getCycles();
     int ret = supplementaryAuthenticationInitial(&A);
     end = counter.getCycles();
-    m1 = end - start;
+    m1 = end - start_init;
     if (ret != 0){
         return ret;
     }
 
     std::cout << "\nThe two UAV autenticated each other.\n";
     std::cout << "m1 Elapsed CPU cycles initial UAV supp authentication: " << m1 << " cycles" << std::endl;
+    std::cout << "operational Elapsed CPU cycles initial UAV supp authentication: " << opCycles << " cycles" << std::endl;
+    std::cout << "idle Elapsed CPU cycles initial UAV supp authentication: " << idlcycles << " cycles" << std::endl;
 
     return 0;
 }
