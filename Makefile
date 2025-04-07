@@ -74,4 +74,4 @@ $(BIN_DIR):
 
 # Clean up all compiled files
 clean:
-	rm -f $(BIN_DIR)/*.o tests scenario* attack*
+	rm -f $(BIN_DIR)/*.o tests scenario* attack* measure*

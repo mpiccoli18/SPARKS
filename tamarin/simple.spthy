@@ -1,0 +1,107 @@
+theory simple
+
+begin
+
+builtins: xor, symmetric-encryption
+
+functions:
+    hkdf/2 
+
+rule Create_Secret:
+    [ Fr(~CA), Fr(~RA), Fr(~RAprime), Fr(~RAprimebefore), Fr(~Sbefore), Fr(~RAbefore), Fr(~aID), Fr(~bID) ]
+    --[]->
+    [ AState(~aID,'INIT',<~CA, ~RA, ~RAprime>), BState(~bID,'INIT',<~CA, ~RA>)]
+
+rule A_Create_NA:
+    [ AState(~aID,'INIT',<~CA, ~RA, ~RAprime>), Fr(~NA) ]
+    --[]->
+    [ AState(~aID,'NA_CREATED',<~CA, ~RA, ~RAprime, ~NA>) ]
+
+rule A_Send_NA:
+    [ AState(~aID,'NA_CREATED',<~CA, ~RA, ~RAprime, ~NA>) ]
+    --[]->
+    [ AState(~aID,'NA_SENT',<~CA, ~RA, ~RAprime, ~NA>), Out(~NA) ]
+
+rule B_Receive_NA:
+    [ BState(~bID,'INIT',<~CA, ~RA>), In(~NA) ]
+    --[ BReceiveNA(~NA) ]->
+    [ BState(~bID,'NA_RECEIVED',<~CA, ~RA, ~NA>) ]
+
+rule B_Create_NB:
+    [ BState(~bID,'NA_RECEIVED',<~CA, ~RA, ~NA>), Fr(~NB) ]
+    --[]->
+    [ BState(~bID,'NB_CREATED',<~CA, ~RA, ~NA, ~NB>) ]
+
+rule B_Send_M1:
+    let M1 = senc(~NB,~RA) in
+    [ BState(~bID,'NB_CREATED',<~CA, ~RA, ~NA, ~NB>) ]
+    --[ BSentM1(M1) ]->
+    [ BState(~bID,'M1_SENT',<~CA, ~RA, ~NA, ~NB>), Out(M1) ]
+
+rule A_Receive_NB_FROM_M1:
+    let NB = sdec(M1,~RA) in
+    [ AState(~aID,'NA_SENT',<~CA, ~RA, ~RAprime, ~NA>), In(M1) ]
+    --[ AReceiveNB(NB) ]->
+    [ AState(~aID,'NB_RECEIVED',<~CA, ~RA, ~RAprime, ~NA, NB>) ]
+
+rule A_Send_M2_MK:
+    let M2 = senc(~RAprime, NB)
+        MK = senc(~S, NB) in
+    [ AState(~aID,'NB_RECEIVED',<~CA, ~RA, ~RAprime, ~NA, NB>), Fr(~S) ]
+    --[]->
+    [ AState(~aID,'M2_SENT',<~CA, ~RA, ~RAprime, ~NA, NB, ~S>), Out(<M2, MK>) ]
+
+rule A_Create_Key:
+    let DerivedInput = ~CA ⊕ ~S
+    k = hkdf(NB, DerivedInput) in
+    [ AState(~aID,'M2_SENT',<~CA, ~RA, ~RAprime, ~NA, NB, ~S>) ]
+    --[ ACreateKey(k) ]->
+    [ AState(~aID,'KEY_CREATED',<~CA, ~RA, ~RAprime, ~NA, NB, ~S, k>) ]
+
+rule B_Receive_RAprime_From_M2_AND_S_From_MK:
+    let RAprime = sdec(M2, ~NB)
+        S = sdec(MK, ~NB) in
+    [ BState(~bID,'M1_SENT',<~CA, ~RA, ~NA, ~NB>), In(<M2, MK>) ]
+    --[ BReceiveRAprimeAndS(RAprime, S) ]->
+    [ BState(~bID,'RAPRIME_S_RECEIVED',<~CA, ~RA, ~NA, ~NB, RAprime, S>) ]
+
+rule B_Create_Key:
+    let DerivedInput = ~CA ⊕ S
+    k = hkdf(~NB, DerivedInput) in
+    [ BState(~bID,'RAPRIME_S_RECEIVED',<~CA, ~RA, ~NA, ~NB, RAprime, S>) ]
+    --[ BCreateKey(k) ]->
+    [ BState(~bID,'KEY_CREATED',<~CA, ~RA, ~NA, ~NB, RAprime, S, k>) ]
+
+
+lemma successful_run: exists-trace
+    "Ex kA kB #i #j.
+        ACreateKey(kA) @ i &
+        BCreateKey(kB) @ j"
+
+lemma successful_run_NA: exists-trace
+    "Ex NA #i.
+        BReceiveNA(NA) @ i"
+
+lemma successful_run_M1: exists-trace
+    "Ex M1 #i.
+        BSentM1(M1) @ i"
+
+lemma successful_run_NB: exists-trace
+    "Ex NB #i.
+        AReceiveNB(NB) @ i"
+
+lemma successful_run_RAprime_S: exists-trace
+    "Ex RAprime S #i.
+        BReceiveRAprimeAndS(RAprime, S) @ i"
+
+lemma k_secret_a:
+    "All k #i. 
+        ACreateKey(k) @ i 
+            ==> not(Ex #j. K(k) @ j)"
+
+lemma k_secret_b:
+    "All k #i. 
+        BCreateKey(k) @ i 
+            ==> not(Ex #j. K(k) @ j)"
+
+end
