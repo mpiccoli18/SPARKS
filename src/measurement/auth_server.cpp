@@ -160,7 +160,7 @@ int autentication_server(UAV * B){
     }
     std::cout << "RA : "; print_hex(RA, PUF_SIZE);
     xor_buffers(RA,NB,PUF_SIZE,M1);
-    xor_buffers(M1,NB,PUF_SIZE,M1);
+    xor_buffers(M1,NA,PUF_SIZE,M1);
     std::cout << "M1 : "; print_hex(M1, PUF_SIZE);
 
     // B sends its ID, M1 and a hash of CA, NB, RA, NA to A
