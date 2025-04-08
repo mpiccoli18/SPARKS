@@ -363,9 +363,9 @@ int main(int argc, char* argv[]) {
         return ret;
     }
 
-    // std::cout << "m1 Elapsed CPU cycles client authentication: " << m1 << " cycles" << std::endl;
-    // std::cout << "operational Elapsed CPU cycles client authentication: " << opCycles << " cycles" << std::endl;
-    // std::cout << "idle Elapsed CPU cycles client authentication: " << idlcycles << " cycles" << std::endl;
+    std::cout << "m1 Elapsed CPU cycles client authentication: " << m1 << " cycles" << std::endl;
+    std::cout << "operational Elapsed CPU cycles client authentication: " << opCycles << " cycles" << std::endl;
+    std::cout << "idle Elapsed CPU cycles client authentication: " << idlcycles << " cycles" << std::endl;
     A.socketModule.closeConnection();
 
     return 0;
