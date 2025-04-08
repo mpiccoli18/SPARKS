@@ -99,7 +99,7 @@ int autentication_client(UAV * A){
         std::cout << "No expected challenge in memory for this UAV.\n";
         return 1;
     }
-
+    
     unsigned char M0[PUF_SIZE];
     xor_buffers(NA,CA,PUF_SIZE,M0);
     std::cout << "M0 : "; print_hex(M0, PUF_SIZE);
@@ -134,6 +134,7 @@ int autentication_client(UAV * A){
     fromHexString(rsp["hash1"].get<std::string>(), hash1, PUF_SIZE);
 
     // A computes RA using CA in memory
+    std::cout << "CA : "; print_hex(CA, PUF_SIZE);
     unsigned char RA[PUF_SIZE];
     A->callPUF(CA,RA);
     std::cout << "RA : "; print_hex(RA, PUF_SIZE);
@@ -176,6 +177,11 @@ int autentication_client(UAV * A){
         unsigned char CAOld[PUF_SIZE]; 
         xor_buffers(lock, secret, PUF_SIZE, CAOld);
 
+        // A will calculate the Nonce A that the server calculated with the wrong CA 
+        unsigned char NAOld[PUF_SIZE];
+        xor_buffers(M0, CAOld, PUF_SIZE, NAOld);
+        std::cout << "NAOld : "; print_hex(NAOld, PUF_SIZE);
+
         // A will calculate the old response 
         unsigned char RAOld[PUF_SIZE];
         A->callPUF(CAOld, RAOld);
@@ -184,7 +190,7 @@ int autentication_client(UAV * A){
         // A will deduce NB from the old response
         unsigned char NBOld[PUF_SIZE];
         xor_buffers(M1, RAOld, PUF_SIZE, NBOld);
-        xor_buffers(NBOld, NA, PUF_SIZE, NBOld);
+        xor_buffers(NBOld, NAOld, PUF_SIZE, NBOld);
         std::cout << "NBOld : "; print_hex(NBOld, PUF_SIZE);
 
         // A now tries to verify the hash with this value

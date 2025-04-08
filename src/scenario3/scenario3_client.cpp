@@ -380,6 +380,11 @@ int autentication_client(UAV * A){
         unsigned char CAOld[PUF_SIZE]; 
         xor_buffers(lock, secret, PUF_SIZE, CAOld);
 
+        // A will calculate the Nonce A that the server calculated with the wrong CA 
+        unsigned char NAOld[PUF_SIZE];
+        xor_buffers(M0, CAOld, PUF_SIZE, NAOld);
+        std::cout << "NAOld : "; print_hex(NAOld, PUF_SIZE);
+
         // A will calculate the old response 
         unsigned char RAOld[PUF_SIZE];
         A->callPUF(CAOld, RAOld);
@@ -388,6 +393,7 @@ int autentication_client(UAV * A){
         // A will deduce NB from the old response
         unsigned char NBOld[PUF_SIZE];
         xor_buffers(M1, RAOld, PUF_SIZE, NBOld);
+        xor_buffers(NBOld, NAOld, PUF_SIZE, NBOld);
         std::cout << "NBOld : "; print_hex(NBOld, PUF_SIZE);
 
         // A now tries to verify the hash with this value
