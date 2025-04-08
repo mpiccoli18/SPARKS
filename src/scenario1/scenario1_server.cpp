@@ -119,7 +119,7 @@ int autentication_server(UAV * B){
     
     unsigned char NA[PUF_SIZE];
     xor_buffers(M0, CA, PUF_SIZE, NA);
-    std::cout << "NA : "; print_hex(CA, PUF_SIZE);
+    std::cout << "NA : "; print_hex(NA, PUF_SIZE);
 
     // B then creates a nonce NB and the secret message M1 
     unsigned char gammaB[PUF_SIZE];
