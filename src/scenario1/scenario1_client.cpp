@@ -95,7 +95,11 @@ int autentication_client(UAV * A){
     std::cout << "NA : "; print_hex(NA, PUF_SIZE);
 
     const unsigned char * CA = A->getUAVData(idB)->getC();
-
+    if (CA == nullptr){
+        std::cout << "No expected challenge in memory for this UAV.\n";
+        return 1;
+    }
+    
     unsigned char M0[PUF_SIZE];
     xor_buffers(NA,CA,PUF_SIZE,M0);
     std::cout << "M0 : "; print_hex(M0, PUF_SIZE);
@@ -130,11 +134,6 @@ int autentication_client(UAV * A){
     fromHexString(rsp["hash1"].get<std::string>(), hash1, PUF_SIZE);
 
     // A computes RA using CA in memory
-    const unsigned char * CA = A->getUAVData(idB)->getC();
-    if (CA == nullptr){
-        std::cout << "No expected challenge in memory for this UAV.\n";
-        return 1;
-    }
     std::cout << "CA : "; print_hex(CA, PUF_SIZE);
     unsigned char RA[PUF_SIZE];
     A->callPUF(CA,RA);
