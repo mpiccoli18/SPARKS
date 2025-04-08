@@ -184,6 +184,8 @@ int failed_autentication_client(UAV * A){
         // A will deduce NB from the old response
         unsigned char NBOld[PUF_SIZE];
         xor_buffers(M1, RAOld, PUF_SIZE, NBOld);
+        xor_buffers(NBOld, NA, PUF_SIZE, NBOld);
+        std::cout << "NBOld : "; print_hex(NBOld, PUF_SIZE);
 
         // A now tries to verify the hash with this value
         ctx = initHash();
