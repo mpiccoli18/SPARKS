@@ -98,13 +98,14 @@ int autentication_server(UAV * B){
     }
 
     // B recover NA
-    unsigned char NA[PUF_SIZE];
-    if(!rsp.contains("NA")){
-        std::cerr << "Error occurred: no member NA" << std::endl;
+    unsigned char M0[PUF_SIZE];
+    if(!rsp.contains("M0")){
+        std::cerr << "Error occurred: no member M0" << std::endl;
         return 1;
     }
-    fromHexString(rsp["NA"].get<std::string>(), NA, PUF_SIZE);
+    fromHexString(rsp["M0"].get<std::string>(), M0, PUF_SIZE);
 
+    
     // B retrieve xA from memory and computes CA
     const unsigned char * xA = B->getUAVData(idA)->getX();
     if (xA == nullptr){
@@ -112,10 +113,14 @@ int autentication_server(UAV * B){
         return 1;
     }
     std::cout << "xA : "; print_hex(xA, PUF_SIZE);
-
+    
     unsigned char CA[PUF_SIZE];
     B->callPUF(xA,CA);
     std::cout << "CA : "; print_hex(CA, PUF_SIZE);
+    
+    unsigned char NA[PUF_SIZE];
+    xor_buffers(M0, CA, PUF_SIZE, NA);
+    std::cout << "NA : "; print_hex(NA, PUF_SIZE);
 
     // B then creates a nonce NB and the secret message M1 
     unsigned char gammaB[PUF_SIZE];
@@ -131,7 +136,8 @@ int autentication_server(UAV * B){
         return 1;
     }
     std::cout << "RA : "; print_hex(RA, PUF_SIZE);
-    xor_buffers(RA,NB,PUF_SIZE,M1);
+    xor_buffers(RA,NA,PUF_SIZE,M1);
+    xor_buffers(M1,NB,PUF_SIZE,M1);
     std::cout << "M1 : "; print_hex(M1, PUF_SIZE);
 
     // B sends its ID, M1 and a hash of CA, NB, RA, NA to A
