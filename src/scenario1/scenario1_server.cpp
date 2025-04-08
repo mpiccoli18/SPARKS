@@ -96,14 +96,13 @@ int autentication_server(UAV * B){
         return -1;
     }
 
-    // B recover NA
+    // B recover M0
     unsigned char M0[PUF_SIZE];
     if(!rsp.contains("M0")){
         std::cerr << "Error occurred: no member M0" << std::endl;
         return 1;
     }
     fromHexString(rsp["M0"].get<std::string>(), M0, PUF_SIZE);
-
     
     // B retrieve xA from memory and computes CA
     const unsigned char * xA = B->getUAVData(idA)->getX();
