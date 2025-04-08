@@ -34,7 +34,7 @@ int enrolment_client(UAV * A){
 
     // Wait for B's response (with RB)
     json rsp = A->socketModule.receiveMessage();
-    printJSON(rsp);
+    // printJSON(rsp);
 
     // Check if an error occurred
     if (rsp.contains("error")) {
@@ -56,7 +56,7 @@ int enrolment_client(UAV * A){
     // B enroll with A
     // A receive CA. It saves CA.
     rsp = A->socketModule.receiveMessage();
-    printJSON(rsp);
+    // printJSON(rsp);
 
     // Check if an error occurred
     if (rsp.contains("error")) {
@@ -111,7 +111,7 @@ int autentication_client(UAV * A){
 
     // A waits for the answer
     json rsp = A->socketModule.receiveMessage();
-    printJSON(rsp);
+    // printJSON(rsp);
 
     // Check if an error occurred
     if (rsp.contains("error")) {
@@ -247,7 +247,7 @@ int autentication_client(UAV * A){
 
     // A waits for B's ACK
     rsp = A->socketModule.receiveMessage();
-    printJSON(rsp);
+    // printJSON(rsp);
 
     // Check if an error occurred
     if (rsp.contains("error")) {
@@ -279,7 +279,7 @@ int autentication_client(UAV * A){
     A->getUAVData(idB)->setC(NB);
 
     // Finished
-    // std::cout << "\nThe two UAV autenticated each other.\n";
+    std::cout << "\nThe two UAV autenticated each other.\n";
     
     return 0;
 }
