@@ -94,10 +94,16 @@ int autentication_client(UAV * A){
     generate_random_bytes(NA);
     std::cout << "NA : "; print_hex(NA, PUF_SIZE);
 
+    const unsigned char * CA = A->getUAVData(idB)->getC();
+
+    unsigned char M0[PUF_SIZE];
+    xor_buffers(NA,CA,PUF_SIZE,M0);
+    std::cout << "M0 : "; print_hex(M0, PUF_SIZE);
+
     // A sends its ID and NA to B 
-    json msg = {{"id", idA}, {"NA", toHexString(NA, PUF_SIZE)}};
+    json msg = {{"id", idA}, {"M0", toHexString(M0, PUF_SIZE)}};
     A->socketModule.sendMessage(msg);
-    std::cout << "Sent ID and NA.\n";
+    std::cout << "Sent ID and M0.\n";
 
     // A waits for the answer
     json rsp = A->socketModule.receiveMessage();
@@ -136,7 +142,8 @@ int autentication_client(UAV * A){
     
     // A retrieve NB from M1 
     unsigned char NB[PUF_SIZE];
-    xor_buffers(M1, RA, PUF_SIZE, NB);
+    xor_buffers(M1, NA, PUF_SIZE, NB);
+    xor_buffers(NB, RA, PUF_SIZE, NB);
     std::cout << "NB : "; print_hex(NB, PUF_SIZE);
 
     // A verify the hash

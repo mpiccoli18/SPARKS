@@ -35,8 +35,31 @@ void print_hex(const unsigned char *buffer, size_t length) {
 }
 
 void xor_buffers(const unsigned char* input1, const unsigned char* input2, size_t size, unsigned char* output) {
-    for (size_t i = 0; i < size; ++i) {
-        output[i] = input1[i] ^ input2[i];
+    if (output == input1 || output == input2) {
+        // XOR into a temporary buffer to avoid interference
+        unsigned char* temp_output = new unsigned char[size];
+        
+        for (size_t i = 0; i < size; ++i) {
+            temp_output[i] = input1[i] ^ input2[i];
+        }
+        
+        // Copy the result back to the original output buffer if needed
+        if (output == input1) {
+            for (size_t i = 0; i < size; ++i) {
+                output[i] = temp_output[i];
+            }
+        } else {
+            for (size_t i = 0; i < size; ++i) {
+                output[i] = temp_output[i];
+            }
+        }
+
+        delete[] temp_output;  // Clean up
+    } else {
+        // No interference, XOR directly into the output buffer
+        for (size_t i = 0; i < size; ++i) {
+            output[i] = input1[i] ^ input2[i];
+        }
     }
 }
 
