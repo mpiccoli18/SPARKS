@@ -198,7 +198,7 @@ int failed_autentication_client(UAV * A){
         addToHash(ctx, CAOld, PUF_SIZE);
         addToHash(ctx, NBOld, PUF_SIZE);
         addToHash(ctx, RAOld, PUF_SIZE);
-        addToHash(ctx, NA, PUF_SIZE);
+        addToHash(ctx, NAOld, PUF_SIZE);
         calculateHash(ctx, hash1Check);
 
         res = memcmp(hash1, hash1Check, PUF_SIZE) == 0;
@@ -212,6 +212,7 @@ int failed_autentication_client(UAV * A){
         A->getUAVData(idB)->setC(CAOld);
         memcpy(RA, RAOld, PUF_SIZE);
         memcpy(NB, NBOld, PUF_SIZE);
+        memcpy(NA, NAOld, PUF_SIZE);
 
     }
 
@@ -401,9 +402,8 @@ int autentication_client(UAV * A){
         addToHash(ctx, CAOld, PUF_SIZE);
         addToHash(ctx, NBOld, PUF_SIZE);
         addToHash(ctx, RAOld, PUF_SIZE);
-        addToHash(ctx, NA, PUF_SIZE);
+        addToHash(ctx, NAOld, PUF_SIZE);
         calculateHash(ctx, hash1Check);
-        std::cout << "hash1Check : "; print_hex(hash1Check, PUF_SIZE);
 
         res = memcmp(hash1, hash1Check, PUF_SIZE) == 0;
         if (res == 0){
@@ -416,6 +416,7 @@ int autentication_client(UAV * A){
         A->getUAVData(idB)->setC(CAOld);
         memcpy(RA, RAOld, PUF_SIZE);
         memcpy(NB, NBOld, PUF_SIZE);
+        memcpy(NA, NAOld, PUF_SIZE);
 
     }
 
