@@ -1,3 +1,5 @@
+/// This is the 
+
 theory simple
 
 begin
@@ -9,6 +11,8 @@ functions:
     pufA/1,
     pufB/1,
     hash/4
+
+// BEGIN RULES
 
 rule Create_Secret:
     [ Fr(~aID), Fr(~bID), Fr(~CA), Fr(~RA), Fr(~Sbefore), Fr(~RAbefore), Fr(~CAbefore), Fr(~NAbefore) ]
@@ -89,12 +93,15 @@ rule B_Create_Key:
     --[ BCreateKey(S,k) ]->
     [ BState(~bID,'KEY_CREATED',<~CA, ~RA, NA, ~NB, RAprime, S, k>) ]
 
+/// BEGIN LEMMATA
 
+// Verify that at least a run was successful
 lemma successful_run: exists-trace
     "Ex SA SB kA kB #i #j.
         ACreateKey(SA,kA) @ i &
         BCreateKey(SB,kB) @ j"
 
+// Verify the secrecy of all the values
 lemma all_secret:
     "All NA NB CA RA Sbefore RAbefore CAbefore NAbefore RAprime S #i #k #l #m. 
         (CreateSecrets(CA,RA,Sbefore,RAbefore,CAbefore,NAbefore) @ i &
@@ -112,7 +119,7 @@ lemma all_secret:
             not(Ex #j. K(NA) @ j) &
             not(Ex #j. K(NB) @ j)"
             
-
+// Verify the secrecy of the keys
 lemma k_secret_a:
     "All S k #i. 
         ACreateKey(S,k) @ i 

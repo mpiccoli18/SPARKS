@@ -1,3 +1,11 @@
+/**
+ * @file CycleCounter.hpp
+ * @brief CycleCounter class header
+ * 
+ * This file holds the CycleCounter class header.
+ * 
+ */
+
 #ifndef CYCLECOUNTER_HPP
 #define CYCLECOUNTER_HPP
 
@@ -8,6 +16,7 @@
 #include <fcntl.h>
 #include <cstring>
 
+/// @brief This class implements the cycles counter
 class CycleCounter {
     private:
         int fddev;

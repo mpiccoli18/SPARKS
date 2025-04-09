@@ -24,10 +24,10 @@ public:
     puf(unsigned char * salt);
 
     void process(const unsigned char * input, size_t size, unsigned char * output) const;
-    // TODO : remove
-    void printSalt() const{
-        print_hex(salt,PUF_SIZE);
-    }
+    
+    // void printSalt() const{
+    //     print_hex(salt,PUF_SIZE);
+    // }
 
 };
 

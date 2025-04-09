@@ -87,9 +87,9 @@ public:
 
     void callPUF(const unsigned char * input, unsigned char * response);
 
-    void printSalt(){
-        PUF.printSalt();
-    }
+    // void printSalt(){
+    //     PUF.printSalt();
+    // }
 
 };
 

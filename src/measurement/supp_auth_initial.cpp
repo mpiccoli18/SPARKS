@@ -152,7 +152,7 @@ int supplementaryAuthenticationInitial(UAV * A){
     calculateHash(ctx, hash2);
     // std::cout << "hash2 : "; print_hex(hash2, PUF_SIZE);
 
-    // TODO : send M2, and a hash of NB, RA, RAp, NA
+    // Send M2, and a hash of NB, RA, RAp, NA
     msg = {
         {"id", idA},
         {"M2", toHexString(M2, PUF_SIZE)},

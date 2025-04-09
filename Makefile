@@ -10,21 +10,11 @@ BIN_DIR := bin
 CPPS := $(SRC_DIR)/UAV.cpp $(SRC_DIR)/puf.cpp $(SRC_DIR)/utils.cpp $(SRC_DIR)/SocketModule.cpp $(SRC_DIR)/CycleCounter.cpp 
 OBJS := $(patsubst $(SRC_DIR)/%.cpp, $(BIN_DIR)/%.o, $(CPPS))
 
-# Default target (currently does nothing)
-all:
-	@echo "Run 'make test' to compile the test executable."
-
-# Rule to compile the test program
-test: tests test_pmc
-
-tests : $(OBJS) $(SRC_DIR)/test.cpp | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
-
-test_pmc : $(OBJS) $(SRC_DIR)/measurement/pmc_test.cpp | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+# Default target
+all: scenarii
 
 # Rule to compile measurement
-measure : measure_enrol_client measure_enrol_server measure_auth_client measure_auth_server measure_enrol_RAM_client measure_enrol_RAM_server measure_auth_RAM_client measure_auth_RAM_server measure_warmup measure_supp_auth_initial measure_supp_auth_supplementary measure_json_client measure_json_server
+measure : test_pmc measure_enrol_client measure_enrol_server measure_auth_client measure_auth_server measure_enrol_RAM_client measure_enrol_RAM_server measure_auth_RAM_client measure_auth_RAM_server measure_warmup measure_supp_auth_initial measure_supp_auth_supplementary measure_json_client measure_json_server
 
 measure_json_client : $(OBJS) $(SRC_DIR)/measurement/json_impact_client.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
@@ -65,13 +55,7 @@ measure_enrol_client : $(OBJS) $(SRC_DIR)/measurement/enrol_client.cpp | $(BIN_D
 measure_enrol_server : $(OBJS) $(SRC_DIR)/measurement/enrol_server.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
-# Rules to compile the attack scenarios
-attack: attack_client attack_server
-
-attack_client: $(OBJS) $(SRC_DIR)/attack_test/attack_client.cpp | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
-
-attack_server: $(OBJS) $(SRC_DIR)/attack_test/attack_server.cpp | $(BIN_DIR)
+test_pmc : $(OBJS) $(SRC_DIR)/measurement/pmc_test.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
 # Rule to compile the scenarios
@@ -103,12 +87,6 @@ scenario3_client: $(OBJS) $(SRC_DIR)/scenario3/scenario3_client.cpp | $(BIN_DIR)
 
 scenario3_server: $(OBJS) $(SRC_DIR)/scenario3/scenario3_server.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
-
-# scenario2 : $(OBJS) $(SRC_DIR)/scenario2.cpp | $(BIN_DIR)
-# 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
-
-# scenario3 : $(OBJS) $(SRC_DIR)/scenario3.cpp | $(BIN_DIR)
-# 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
 $(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
