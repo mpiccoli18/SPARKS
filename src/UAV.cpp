@@ -87,6 +87,8 @@ void UAVData::updatePointer(unsigned char*& dest, const unsigned char* src) {
 /// @brief Constructor implementation
 UAV::UAV(std::string id) : id(id), PUF() {}
 
+UAV::UAV(std::string id, unsigned char * salt) : id(id), PUF(salt) {}
+
 /// @brief Method implementation
 std::string UAV::getId() {
     return this->id;

@@ -15,11 +15,6 @@ int main() {
     std::cout << "The first drone is " <<A.getId() << ".\n"; 
     std::cout << "The second drone is " <<B.getId() << ".\n"; 
 
-    std::cout << "Salt of A is : ";
-    A.printSalt();
-    std::cout << "Salt of B is : ";
-    B.printSalt();
-
     // std::cout << "Let's enroll the drones with each others"; 
     
     std::cout << "Let's verify that the PUF are different in the two drones\n";

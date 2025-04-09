@@ -69,6 +69,7 @@ private:
 public:
     SocketModule socketModule = SocketModule(); 
     UAV(std::string id);
+    UAV(std::string id, unsigned char * salt);
     std::string getId();
     
     void addUAV(
@@ -85,6 +86,10 @@ public:
     UAVData* getUAVData(const std::string& id);
 
     void callPUF(const unsigned char * input, unsigned char * response);
+
+    void printSalt(){
+        PUF.printSalt();
+    }
 
 };
 

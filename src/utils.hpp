@@ -17,6 +17,7 @@
 #include <sstream>  // For std::ostringstream
 #include <cstring> 
 #include <nlohmann/json.hpp> 
+#include <fstream>
 
 using json = nlohmann::json;
 
@@ -121,5 +122,13 @@ std::string toHexString(const unsigned char* data, size_t length);
  * @param maxLength 
  */
 void fromHexString(const std::string& hex, unsigned char* output, size_t maxLength);
+
+
+/**
+ * @brief Function to read the CPU frequency from /proc/cpuinfo
+ * 
+ * @return double 
+ */
+double getCpuFrequency();
 
 #endif

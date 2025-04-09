@@ -18,9 +18,10 @@
 class puf
 {
 private:
-    const unsigned char salt[PUF_SIZE];
+    unsigned char salt[PUF_SIZE];
 public:
     puf();
+    puf(unsigned char * salt);
 
     void process(const unsigned char * input, size_t size, unsigned char * output) const;
     // TODO : remove

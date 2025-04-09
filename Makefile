@@ -1,13 +1,13 @@
 # Compiler
 CXX = g++
-CXXFLAGS = -Wall -Wextra -O2 -std=c++11 -g
+CXXFLAGS = -Wall -Wextra -O3 -std=c++11 -g
 
 # Directories
 SRC_DIR := src
 BIN_DIR := bin
 
 # Files
-CPPS := $(SRC_DIR)/UAV.cpp $(SRC_DIR)/puf.cpp $(SRC_DIR)/utils.cpp $(SRC_DIR)/SocketModule.cpp 
+CPPS := $(SRC_DIR)/UAV.cpp $(SRC_DIR)/puf.cpp $(SRC_DIR)/utils.cpp $(SRC_DIR)/SocketModule.cpp $(SRC_DIR)/CycleCounter.cpp 
 OBJS := $(patsubst $(SRC_DIR)/%.cpp, $(BIN_DIR)/%.o, $(CPPS))
 
 # Default target (currently does nothing)
@@ -15,9 +15,54 @@ all:
 	@echo "Run 'make test' to compile the test executable."
 
 # Rule to compile the test program
-test: tests
+test: tests test_pmc
 
 tests : $(OBJS) $(SRC_DIR)/test.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+
+test_pmc : $(OBJS) $(SRC_DIR)/measurement/pmc_test.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+
+# Rule to compile measurement
+measure : measure_enrol_client measure_enrol_server measure_auth_client measure_auth_server measure_enrol_RAM_client measure_enrol_RAM_server measure_auth_RAM_client measure_auth_RAM_server measure_warmup measure_supp_auth_initial measure_supp_auth_supplementary measure_json_client measure_json_server
+
+measure_json_client : $(OBJS) $(SRC_DIR)/measurement/json_impact_client.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+
+measure_json_server : $(OBJS) $(SRC_DIR)/measurement/json_impact_server.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+
+measure_supp_auth_supplementary : $(OBJS) $(SRC_DIR)/measurement/supp_auth_supplementary.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+
+measure_supp_auth_initial : $(OBJS) $(SRC_DIR)/measurement/supp_auth_initial.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+
+measure_warmup : $(OBJS) $(SRC_DIR)/measurement/warmup_impact.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+
+measure_auth_RAM_client : $(OBJS) $(SRC_DIR)/measurement/auth_RAM_client.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+
+measure_auth_RAM_server :  $(OBJS) $(SRC_DIR)/measurement/auth_RAM_server.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+	
+measure_enrol_RAM_client : $(OBJS) $(SRC_DIR)/measurement/enrol_RAM_client.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+
+measure_enrol_RAM_server : $(OBJS) $(SRC_DIR)/measurement/enrol_RAM_server.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+
+measure_auth_client : $(OBJS) $(SRC_DIR)/measurement/auth_client.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+
+measure_auth_server : $(OBJS) $(SRC_DIR)/measurement/auth_server.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+
+measure_enrol_client : $(OBJS) $(SRC_DIR)/measurement/enrol_client.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
+
+measure_enrol_server : $(OBJS) $(SRC_DIR)/measurement/enrol_server.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
 # Rules to compile the attack scenarios
@@ -74,4 +119,4 @@ $(BIN_DIR):
 
 # Clean up all compiled files
 clean:
-	rm -f $(BIN_DIR)/*.o tests scenario* attack*
+	rm -f $(BIN_DIR)/*.o test* scenario* attack*
