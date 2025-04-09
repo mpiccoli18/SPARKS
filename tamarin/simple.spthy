@@ -64,7 +64,7 @@ rule A_Send_M2_MK:
         temp = senc(~S, ~NA)
         MK = senc(temp, NB) in
     [ AState(~aID,'NB_RECEIVED',<~CA, ~RA, ~NA, NB>), Fr(~S) ]
-    --[]->
+    --[ CreateRAprimeS(RAprime, ~S) ]->
     [ AState(~aID,'M2_SENT',<~CA, ~RA, RAprime, ~NA, NB, ~S>), Out(<M2, MK>) ]
 
 rule A_Create_Key:
@@ -96,16 +96,19 @@ lemma successful_run: exists-trace
         BCreateKey(SB,kB) @ j"
 
 lemma all_secret:
-    "All NA NB CA RA Sbefore RAbefore CAbefore NAbefore #i #k #l. 
+    "All NA NB CA RA Sbefore RAbefore CAbefore NAbefore RAprime S #i #k #l #m. 
         (CreateSecrets(CA,RA,Sbefore,RAbefore,CAbefore,NAbefore) @ i &
         CreateNA(NA) @ k &
-        CreateNB(NB) @ l)
+        CreateNB(NB) @ l & 
+        CreateRAprimeS(RAprime,S) @ m)
             ==> not(Ex #j. K(CA) @ j) & 
             not(Ex #j. K(RA) @ j) & 
             not(Ex #j. K(Sbefore) @ j) & 
             not(Ex #j. K(RAbefore) @ j) & 
             not(Ex #j. K(CAbefore) @ j) & 
             not(Ex #j. K(NAbefore) @ j) &
+            not(Ex #j. K(RAprime) @ j) &
+            not(Ex #j. K(S) @ j) &
             not(Ex #j. K(NA) @ j) &
             not(Ex #j. K(NB) @ j)"
             
