@@ -182,11 +182,6 @@ int autentication_client(UAV * A){
         xor_buffers(M0, CAOld, PUF_SIZE, NAOld);
         std::cout << "NAOld : "; print_hex(NAOld, PUF_SIZE);
 
-        // A will calculate the Nonce A that the server calculated with the wrong CA 
-        unsigned char NAOld[PUF_SIZE];
-        xor_buffers(M0, CAOld, PUF_SIZE, NAOld);
-        std::cout << "NAOld : "; print_hex(NAOld, PUF_SIZE);
-
         // A will calculate the old response 
         unsigned char RAOld[PUF_SIZE];
         A->callPUF(CAOld, RAOld);
