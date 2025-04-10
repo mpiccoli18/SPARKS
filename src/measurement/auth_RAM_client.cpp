@@ -223,7 +223,7 @@ int autentication_client(UAV * A){
     // std::cout << "RAp : "; print_hex(RAp, PUF_SIZE);
 
     unsigned char M2[PUF_SIZE];
-    xor_buffers(NB,RAp,PUF_SIZE,M2);
+    xor_buffers(NA,RAp,PUF_SIZE,M2);
     // std::cout << "M2 : "; print_hex(M2, PUF_SIZE);
 
     // A sends M2, and a hash of NB, RA, RAp, NA
