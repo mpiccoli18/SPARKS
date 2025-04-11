@@ -102,7 +102,7 @@ int enrolment_client_passive(UAV * A){
     json rsp = A->socketModule.receiveMessage();
 
     end = counter.getCycles();
-    idlcyclesActive += end - start;
+    idlcyclesPassive += end - start;
     start = counter.getCycles();
 
     // printJSON(rsp);
@@ -139,7 +139,7 @@ int enrolment_client_passive(UAV * A){
     A->socketModule.sendMessage(msg);
 
     end = counter.getCycles();
-    opCyclesActive += end - start;
+    opCyclesPassive += end - start;
     
     return 0;
 }
