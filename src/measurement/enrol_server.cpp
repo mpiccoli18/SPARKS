@@ -12,14 +12,15 @@ std::string idA = "A";
 std::string idB = "B";
 bool server = false;
 
-long long m1;
-long long m2;
-long long m3;
-long long m4;
-long long m5;
-long long m5a;
-long long m6;
-long long m7;
+long long idlcyclesActive = 0;
+long long opCyclesActive = 0;
+long long idlcyclesPassive = 0;
+long long opCyclesPassive = 0;
+long long totalActive;
+long long totalPassive;
+long long start_init;
+long long start;
+long long end;
 
 CycleCounter counter;
 
@@ -31,15 +32,10 @@ void warmup(UAV * A){
     // print_hex(out, PUF_SIZE);
 }
 
-int enrolment_client_active(UAV * A){
-    // long long start;
-    // long long end;
-    
+int enrolment_client_active(UAV * A){    
     // std::cout << "\nEnrolment process begins.\n";
     
-    // A enroll with B
-    // A computes the challenge for B
-    // start = counter.getCycles();
+    start = counter.getCycles();
     unsigned char xB[PUF_SIZE];
     generate_random_bytes(xB, PUF_SIZE);
     // std::cout << "xB : "; print_hex(xB, PUF_SIZE);
@@ -58,10 +54,19 @@ int enrolment_client_active(UAV * A){
     // m1 = end - start;
     // start = counter.getCycles();
     A->socketModule.sendMessage(msg);
+
+    end = counter.getCycles();
+    opCyclesActive += end - start;
+    start = counter.getCycles();
     // std::cout << "Sent CB.\n";
     
     // Wait for B's response (with RB)
     json rsp = A->socketModule.receiveMessage();
+
+    end = counter.getCycles();
+    idlcyclesActive += end - start;
+    start = counter.getCycles();
+
     // printJSON(rsp);
     
     // Check if an error occurred
@@ -83,17 +88,23 @@ int enrolment_client_active(UAV * A){
     // end = counter.getCycles();
     // m3 = end - start;
     // std::cout << "\nB is enroled to A\n";
-   
+
+    end = counter.getCycles();
+    opCyclesActive += end - start;   
     return 0;
 }
 
 int enrolment_client_passive(UAV * A){
-    // long long start;
-    // long long end;
-    // start = counter.getCycles();
     // B enroll with A
     // A receive CA. It saves CA.
+
+    start = counter.getCycles();
     json rsp = A->socketModule.receiveMessage();
+
+    end = counter.getCycles();
+    idlcyclesActive += end - start;
+    start = counter.getCycles();
+
     // printJSON(rsp);
 
     // Check if an error occurred
@@ -126,17 +137,14 @@ int enrolment_client_passive(UAV * A){
     // A sends RA
     json msg = {{"id", idA}, {"R", toHexString(RA, PUF_SIZE)}};
     A->socketModule.sendMessage(msg);
-    // std::cout << "Sent RA.\n";
+
+    end = counter.getCycles();
+    opCyclesActive += end - start;
     
-    // end = counter.getCycles();
-    // m5a = end - start;
     return 0;
 }
 
 int main() {
-    long long start;
-    long long end;
-
     // Creation of the UAV
 
     UAV A = UAV(idA);
@@ -152,33 +160,30 @@ int main() {
     warmup(&A);    
     
     // std::cout << "Started enrolment one side" << std::endl;
-    start = counter.getCycles();
+    start_init = counter.getCycles();
     int ret = enrolment_client_passive(&A);
     if (ret == 1){
         return ret;
     }
     end = counter.getCycles();
-    m6 = end - start;
+    totalPassive = end - start_init;
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    start = counter.getCycles();
+    A.socketModule.closeConnection();
+    A.socketModule.waitForConnection(8080);
+
+    start_init = counter.getCycles();
     ret = enrolment_client_active(&A);
     if (ret == 1){
         return ret;
     }
     end = counter.getCycles();
-    m7 = end - start;
+    totalActive = end - start_init;
     
     // std::cout << "Finished enrolment" << std::endl;
 
-    // std::cout << "m1 Elapsed CPU cycles: " << m1 << " cycles" << std::endl;
-    // std::cout << "m2 Elapsed CPU cycles: " << m2 << " cycles" << std::endl;
-    // std::cout << "m3 Elapsed CPU cycles: " << m3 << " cycles" << std::endl;
-    // std::cout << "m4 Elapsed CPU cycles: " << m4 << " cycles" << std::endl;
-    // std::cout << "m5 Elapsed CPU cycles: " << m5 << " cycles" << std::endl;
-    // std::cout << "m5a Elapsed CPU cycles: " << m5a << " cycles" << std::endl;
-    std::cout << "m6 Elapsed CPU cycles passive enrolment: " << m6 << " cycles" << std::endl;
-    std::cout << "m7 Elapsed CPU cycles active enrolment: " << m7 << " cycles" << std::endl;
+
+    std::cout << "m6 Elapsed CPU cycles passive enrolment: " << totalPassive << " cycles" << std::endl;
+    std::cout << "m7 Elapsed CPU cycles active enrolment: " << totalActive << " cycles" << std::endl;
     A.socketModule.closeConnection();
 
     return 0;

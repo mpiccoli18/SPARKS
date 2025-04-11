@@ -43,6 +43,35 @@ All compiled files are placed in the `bin/` directory.
 
 ---
 
+### 📜 Scenarii
+To compile all the different scenarii, run: 
+
+```bash
+make scenarii
+```
+
+It is also possible to compile one scenario only by running: 
+
+```bash
+make scenarioX
+```
+with `X` being the number of the scenario to compile. 
+
+#### Scenario 1: 
+This scenario represents a simple authentication process between a UAV A and B. 
+
+To run the scenario, launch `scenario1_B` then `scenario1_A`. `scenario1_A` takes the other UAV IP in argument, ex : `./scenario1_A "127.0.0.1"` or `./scenario1_A "192.168.193.215"`
+
+#### Scenario 2: 
+This scenario represents a supplementary authentication process between a UAV C and A. A is the initial UAV. A will first register supplementary challenges with the base station. Then C will gather a challenge for A from the base station and finally attempt a connection with A following the supplementary authentication process. 
+
+To run the scenario, launch `scenario2_Base_Station` then `scenario2_A` finally `scenario2_C`. `scenario2_A` takes the IP address of the base station and `scenario2_C` takes two arguments, first the base station IP address then A's IP address. Ex : `./scenario2_A "127.0.0.1"` and `./scenario2_C "127.0.0.1" "192.168.193.215"`
+
+#### Scenario 3: 
+This scenario represents a simple authentication process between a UAV A and B where the connection was interrupted, demonstrating the desynchronization recovery process. 
+
+To run the scenario, launch `scenario3_B` then `scenario3_A`. `scenario3_A` takes the other UAV IP in argument, ex : `./scenario3_A "127.0.0.1"` or `./scenario3_A "192.168.193.215"`.
+
 ### 📊 Run Measurement Tools
 To compile all performance and measurement-related binaries, run:
 

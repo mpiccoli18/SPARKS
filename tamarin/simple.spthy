@@ -10,7 +10,6 @@ functions:
     hkdf/2,
     pufA/1,
     pufB/1,
-    hash/4
 
 // BEGIN RULES
 

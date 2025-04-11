@@ -61,31 +61,31 @@ test_pmc : $(OBJS) $(SRC_DIR)/measurement/pmc_test.cpp | $(BIN_DIR)
 # Rule to compile the scenarios
 scenarii: scenario1 scenario2 scenario3
 
-scenario1: scenario1_client scenario1_server
+scenario1: scenario1_A scenario1_B
 
-scenario2: scenario2_initial scenario2_base_station scenario2_supplementary
+scenario2: scenario2_A scenario2_Base_Station scenario2_C
 
-scenario3: scenario3_client scenario3_server
+scenario3: scenario3_A scenario3_B
 
-scenario1_client: $(OBJS) $(SRC_DIR)/scenario1/scenario1_client.cpp | $(BIN_DIR)
+scenario1_A: $(OBJS) $(SRC_DIR)/scenario1/scenario1_A.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
-scenario1_server: $(OBJS) $(SRC_DIR)/scenario1/scenario1_server.cpp | $(BIN_DIR)
+scenario1_B: $(OBJS) $(SRC_DIR)/scenario1/scenario1_B.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
-scenario2_initial: $(OBJS) $(SRC_DIR)/scenario2/scenario2_initial.cpp | $(BIN_DIR)
+scenario2_A: $(OBJS) $(SRC_DIR)/scenario2/scenario2_A.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
-scenario2_base_station: $(OBJS) $(SRC_DIR)/scenario2/scenario2_base_station.cpp | $(BIN_DIR)
+scenario2_Base_Station: $(OBJS) $(SRC_DIR)/scenario2/scenario2_Base_Station.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
-scenario2_supplementary: $(OBJS) $(SRC_DIR)/scenario2/scenario2_supplementary.cpp | $(BIN_DIR)
+scenario2_C: $(OBJS) $(SRC_DIR)/scenario2/scenario2_C.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
-scenario3_client: $(OBJS) $(SRC_DIR)/scenario3/scenario3_client.cpp | $(BIN_DIR)
+scenario3_A: $(OBJS) $(SRC_DIR)/scenario3/scenario3_A.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
-scenario3_server: $(OBJS) $(SRC_DIR)/scenario3/scenario3_server.cpp | $(BIN_DIR)
+scenario3_B: $(OBJS) $(SRC_DIR)/scenario3/scenario3_B.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lcrypto
 
 $(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BIN_DIR)

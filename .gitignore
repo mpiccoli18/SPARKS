@@ -1,7 +1,7 @@
 # Ignore compiled binaries and object files
 bin/
 tests
-scenario*
+/scenario*
 attack*
 measure_*
 test_*

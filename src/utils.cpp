@@ -9,6 +9,12 @@
 
 #include "utils.hpp"
 
+/**
+ * @brief Generates a random 256 bits unsigned char.
+ * 
+ * @param buffer 
+ * @param size 
+ */
 void generate_random_bytes(unsigned char* buffer, size_t size) {
     std::random_device rd;
     std::mt19937_64 gen(rd()); // 64-bit generator
@@ -27,6 +33,12 @@ void generate_random_bytes(unsigned char* buffer, size_t size) {
     }
 }
 
+/**
+ * @brief Print an unsigned char to a human readable format.
+ * 
+ * @param buffer 
+ * @param length 
+ */
 void print_hex(const unsigned char *buffer, size_t length) {
     for (size_t i = 0; i < length; i++) {
         std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)buffer[i];
@@ -34,6 +46,14 @@ void print_hex(const unsigned char *buffer, size_t length) {
     std::cout << std::dec << "\n";
 }
 
+/**
+ * @brief Compute the XOR operation between two buffers containing the code of two 32 bytes numbers.
+ * 
+ * @param input1 
+ * @param input2 
+ * @param size 
+ * @param output 
+ */
 void xor_buffers(const unsigned char* input1, const unsigned char* input2, size_t size, unsigned char* output) {
     if (output == input1 || output == input2) {
         // XOR into a temporary buffer to avoid interference
@@ -63,42 +83,52 @@ void xor_buffers(const unsigned char* input1, const unsigned char* input2, size_
     }
 }
 
-// Function that initialize a hash
-EVP_MD_CTX* initHash(){
+/**
+ * @brief Initiate a hashing context
+ * 
+ * @return * Function* 
+ */EVP_MD_CTX* initHash(){
     EVP_MD_CTX* ctx = EVP_MD_CTX_new();
     EVP_DigestInit_ex(ctx, EVP_sha256(), NULL);
     return ctx;
 }
 
-// Basic variadic template
-// template <typename T>
-// void addToHash(EVP_MD_CTX* ctx, const T& value){
-//     EVP_DigestUpdate(ctx, &value, sizeof(T));  
-// }
-
-// const unsigned char * overload
+/**
+ * @brief Specialization of the variadic template for buffers containing 32 Bytes numbers
+ * 
+ * @param ctx 
+ * @param data 
+ * @param size 
+ */
 void addToHash(EVP_MD_CTX* ctx, const unsigned char* data, size_t size){
     EVP_DigestUpdate(ctx, data, size);
 }
 
-// std::string overload
-void addToHash(EVP_MD_CTX* ctx, const std::string& str){
+/**
+ * @brief Specialization of the variadic template for std::string type
+ * 
+ * @param ctx 
+ * @param str 
+ */void addToHash(EVP_MD_CTX* ctx, const std::string& str){
     EVP_DigestUpdate(ctx, str.data(), str.size());
 }
 
-// // Multiple argument variadic template
-// template <typename First, typename... Rest>
-// void addToHash(EVP_MD_CTX* ctx, const First& first, const Rest&... rest){
-//     addToHash(ctx, first);  // Process the first argument
-//     (addToHash(ctx, rest), ...);  // Process the remaining arguments (fold expression)
-// }
-
-// Function that actually calculates the hash
+/**
+ * @brief Calculate the hash value with every elements added to the context
+ * 
+ * @param ctx 
+ * @param output 
+ */
 void calculateHash(EVP_MD_CTX* ctx, unsigned char * output){
     EVP_DigestFinal_ex(ctx, output, NULL); 
     EVP_MD_CTX_free(ctx); 
 }
 
+/**
+ * @brief Print the content of a JSON value.
+ * 
+ * @param msg 
+ */
 void printJSON(json msg){
     if (msg.empty()) {
         std::cerr << "Error: JSON object is empty!" << std::endl;
@@ -107,6 +137,13 @@ void printJSON(json msg){
     }
 }
 
+/**
+ * @brief Transform an unsigned char buffer to a std::string for easier transportation
+ * 
+ * @param data 
+ * @param length 
+ * @return std::string 
+ */
 std::string toHexString(const unsigned char* data, size_t length) {
     std::ostringstream oss;
     oss << std::hex << std::setfill('0');
@@ -116,7 +153,13 @@ std::string toHexString(const unsigned char* data, size_t length) {
     return oss.str();
 }
 
-// Converts hex string back to unsigned char array
+/**
+ * @brief Retrieve a unsigned char number fron a std::string
+ * 
+ * @param hex 
+ * @param output 
+ * @param maxLength 
+ */
 void fromHexString(const std::string& hex, unsigned char* output, size_t maxLength) {
     size_t length = hex.length() / 2;
     if (length > maxLength) length = maxLength; // Prevent buffer overflow
@@ -127,7 +170,11 @@ void fromHexString(const std::string& hex, unsigned char* output, size_t maxLeng
     }
 }
 
-// Function to read the CPU frequency from /proc/cpuinfo
+/**
+ * @brief Try to get the current CPU Frequency. Might be skewed, only to be used as a support option.
+ * 
+ * @return double 
+ */
 double getCpuFrequency() {
     std::ifstream cpuinfo("/proc/cpuinfo");
     std::string line;

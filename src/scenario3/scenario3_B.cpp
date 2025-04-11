@@ -184,7 +184,7 @@ int autentication_server(UAV * B){
 
     // B retrieve RAp from M2
     unsigned char RAp[PUF_SIZE];
-    xor_buffers(M2, NB, PUF_SIZE, RAp);
+    xor_buffers(M2, NA, PUF_SIZE, RAp);
     std::cout << "RAp : "; print_hex(RAp, PUF_SIZE);
 
     // B verify the hash
@@ -205,7 +205,7 @@ int autentication_server(UAV * B){
         return 1;
     }
 
-    std::cout << "A's hash has been verified. A is autenticated to B.";
+    std::cout << "A's hash has been verified. A is autenticated to B.\n";
 
     // B changes its values
     B->getUAVData(idA)->setX(gammaB);

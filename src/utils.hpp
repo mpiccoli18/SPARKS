@@ -86,10 +86,6 @@ void addToHash(EVP_MD_CTX* ctx, const unsigned char* data, size_t size);
  */
 void addToHash(EVP_MD_CTX* ctx, const std::string& str);
 
-// // Multiple argument variadic template
-// template <typename First, typename... Rest>
-// void addToHash(EVP_MD_CTX* ctx, const First& first, const Rest&... rest);
-
 /**
  * @brief Calculate the hash value with every elements added to the context
  * 
@@ -125,7 +121,7 @@ void fromHexString(const std::string& hex, unsigned char* output, size_t maxLeng
 
 
 /**
- * @brief Function to read the CPU frequency from /proc/cpuinfo
+ * @brief Try to get the current CPU Frequency. Might be skewed, only to be used as a support option.
  * 
  * @return double 
  */
