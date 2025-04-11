@@ -122,9 +122,6 @@ int enrolment_client_passive(UAV * A){
 }
 
 int main() {
-    long long start;
-    long long end;
-
     // Creation of the UAV
 
     UAV A = UAV(idA);

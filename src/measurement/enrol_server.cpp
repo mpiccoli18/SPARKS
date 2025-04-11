@@ -181,9 +181,13 @@ int main() {
     
     // std::cout << "Finished enrolment" << std::endl;
 
+    std::cout << "Elapsed CPU cycles passive enrolment: " << totalPassive << " cycles" << std::endl;
+    std::cout << "operational Elapsed CPU cycles passive enrolment: " << opCyclesPassive << " cycles" << std::endl;
+    std::cout << "idle Elapsed CPU cycles passive enrolment: " << idlcyclesPassive << " cycles" << std::endl;
 
-    std::cout << "m6 Elapsed CPU cycles passive enrolment: " << totalPassive << " cycles" << std::endl;
-    std::cout << "m7 Elapsed CPU cycles active enrolment: " << totalActive << " cycles" << std::endl;
+    std::cout << "Elapsed CPU cycles active enrolment: " << totalActive << " cycles" << std::endl;
+    std::cout << "operational Elapsed CPU cycles active enrolment: " << opCyclesActive << " cycles" << std::endl;
+    std::cout << "idle Elapsed CPU cycles active enrolment: " << idlcyclesActive << " cycles" << std::endl;
     A.socketModule.closeConnection();
 
     return 0;
