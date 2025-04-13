@@ -127,4 +127,6 @@ void fromHexString(const std::string& hex, unsigned char* output, size_t maxLeng
  */
 double getCpuFrequency();
 
+// Function to derive a key using HKDF (SHA256)
+void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const unsigned char* S, size_t keyLength, unsigned char* derivedKey);
 #endif
