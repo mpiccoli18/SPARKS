@@ -213,7 +213,7 @@ int autentication_server(UAV * B){
 
     // B retrieve RAp from M2
     unsigned char RAp[PUF_SIZE];
-    xor_buffers(M2, NB, PUF_SIZE, RAp);
+    xor_buffers(M2, NA, PUF_SIZE, RAp);
     // std::cout << "RAp : "; print_hex(RAp, PUF_SIZE);
 
     // B verify the hash
