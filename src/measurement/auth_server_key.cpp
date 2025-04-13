@@ -310,9 +310,9 @@ int main(){
         return ret;
     }
 
-    // std::cout << "m1 Elapsed CPU cycles server authentication: " << m1 << " cycles" << std::endl;
-    // std::cout << "operational Elapsed CPU cycles server authentication: " << opCycles << " cycles" << std::endl;
-    // std::cout << "idle Elapsed CPU cycles server authentication: " << idlcycles << " cycles" << std::endl;
+    std::cout << "m1 Elapsed CPU cycles server authentication: " << m1 << " cycles" << std::endl;
+    std::cout << "operational Elapsed CPU cycles server authentication: " << opCycles << " cycles" << std::endl;
+    std::cout << "idle Elapsed CPU cycles server authentication: " << idlcycles << " cycles" << std::endl;
     B.socketModule.closeConnection();
 
     return 0;
