@@ -209,15 +209,6 @@ double getCpuFrequency() {
     return frequency / 1000.0;  // Convert MHz to GHz
 }
 
-#include <iostream>
-#include <cryptlib.h>
-#include <hkdf.h>
-#include <sha.h>
-#include <hex.h>
-#include <cstring>
-
-using namespace CryptoPP;
-
 // Function to derive a key using HKDF (SHA256)
 void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const unsigned char* S,
     size_t keyLength, unsigned char* derivedKey) {
