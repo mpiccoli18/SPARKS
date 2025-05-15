@@ -19,6 +19,13 @@
 #include <nlohmann/json.hpp> 
 #include <fstream>
 
+#include <cryptlib.h>
+#include <hkdf.h>
+#include <sha.h>
+#include <hex.h>
+
+using namespace CryptoPP;
+
 using json = nlohmann::json;
 
 #define PUF_SIZE 32 // 256 bits = 32 bytes
