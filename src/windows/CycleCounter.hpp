@@ -10,16 +10,22 @@
 #define CYCLECOUNTER_HPP
 
 #include <fstream>
+#if defined(__linux__)
 #include <linux/perf_event.h>
 #include <sys/syscall.h>
-#include <unistd.h>
+#elif defined(_WIN32) || defined(_WIN64)
+#include <windows.h>
+#include <io.h>
+#include <intrin.h>
+#endif
+#include "lib/unistd.h"
 #include <fcntl.h>
 #include <cstring>
 
 /// @brief This class implements the cycles counter
 class CycleCounter {
     private:
-        int fddev;
+        unsigned __int64 startCycles;
     
     public:
         CycleCounter();

@@ -8,11 +8,11 @@
                 "${file}",
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe",
-                "${workspaceFolder}\\src\\UAV.cpp",
-                "${workspaceFolder}\\src\\utils.cpp",
-                "${workspaceFolder}\\src\\puf.cpp",
-                "${workspaceFolder}\\src\\CycleCounter.cpp",
-                "${workspaceFolder}\\src\\SocketModule.cpp",
+                "${workspaceFolder}\\src\\windows\\UAV.cpp",
+                "${workspaceFolder}\\src\\windows\\utils.cpp",
+                "${workspaceFolder}\\src\\windows\\puf.cpp",
+                "${workspaceFolder}\\src\\windows\\CycleCounter.cpp",
+                "${workspaceFolder}\\src\\windows\\SocketModule.cpp",
                 "-lcrypto"
             ],
             "options": {
