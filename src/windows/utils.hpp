@@ -16,9 +16,10 @@
 #include <iomanip>
 #include <sstream>  // For std::ostringstream
 #include <cstring> 
-#include "lib/json.hpp" 
 #include <fstream>
 
+#include "lib/json.hpp" 
+#include "../../cryptopp/cryptlib.h"
 #include "../../cryptopp/hkdf.h"
 #include "../../cryptopp/sha.h"
 #include "../../cryptopp/hex.h"

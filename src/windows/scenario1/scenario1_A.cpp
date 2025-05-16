@@ -1,10 +1,10 @@
 #include <string>
 #include <chrono> 
 
-#include "../../UAV.hpp"
-#include "../../puf.hpp"
-#include "../../utils.hpp"
-#include "../../SocketModule.hpp"
+#include "../UAV.hpp"
+#include "../puf.hpp"
+#include "../utils.hpp"
+#include "../SocketModule.hpp"
 
 std::string idA = "A";
 std::string idB = "B";

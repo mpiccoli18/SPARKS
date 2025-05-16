@@ -5,15 +5,23 @@
             "label": "C/C++: g++.exe build active file",
             "command": "C:\\msys64\\ucrt64\\bin\\g++.exe",
             "args": [
-                "${file}",
-                "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe",
+                "-L",
                 "${workspaceFolder}\\src\\windows\\UAV.cpp",
                 "${workspaceFolder}\\src\\windows\\utils.cpp",
                 "${workspaceFolder}\\src\\windows\\puf.cpp",
                 "${workspaceFolder}\\src\\windows\\CycleCounter.cpp",
                 "${workspaceFolder}\\src\\windows\\SocketModule.cpp",
-                "-lcrypto"
+                "${workspaceFolder}\\cryptopp\\cryptlib.cpp",      
+                "${workspaceFolder}\\cryptopp\\hkdf.h",  
+                "${workspaceFolder}\\cryptopp\\hex.cpp",  
+                "${workspaceFolder}\\cryptopp\\sha.cpp",       
+                "-lcrypto",
+                "-lws2_32",
+                "-lpthread",
+                "${file}",
+                "-o",  
+                "${file}.exe"              
+
             ],
             "options": {
                 "cwd": "${fileDirname}"

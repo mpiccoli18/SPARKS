@@ -10,6 +10,9 @@
 #define CYCLECOUNTER_HPP
 
 #include <fstream>
+#include <fcntl.h>
+#include <cstring>
+#include "lib/unistd.h"
 #if defined(__linux__)
 #include <linux/perf_event.h>
 #include <sys/syscall.h>
@@ -18,9 +21,8 @@
 #include <io.h>
 #include <intrin.h>
 #endif
-#include "lib/unistd.h"
-#include <fcntl.h>
-#include <cstring>
+
+
 
 /// @brief This class implements the cycles counter
 class CycleCounter {

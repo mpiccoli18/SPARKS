@@ -45,6 +45,10 @@
 #define STDOUT_FILENO 1
 #define STDERR_FILENO 2
 /* should be in some equivalent to <sys/types.h> */
+#ifndef _STDINT_H
+#ifndef _INTTYPES_H
+#ifndef _MSC_STDINT_H_
+// Only define these types if not already defined
 typedef __int8            int8_t;
 typedef __int16           int16_t; 
 typedef __int32           int32_t;
@@ -53,5 +57,8 @@ typedef unsigned __int8   uint8_t;
 typedef unsigned __int16  uint16_t;
 typedef unsigned __int32  uint32_t;
 typedef unsigned __int64  uint64_t;
+#endif
+#endif
+#endif
 
 #endif /* unistd.h  */
