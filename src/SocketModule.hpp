@@ -12,13 +12,8 @@
 #include <iostream>
 #include <cstring>
 #include <unistd.h>
-#if defined(__linux__)
 #include <arpa/inet.h>
-#elif defined(_WIN32) || defined(_WIN64)
-#include <Winsock2.h>
-#include <ws2tcpip.h>
-#endif
-#include <nlohmann/json>
+#include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 #define TIMEOUT_VALUE  5

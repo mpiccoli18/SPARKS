@@ -10,17 +10,9 @@
 #define CYCLECOUNTER_HPP
 
 #include <fstream>
-#if defined(__linux__)
 #include <linux/perf_event.h>
 #include <sys/syscall.h>
-#elif defined(_WIN32) || defined(_WIN64)
-#include <windows.h>
-#include <winnt.h>
-#include <winbase.h>
-#include <processthreadsapi.h>
-#include <io.h>
-#endif
-#include "lib/unistd.h"
+#include <unistd.h>
 #include <fcntl.h>
 #include <cstring>
 

@@ -1,23 +1,19 @@
 {
     "configurations": [
         {
-            "name": "Win32",
+            "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "C:\\\\Program Files\\\\OpenSSL-Win64\\\\bin",
-                "C:\\\\Program Files\\\\OpenSSL-Win64\\\\include"
+                "/usr/include/cryptopp",
+                "/usr/include/nlohmann",
+                "/usr/include/openssl",
+                "/usr/include/x86_64-linux-gnu"
             ],
-            "defines": [
-                "_DEBUG",
-                "UNICODE",
-                "_UNICODE"
-            ],
-            "windowsSdkVersion": "10.0.22621.0",
-            "compilerPath": "C:\\msys64\\ucrt64\\bin\\g++.exe",
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
             "cStandard": "c17",
             "cppStandard": "c++17",
-            "intelliSenseMode": "windows-gcc-x64",
-            "configurationProvider": "ms-vscode.makefile-tools"
+            "intelliSenseMode": "${default}"
         }
     ],
     "version": 4

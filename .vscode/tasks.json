@@ -2,26 +2,15 @@
     "tasks": [
         {
             "type": "cppbuild",
-            "label": "C/C++: g++.exe build active file",
-            "command": "C:\\msys64\\ucrt64\\bin\\g++.exe",
+            "label": "C/C++: gcc build active file",
+            "command": "/usr/bin/gcc",
             "args": [
-                "-L",
-                "${workspaceFolder}\\src\\windows\\UAV.cpp",
-                "${workspaceFolder}\\src\\windows\\utils.cpp",
-                "${workspaceFolder}\\src\\windows\\puf.cpp",
-                "${workspaceFolder}\\src\\windows\\CycleCounter.cpp",
-                "${workspaceFolder}\\src\\windows\\SocketModule.cpp",
-                "${workspaceFolder}\\cryptopp\\cryptlib.cpp",      
-                "${workspaceFolder}\\cryptopp\\hkdf.h",  
-                "${workspaceFolder}\\cryptopp\\hex.cpp",  
-                "${workspaceFolder}\\cryptopp\\sha.cpp",       
-                "-lcrypto",
-                "-lws2_32",
-                "-lpthread",
+                "-fdiagnostics-color=always",
+                "-g",
                 "${file}",
-                "-o",  
-                "${file}.exe"              
-
+                "-o",
+                "${fileDirname}/${fileBasenameNoExtension}",
+                "-lcrypto"
             ],
             "options": {
                 "cwd": "${fileDirname}"
