@@ -876,7 +876,7 @@ int UAV::failed_autentication_client(){
     generate_random_bytes(NA);
     std::cout << "NA : "; print_hex(NA, PUF_SIZE);
 
-    const unsigned char * CA = A->getUAVData(idB)->getC();
+    const unsigned char * CA = this->getUAVData("B")->getC();
     if (CA == nullptr){
         std::cout << "No expected challenge in memory for this UAV.\n";
         return 1;
@@ -887,12 +887,12 @@ int UAV::failed_autentication_client(){
     std::cout << "M0 : "; print_hex(M0, PUF_SIZE);
 
     // A sends its ID and NA to B 
-    json msg = {{"id", idA}, {"M0", toHexString(M0, PUF_SIZE)}};
-    A->socketModule.sendMessage(msg);
+    json msg = {{"id", this->getId()}, {"M0", toHexString(M0, PUF_SIZE)}};
+    this->socketModule.sendMessage(msg);
     std::cout << "Sent ID and M0.\n";
 
     // A waits for the answer
-    json rsp = A->socketModule.receiveMessage();
+    json rsp = this->socketModule.receiveMessage();
     printJSON(rsp);
 
     // Check if an error occurred
@@ -917,7 +917,7 @@ int UAV::failed_autentication_client(){
 
     // A computes RA using CA in memory
     unsigned char RA[PUF_SIZE];
-    A->callPUF(CA,RA);
+    this->callPUF(CA,RA);
     std::cout << "RA : "; print_hex(RA, PUF_SIZE);
     
     // A retrieve NB from M1 
@@ -943,18 +943,18 @@ int UAV::failed_autentication_client(){
         std::cout << "The autentication failed. A will try to verify the hash with an old challenge if it exists.\n";
 
         // A will recover the old challenge 
-        const unsigned char * xLock = A->getUAVData(idB)->getXLock();
+        const unsigned char * xLock = this->getUAVData("B")->getXLock();
         if (xLock == nullptr){
             std::cout << "No old challenge in memory for the requested UAV.\n";
             return 1;
         }
-        const unsigned char * secret = A->getUAVData(idB)->getSecret();
+        const unsigned char * secret = this->getUAVData("B")->getSecret();
         if (secret == nullptr){
             std::cout << "No old challenge in memory for the requested UAV.\n";
             return 1;
         }
         unsigned char lock[PUF_SIZE];
-        A->callPUF(xLock, lock);
+        this->callPUF(xLock, lock);
         unsigned char CAOld[PUF_SIZE]; 
         xor_buffers(lock, secret, PUF_SIZE, CAOld);
 
@@ -965,7 +965,7 @@ int UAV::failed_autentication_client(){
 
         // A will calculate the old response 
         unsigned char RAOld[PUF_SIZE];
-        A->callPUF(CAOld, RAOld);
+        this->callPUF(CAOld, RAOld);
         std::cout << "RAOld : "; print_hex(RAOld, PUF_SIZE);
 
         // A will deduce NB from the old response
@@ -990,7 +990,7 @@ int UAV::failed_autentication_client(){
         std::cout << "B has been autenticated by A with the old challenge.\n";
 
         // A will now change the values to be the one obtained of the old challenge
-        A->getUAVData(idB)->setC(CAOld);
+        this->getUAVData(idB)->setC(CAOld);
         memcpy(RA, RAOld, PUF_SIZE);
         memcpy(NB, NBOld, PUF_SIZE);
         memcpy(NA, NAOld, PUF_SIZE);
@@ -1001,7 +1001,7 @@ int UAV::failed_autentication_client(){
 
     // A will now conputes the new challenge and M2
     unsigned char RAp[PUF_SIZE];
-    A->callPUF(NB,RAp);
+    this->callPUF(NB,RAp);
     std::cout << "RAp : "; print_hex(RAp, PUF_SIZE);
 
     unsigned char M2[PUF_SIZE];
@@ -1035,7 +1035,7 @@ int UAV::failed_autentication_client(){
     // ################################################################
 
     // A waits for B's ACK
-    rsp = A->socketModule.receiveMessage();
+    rsp = this->socketModule.receiveMessage();
     printJSON(rsp);
 
     // Check if an error occurred
@@ -1049,21 +1049,21 @@ int UAV::failed_autentication_client(){
         generate_random_bytes(xLock);
     
         unsigned char lock[PUF_SIZE];
-        A->callPUF(xLock, lock);
+        this->callPUF(xLock, lock);
     
         unsigned char concealedCA[PUF_SIZE];
         xor_buffers(CA,lock,PUF_SIZE,concealedCA);
     
-        A->getUAVData(idB)->setXLock(xLock);
-        A->getUAVData(idB)->setSecret(concealedCA);
+        this->getUAVData("B")->setXLock(xLock);
+        this->getUAVData("B")->setSecret(concealedCA);
         
         // Then A saves the new challenge in CA
-        A->getUAVData(idB)->setC(NB);
+        this->getUAVData("B")->setC(NB);
         return 1;
     }
     
     // Then A saves the new challenge in CA
-    A->getUAVData(idB)->setC(NB);
+    this->getUAVData("B")->setC(NB);
 
     // Finished
 
