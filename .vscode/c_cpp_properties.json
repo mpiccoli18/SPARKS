@@ -7,12 +7,13 @@
                 "/usr/include/cryptopp",
                 "/usr/include/nlohmann",
                 "/usr/include/openssl",
-                "/usr/include/x86_64-linux-gnu"
+                "/usr/include/x86_64-linux-gnu",
+                "/usr/include/msgpack"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
-            "cStandard": "c17",
-            "cppStandard": "c++17",
+            "cStandard": "c11",
+            "cppStandard": "c++11",
             "intelliSenseMode": "${default}"
         }
     ],
