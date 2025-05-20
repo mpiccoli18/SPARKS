@@ -93,6 +93,7 @@ public:
     int autentication_server();
     int preEnrolment();
     int supplementaryAuthenticationInitial();
+    int failed_autentication_client();
     // void printSalt(){
     //     PUF.printSalt();
     // }
