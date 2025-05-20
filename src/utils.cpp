@@ -138,6 +138,25 @@ void printJSON(json msg){
 }
 
 /**
+ * @brief Print the content of a MsgPack value.
+ * 
+ * @param msg 
+ */
+/*void printMsgPack(msgpack_object message){
+    if (message.via.map.size == 0)
+    {
+        std::cerr << "Error: MsgPack object is empty!" << std::endl;
+    } 
+    else 
+    {
+        std::cout << "MsgPack object:" << std::endl;
+        for (size_t i = 0; i < message.via.map.size; ++i) {
+            std::cout << "Key: " << std::string(message.via.map.ptr[i].key) << ", Value: " << message.via.map.ptr[i].val << std::endl;
+        }
+    }
+}*/
+
+/**
  * @brief Transform an unsigned char buffer to a std::string for easier transportation
  * 
  * @param data 

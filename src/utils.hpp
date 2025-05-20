@@ -17,6 +17,7 @@
 #include <sstream>  // For std::ostringstream
 #include <cstring> 
 #include <nlohmann/json.hpp> 
+#include <msgpack.hpp>
 #include <fstream>
 
 #include <cryptlib.h>
@@ -27,6 +28,7 @@
 using namespace CryptoPP;
 
 using json = nlohmann::json;
+
 
 #define PUF_SIZE 32 // 256 bits = 32 bytes
 #define CHALLENGE_SIZE 5
@@ -107,6 +109,15 @@ void calculateHash(EVP_MD_CTX* ctx, unsigned char * output);
  * @param msg 
  */
 void printJSON(json msg);
+
+
+/**
+ * @brief Print the content of a MsgPack value.
+ * 
+ * @param msg 
+ */
+void printMsgPack(msgpack_object message);
+
 
 /**
  * @brief Transform an unsigned char buffer to a std::string for easier transportation

@@ -1,6 +1,6 @@
 # Compiler
 CXX = g++
-CXXFLAGS = -Wall -Wextra -O3 -std=c++11 -I/usr/include/crypto++
+CXXFLAGS = -Wall -Wextra -O3 -std=c++11 -I/usr/include/crypto++ -I/home/sparks/Desktop/msgpack/include
 
 # Directories
 SRC_DIR := src
