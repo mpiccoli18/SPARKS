@@ -674,7 +674,7 @@ int UAV::preEnrolment(){
     // Generates the responses
     unsigned char LR[CHALLENGE_SIZE][PUF_SIZE];
     for (int i = 0; i < CHALLENGE_SIZE && i < CHALLENGE_SIZE; i++) {
-        A->callPUF(receivedArrays[i], LR[i]);
+        this->callPUF(receivedArrays[i], LR[i]);
         std::cout << "LR[" << i << "]: "; print_hex(LR[i], PUF_SIZE);
     }
 
@@ -990,7 +990,7 @@ int UAV::failed_autentication_client(){
         std::cout << "B has been autenticated by A with the old challenge.\n";
 
         // A will now change the values to be the one obtained of the old challenge
-        this->getUAVData(idB)->setC(CAOld);
+        this->getUAVData("B")->setC(CAOld);
         memcpy(RA, RAOld, PUF_SIZE);
         memcpy(NB, NBOld, PUF_SIZE);
         memcpy(NA, NAOld, PUF_SIZE);
@@ -1020,7 +1020,7 @@ int UAV::failed_autentication_client(){
 
     // TODO : send M2, and a hash of NB, RA, RAp, NA
     msg = {
-        {"id", idA},
+        {"id", this->getId()},
         {"M2", toHexString(M2, PUF_SIZE)},
         {"hash2", toHexString(hash2, PUF_SIZE)}
     };
