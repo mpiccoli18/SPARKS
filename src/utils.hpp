@@ -116,7 +116,8 @@ void printJSON(json msg);
  * 
  * @param msg 
  */
-void printMsgPack(msgpack_object message);
+//Note: std::string has to be changed cause of innacuracy of types given
+void printMsgPack(std::string data);
 
 
 /**

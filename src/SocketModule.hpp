@@ -13,6 +13,7 @@
 #include <cstring>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <msgpack.hpp>
 #include <nlohmann/json.hpp> 
 
 using json = nlohmann::json;
@@ -33,6 +34,8 @@ public:
     bool waitForConnection(int port);
     
     void sendMessage(const json& message);
+    void sendMsgPack(const std::string& msgPack);
+    std::string receiveMsgPack();
     json receiveMessage(); 
 
     void closeConnection();

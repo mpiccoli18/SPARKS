@@ -108,6 +108,12 @@ void SocketModule::sendMessage(const json& message) {
     send(this->connection_fd, jsonString.c_str(), jsonString.size(), 0);
 }
 
+/// @brief Send a msgPack message over the socket
+/// @param msgPack The message to send
+void SocketModule::sendMsgPack(const std::string& msgPack) {
+    send(this->connection_fd, msgPack.c_str(), msgPack.size(), 0);
+}
+
 /// @brief Receive a message on the connection socket.
 json SocketModule::receiveMessage() {
     static std::string dataBuffer = "";  // Store partial data between calls
@@ -148,6 +154,46 @@ json SocketModule::receiveMessage() {
     }
 }
 
+/// @brief Receive a msgPack message on the socket
+/// @param none
+/// @return The received message as a string
+std::string SocketModule::receiveMsgPack(){
+    static std::string dataBuffer = "";  // Store partial data between calls
+    char buffer[1024] = {0};
+    msgpack::object_handle msgpack_obj;
+    while(true)
+    {
+        int bytesReceived = read(this->connection_fd, buffer, sizeof(buffer));
+        if (bytesReceived > 0) {
+            // Append new data to buffer
+            dataBuffer += std::string(buffer, bytesReceived);
+
+            try {
+                // Attempt to parse MsgPack
+                msgpack_obj = msgpack::unpack(dataBuffer.data(), dataBuffer.size());
+                dataBuffer.clear();  // Clear buffer after successful parsing
+                return msgpack_obj.get().as<std::string>();
+            } catch (msgpack::unpack_error& e) {
+                std::cerr << "MsgPack parse error: " << e.what() << std::endl;
+                std::cerr << "Partial MsgPack received, waiting for more data..." << std::endl;
+                continue;  // Keep reading until we get a full MsgPack
+            }
+        } 
+        else if (bytesReceived == 0) {
+            std::cerr << "Connection closed by peer." << std::endl;
+            return "";
+        } 
+        else {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                std::cerr << "Receive timeout!" << std::endl;
+                return "";
+            } else {
+                perror("Receive failed");
+                return "";
+            }
+        }
+    }
+}
 
 /// @brief Close the connection
 void SocketModule::closeConnection() {
