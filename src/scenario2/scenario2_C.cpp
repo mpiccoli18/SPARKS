@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
     C.socketModule.initiateConnection(ipBS, 8080);
 
     // A's credential retrieval
-    int ret = C.preEnrolment();
+    int ret = C.preEnrolmentRetrival();
     if (ret == 1){
         return ret;
     }
@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
 
     C.socketModule.initiateConnection(ipUAV,8085);
 
-    ret = C.supplementaryAuthenticationInitial();
+    ret = C.supplementaryAuthenticationSup();
     if (ret == 1){
         return ret;
     }

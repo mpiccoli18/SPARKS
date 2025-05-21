@@ -92,6 +92,8 @@ public:
     int enrolment_server();
     int autentication_server();
     int preEnrolment();
+    int preEnrolmentRetrival();
+    int supplementaryAuthenticationSup();
     int supplementaryAuthenticationInitial();
     int failed_autentication_client();
     // void printSalt(){
