@@ -320,7 +320,6 @@ int UAV::autentication_client(){
         unsigned char NBOld[PUF_SIZE];
         xor_buffers(M1, RAOld, PUF_SIZE, NBOld);
         xor_buffers(NBOld, NAOld, PUF_SIZE, NBOld);
-        xor_buffers(NBOld, NAOld, PUF_SIZE, NBOld);
         std::cout << "NBOld : "; print_hex(NBOld, PUF_SIZE);
 
         // A now tries to verify the hash with this value
@@ -328,7 +327,6 @@ int UAV::autentication_client(){
         addToHash(ctx, CAOld, PUF_SIZE);
         addToHash(ctx, NBOld, PUF_SIZE);
         addToHash(ctx, RAOld, PUF_SIZE);
-        addToHash(ctx, NAOld, PUF_SIZE);
         addToHash(ctx, NAOld, PUF_SIZE);
         calculateHash(ctx, hash1Check);
 
@@ -734,7 +732,7 @@ int UAV::preEnrolmentRetrival(){
     std::cout << "secret : "; print_hex(secret, PUF_SIZE);
 
 
-    C->addUAV(idA, nullptr, CA, nullptr, xLock, secret);
+    C->addUAV("A", nullptr, CA, nullptr, xLock, secret);
     std::cout << "\nC has retrieved A's credentials.\n";
 
     return 0;
@@ -913,7 +911,7 @@ int UAV::supplementaryAuthenticationInitial(){
     return 0;
 }
 
-int supplementaryAuthenticationSup(UAV * C){
+int UAV::supplementaryAuthenticationSup(){
 
     // C will now try to connect to A
     json msg = {{"id", idC}};
@@ -971,7 +969,7 @@ int supplementaryAuthenticationSup(UAV * C){
     // C sends its ID, M1 and a hash of idC, CA, NB, RA, NA to A
     unsigned char hash1[PUF_SIZE];
     EVP_MD_CTX * ctx = initHash();
-    addToHash(ctx, idC);
+    addToHash(ctx, this->getId());
     addToHash(ctx, CA, PUF_SIZE);
     addToHash(ctx, NC, PUF_SIZE);
     addToHash(ctx, RA, PUF_SIZE);
@@ -980,7 +978,7 @@ int supplementaryAuthenticationSup(UAV * C){
     std::cout << "hash1 : "; print_hex(hash1, PUF_SIZE);
     
     msg = {
-        {"id", idC}, 
+        {"id", this->getId()}, 
         {"CA", toHexString(CA, PUF_SIZE)}, 
         {"M1", toHexString(M1, PUF_SIZE)}, 
         {"hash1", toHexString(hash1, PUF_SIZE)}
@@ -1050,7 +1048,7 @@ int supplementaryAuthenticationSup(UAV * C){
     calculateHash(ctx, hash3);
     std::cout << "hash3 : "; print_hex(hash3, PUF_SIZE);
     
-    msg = {{"id", idC}, {"hash3", toHexString(hash3, PUF_SIZE)}};
+    msg = {{"id", this->getId()}, {"hash3", toHexString(hash3, PUF_SIZE)}};
     C->socketModule.sendMessage(msg);
     std::cout << "Sent ID and hash3.\n";
 
