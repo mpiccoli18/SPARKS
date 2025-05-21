@@ -116,9 +116,7 @@ void printJSON(json msg);
  * 
  * @param msg 
  */
-//Note: std::string has to be changed cause of innacuracy of types given
-void printMsgPack(std::string data);
-
+void printMsgPack(std::map<std::string, std::string> data);
 
 /**
  * @brief Transform an unsigned char buffer to a std::string for easier transportation

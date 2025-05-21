@@ -110,8 +110,11 @@ void SocketModule::sendMessage(const json& message) {
 
 /// @brief Send a msgPack message over the socket
 /// @param msgPack The message to send
-void SocketModule::sendMsgPack(const std::string& msgPack) {
-    send(this->connection_fd, msgPack.c_str(), msgPack.size(), 0);
+void SocketModule::sendMsgPack(const std::map<std::string, std::string> &msgPack) {
+    // Serialize the map using msgpack
+    msgpack::sbuffer sbuf;
+    msgpack::pack(sbuf, msgPack);
+    send(this->connection_fd, sbuf.data(), sbuf.size(), 0);
 }
 
 /// @brief Receive a message on the connection socket.
@@ -157,7 +160,7 @@ json SocketModule::receiveMessage() {
 /// @brief Receive a msgPack message on the socket
 /// @param none
 /// @return The received message as a string
-std::string SocketModule::receiveMsgPack(){
+std::map<std::string, std::string> SocketModule::receiveMsgPack(){
     static std::string dataBuffer = "";  // Store partial data between calls
     char buffer[1024] = {0};
     msgpack::object_handle msgpack_obj;
@@ -167,12 +170,11 @@ std::string SocketModule::receiveMsgPack(){
         if (bytesReceived > 0) {
             // Append new data to buffer
             dataBuffer += std::string(buffer, bytesReceived);
-
             try {
                 // Attempt to parse MsgPack
                 msgpack_obj = msgpack::unpack(dataBuffer.data(), dataBuffer.size());
                 dataBuffer.clear();  // Clear buffer after successful parsing
-                return msgpack_obj.get().as<std::string>();
+                return msgpack_obj.get().as<std::map<std::string, std::string>>();
             } catch (msgpack::unpack_error& e) {
                 std::cerr << "MsgPack parse error: " << e.what() << std::endl;
                 std::cerr << "Partial MsgPack received, waiting for more data..." << std::endl;
@@ -181,15 +183,15 @@ std::string SocketModule::receiveMsgPack(){
         } 
         else if (bytesReceived == 0) {
             std::cerr << "Connection closed by peer." << std::endl;
-            return "";
+            return {};
         } 
         else {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 std::cerr << "Receive timeout!" << std::endl;
-                return "";
-            } else {
+                return {};
+           } else {
                 perror("Receive failed");
-                return "";
+                return {};
             }
         }
     }

@@ -15,22 +15,23 @@ int enrolment_server(UAV * B){
     std::cout << "\nEnrolment process begins.\n";
 
     // B waits for B's message  (with CB)
-    json rsp = B->socketModule.receiveMessage();
-    printJSON(rsp);
+    std::map<std::string, std::string> rsp = B->socketModule.receiveMsgPack();
+    printMsgPack(rsp);
 
     // Check if an error occurred
-    if (rsp.contains("error")) {
-        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
-        return -1;
+    if (rsp.empty()){
+        std::cerr << "Error occurred: no message received" << std::endl;
+        return 1;
     }
 
     // B receive CB. It creates A in the memory of B and save CB.
-    unsigned char CB[PUF_SIZE];
-    if(!rsp.contains("CB")){
+    unsigned char CB[PUF_SIZE];    
+    if(rsp["CB"].empty()){
         std::cerr << "Error occurred: no member CB" << std::endl;
         return 1;
     }
-    fromHexString(rsp["CB"].get<std::string>(), CB, PUF_SIZE);
+    fromHexString(rsp["CB"], CB, PUF_SIZE);
+    std::cout << "CB : "; print_hex(CB, PUF_SIZE);
     B->addUAV(idA, nullptr, CB);
 
     // B computes RB
@@ -39,8 +40,11 @@ int enrolment_server(UAV * B){
     std::cout << "RB : "; print_hex(RB, PUF_SIZE);
 
     // B sends RB
-    json msg = {{"id", idB}, {"RB", toHexString(RB, PUF_SIZE)}};
-    B->socketModule.sendMessage(msg);
+    rsp = {
+        {"id", idB}, 
+        {"RB", toHexString(RB, PUF_SIZE)}
+    };
+    B->socketModule.sendMsgPack(rsp);
     std::cout << "Sent RB.\n";
 
     // B enroll with A
@@ -58,26 +62,28 @@ int enrolment_server(UAV * B){
     std::cout << "CA : "; print_hex(CA, PUF_SIZE);
 
     // Sends CA
-    msg = {{"id", idB}, {"CA", toHexString(CA, PUF_SIZE)}};
-    B->socketModule.sendMessage(msg);
+    rsp = {{"id", idB}, {"CA", toHexString(CA, PUF_SIZE)}};
+    printMsgPack(rsp);
+    B->socketModule.sendMsgPack(rsp);
     std::cout << "Sent CA.\n";
 
     // B receive RA and saves it. 
-    rsp = B->socketModule.receiveMessage();
-    printJSON(rsp);
+    rsp = B->socketModule.receiveMsgPack();
+    printMsgPack(rsp);
 
     // Check if an error occurred
-    if (rsp.contains("error")) {
-        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
-        return -1;
+    if (rsp.empty()){
+        std::cerr << "Error occurred: no message received" << std::endl;
+        return 1;
     }
 
     unsigned char RA[PUF_SIZE];
-    if(!rsp.contains("RA")){
+    if(rsp["RA"].empty()){
         std::cerr << "Error occurred: no member RA" << std::endl;
         return 1;
     }
-    fromHexString(rsp["RA"].get<std::string>(), RA, PUF_SIZE);
+    fromHexString(rsp["RA"], RA, PUF_SIZE);
+    std::cout << "RA : "; print_hex(RA, PUF_SIZE);
     B->getUAVData(idA)->setR(RA);
     
     return 0;
@@ -88,22 +94,22 @@ int autentication_server(UAV * B){
     std::cout << "\nAutentication process begins.\n";
 
     // B receive the initial message
-    json rsp = B->socketModule.receiveMessage();
-    printJSON(rsp);
+    std::map<std::string, std::string> rsp = B->socketModule.receiveMsgPack();
+    printMsgPack(rsp);
 
     // Check if an error occurred
-    if (rsp.contains("error")) {
-        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+    if (rsp.empty()) {
+        std::cerr << "Error occurred: no message received" << std::endl;
         return -1;
     }
 
     // B recover NA
     unsigned char M0[PUF_SIZE];
-    if(!rsp.contains("M0")){
+    if(rsp["M0"].empty()){
         std::cerr << "Error occurred: no member M0" << std::endl;
         return 1;
     }
-    fromHexString(rsp["M0"].get<std::string>(), M0, PUF_SIZE);
+    fromHexString(rsp["M0"], M0, PUF_SIZE);
 
     
     // B retrieve xA from memory and computes CA
@@ -150,37 +156,37 @@ int autentication_server(UAV * B){
     calculateHash(ctx, hash1);
     std::cout << "hash1 : "; print_hex(hash1, PUF_SIZE);
     
-    json msg = {
+    rsp = {
         {"id", idB}, 
         {"M1", toHexString(M1, PUF_SIZE)}, 
         {"hash1", toHexString(hash1, PUF_SIZE)}
     };
-    B->socketModule.sendMessage(msg);
+    B->socketModule.sendMsgPack(rsp);
     std::cout << "Sent ID, M1 and hash1.\n";
 
     // B waits for A response (M2)
-    rsp = B->socketModule.receiveMessage();
-    printJSON(rsp);
+    rsp = B->socketModule.receiveMsgPack();
+    printMsgPack(rsp);
 
     // Check if an error occurred
-    if (rsp.contains("error")) {
-        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+    if (rsp.empty()) {
+        std::cerr << "Error occurred: no message received" << std::endl;
         return -1;
     }
 
     // B recovers M2 and hash2
     unsigned char M2[PUF_SIZE];
-    if(!rsp.contains("M2")){
+    if(rsp["M2"].empty()){
         std::cerr << "Error occurred: no member M2" << std::endl;
         return 1;
     }
-    fromHexString(rsp["M2"].get<std::string>(), M2, PUF_SIZE);
+    fromHexString(rsp["M2"], M2, PUF_SIZE);
     unsigned char hash2[PUF_SIZE];
-    if(!rsp.contains("hash2")){
+    if(rsp["hash2"].empty()){
         std::cerr << "Error occurred: no member hash2" << std::endl;
         return 1;
     }
-    fromHexString(rsp["hash2"].get<std::string>(), hash2, PUF_SIZE);
+    fromHexString(rsp["hash2"], hash2, PUF_SIZE);
 
     // B retrieve RAp from M2
     unsigned char RAp[PUF_SIZE];
@@ -220,8 +226,8 @@ int autentication_server(UAV * B){
     calculateHash(ctx, hash3);
     std::cout << "hash3 : "; print_hex(hash3, PUF_SIZE);
     
-    msg = {{"id", idB}, {"hash3", toHexString(hash3, PUF_SIZE)}};
-    B->socketModule.sendMessage(msg);
+    rsp = {{"id", idB}, {"hash3", toHexString(hash3, PUF_SIZE)}};
+    B->socketModule.sendMsgPack(rsp);
     std::cout << "Sent ID and hash3.\n";
 
     // Finished

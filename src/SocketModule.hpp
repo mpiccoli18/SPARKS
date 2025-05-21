@@ -34,8 +34,8 @@ public:
     bool waitForConnection(int port);
     
     void sendMessage(const json& message);
-    void sendMsgPack(const std::string& msgPack);
-    std::string receiveMsgPack();
+    void sendMsgPack(const std::map<std::string, std::string> &msgPack);
+    std::map<std::string, std::string> receiveMsgPack();
     json receiveMessage(); 
 
     void closeConnection();

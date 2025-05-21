@@ -142,7 +142,7 @@ void printJSON(json msg){
  * 
  * @param msg 
  */
-void printMsgPack(std::string data){
+void printMsgPack(std::map<std::string, std::string> data){
     if(data.empty()){
         std::cerr << "Error: MsgPack data is empty!" << std::endl;
         return;
