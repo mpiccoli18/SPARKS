@@ -22,7 +22,7 @@ bool SocketModule::initiateConnection(const std::string& ip, int port) {
     }
 
     int opt = 1;
-    setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&opt, sizeof(opt));
 
     struct timeval timeout;      
     timeout.tv_sec = TIMEOUT_VALUE;  // Timeout after 5 seconds
@@ -60,7 +60,7 @@ bool SocketModule::waitForConnection(int port) {
     }
 
     int opt = 1;
-    setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&opt, sizeof(opt));
 
     struct timeval timeout;      
     timeout.tv_sec = TIMEOUT_VALUE;  // Timeout after 5 seconds
@@ -97,7 +97,7 @@ bool SocketModule::waitForConnection(int port) {
     // std::cout << "Client connected!\n";
 
     // Set the timeout
-    setsockopt(connection_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    setsockopt(connection_fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&opt, sizeof(opt));
     setsockopt(connection_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
     return true;
 }
