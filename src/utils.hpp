@@ -20,10 +20,10 @@
 #include <msgpack.hpp>
 #include <fstream>
 
-#include <cryptlib.h>
-#include <hkdf.h>
-#include <sha.h>
-#include <hex.h>
+#include <cryptopp/cryptlib.h>
+#include <cryptopp/hkdf.h>
+#include <cryptopp/sha.h>
+#include <cryptopp/hex.h>
 
 using namespace CryptoPP;
 

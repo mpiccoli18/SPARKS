@@ -14,7 +14,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <msgpack.hpp>
-#include <nlohmann/json.hpp> 
+#include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 #define TIMEOUT_VALUE  5
