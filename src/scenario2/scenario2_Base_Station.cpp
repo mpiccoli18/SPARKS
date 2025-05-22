@@ -43,26 +43,26 @@ int main(){
     // This list is sent to the UAV to get the responses
     std::map<std::string, std::string> msg = {
         {"id", idBS},
-        {"data", toHexString(LC[0], CHALLENGE_SIZE)}
+        {"data", toHexString(&LC[0][0], CHALLENGE_SIZE * PUF_SIZE)}
     };
     sm.sendMsgPack(msg);
     std::cout << "Sent LC to A;\n";
 
     // Wait for the responses
-    std::map<std::string, std::string> rsp = sm.receiveMsgPack();
-    printMsgPack(rsp);
+    msg = sm.receiveMsgPack();
+    printMsgPack(msg);
 
     // Check if an error occurred
-    if (rsp.empty()) {
+    if (msg.empty()) {
         std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
-    if(rsp["data"].empty()){
+    if(msg["data"].empty()){
         std::cerr << "Error occurred: no member data" << std::endl;
         return 1;
     }
-    std::string receivedHexList = rsp["data"];
+    std::string receivedHexList = msg["data"];
 
     // Convert each hex string back to unsigned char arrays
     for (size_t i = 0; i < receivedHexList.size() && i < receivedHexList.size(); i++) {

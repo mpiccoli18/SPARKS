@@ -657,7 +657,6 @@ int UAV::autentication_server(){
 /// @param none
 /// @return 0 if succeded, 1 if failed
 int UAV::preEnrolment(){
-
     // A waits for BS's query
     std::map<std::string, std::string> rsp = this->socketModule.receiveMsgPack();
     printMsgPack(rsp);
@@ -676,22 +675,24 @@ int UAV::preEnrolment(){
 
     // Convert each hex string back to unsigned char arrays
     unsigned char receivedArrays[CHALLENGE_SIZE][PUF_SIZE];
-
-    for (size_t i = 0; i < receivedHexList.size() && i < receivedHexList.size(); i++) {
-        fromHexString(receivedHexList, receivedArrays[i], PUF_SIZE);
-    }
-
+    //std::cout << "After receivedArrays" << std::endl;
+    
+    fromHexString(receivedHexList, &receivedArrays[0][0], CHALLENGE_SIZE * PUF_SIZE);
+    //std::cout << "After first fromhexstring statement" << std::endl;
+    
     // Generates the responses
     unsigned char LR[CHALLENGE_SIZE][PUF_SIZE];
-    for (int i = 0; i < CHALLENGE_SIZE && i < CHALLENGE_SIZE; i++) {
+    for (int i = 0; i < CHALLENGE_SIZE; i++) {
         this->callPUF(receivedArrays[i], LR[i]);
-        std::cout << "LR[" << i << "]: "; print_hex(LR[i], PUF_SIZE);
+        std::cout << "LR[" << i << "]: "; print_hex(LR[i], CHALLENGE_SIZE * PUF_SIZE);
     }
 
+    //std::cout << "After second for statement" << std::endl;
+    
     // Send the responses back
     rsp = {
         {"id", this->getId()},
-        {"data", toHexString(LR[0], CHALLENGE_SIZE)}
+        {"data", toHexString(&LR[0][0], CHALLENGE_SIZE * PUF_SIZE)}
     };
     this->socketModule.sendMsgPack(rsp);
 
