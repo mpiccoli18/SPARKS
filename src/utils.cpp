@@ -142,15 +142,33 @@ void printJSON(json msg){
  * 
  * @param msg 
  */
-void printMsgPack(std::map<std::string, std::string> data){
+void printMsgPack(std::unordered_map<std::string, std::string> data){
     if(data.empty()){
         std::cerr << "Error: MsgPack data is empty!" << std::endl;
         return;
     }
-    std::cout << "MsgPack data: ";
-    // Use msgpack::pack to serialize the data and print it
-    msgpack::pack(std::cout, data);
-    std::cout << std::endl;
+    
+    std::cout << "MsgPack content:\n";
+    for (const auto& pair : data) {
+        const std::string& key = pair.first;
+        const std::string& value = pair.second;
+
+        std::cout << "  " << key << ": ";
+
+        if (key == "id") {
+            // Always treat "id" as printable text
+            std::cout << value;
+        } else {
+            // Print other values as hex
+            std::cout << "[" << value.size() << " bytes] ";
+            for (unsigned char c : value) {
+                std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)c;
+            }
+            std::cout << std::dec;  // reset to decimal
+        }
+
+        std::cout << "\n";
+    }
 }
 
 /**
@@ -242,4 +260,19 @@ SecByteBlock info;         // Optional info, can be empty (no extra context data
 
 // Derive the key
 hkdf.DeriveKey(derivedKey, keyLength, input_key_material, sizeof(input_key_material), salt, salt.size(), info, info.size());
+}
+
+void extractValueFromMap(std::unordered_map<std::string, std::string> map, std::string key , unsigned char * output, size_t size){
+
+    auto it = map.find(key);
+    if (it == map.end()) {
+        std::cerr << "Error: key " << key << " not found.\n";
+    }
+
+    const std::string& valStr = it->second;
+
+    if (valStr.size() != size) {
+        std::cerr << "Error: value has incorrect size (" << valStr.size() << ").\n";
+    }
+    std::memcpy(output, valStr.data(), size);
 }

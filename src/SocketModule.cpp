@@ -104,7 +104,7 @@ bool SocketModule::waitForConnection(int port) {
 
 /// @brief Send a msgPack message over the socket
 /// @param msgPack The message to send
-void SocketModule::sendMsgPack(const std::map<std::string, std::string> &msgPack) {
+void SocketModule::sendMsgPack(const std::unordered_map<std::string, std::string> &msgPack) {
     // Serialize the map using msgpack
     msgpack::sbuffer sbuf;
     msgpack::pack(sbuf, msgPack);
@@ -114,7 +114,7 @@ void SocketModule::sendMsgPack(const std::map<std::string, std::string> &msgPack
 /// @brief Receive a msgPack message on the socket
 /// @param none
 /// @return The received message as a string
-std::map<std::string, std::string> SocketModule::receiveMsgPack(){
+std::unordered_map<std::string, std::string> SocketModule::receiveMsgPack(){
     static std::string dataBuffer = "";  // Store partial data between calls
     char buffer[1024] = {0};
     msgpack::object_handle msgpack_obj;
@@ -123,12 +123,13 @@ std::map<std::string, std::string> SocketModule::receiveMsgPack(){
         int bytesReceived = read(this->connection_fd, buffer, sizeof(buffer));
         if (bytesReceived > 0) {
             // Append new data to buffer
+            std::cout << "Received " << bytesReceived << "bytes." << std::endl;
             dataBuffer += std::string(buffer, bytesReceived);
             try {
                 // Attempt to parse MsgPack
                 msgpack_obj = msgpack::unpack(dataBuffer.data(), dataBuffer.size());
                 dataBuffer.clear();  // Clear buffer after successful parsing
-                return msgpack_obj.get().as<std::map<std::string, std::string>>();
+                return msgpack_obj.get().as<std::unordered_map<std::string, std::string>>();
             } catch (msgpack::unpack_error& e) {
                 std::cerr << "MsgPack parse error: " << e.what() << std::endl;
                 std::cerr << "Partial MsgPack received, waiting for more data..." << std::endl;

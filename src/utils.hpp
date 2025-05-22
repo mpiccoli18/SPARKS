@@ -116,7 +116,7 @@ void printJSON(json msg);
  * 
  * @param msg 
  */
-void printMsgPack(std::map<std::string, std::string> data);
+void printMsgPack(std::unordered_map<std::string, std::string> data);
 
 /**
  * @brief Transform an unsigned char buffer to a std::string for easier transportation
@@ -147,3 +147,6 @@ double getCpuFrequency();
 // Function to derive a key using HKDF (SHA256)
 void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const unsigned char* S, size_t keyLength, unsigned char* derivedKey);
 #endif
+
+
+void extractValueFromMap(std::unordered_map<std::string, std::string> map, std::string key , unsigned char * output, size_t size);

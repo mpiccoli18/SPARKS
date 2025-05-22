@@ -41,33 +41,26 @@ int main(){
     }
 
     // This list is sent to the UAV to get the responses
-    std::map<std::string, std::string> msg = {
-        {"id", idBS},
-        {"data", toHexString(&LC[0][0], CHALLENGE_SIZE * PUF_SIZE)}
-    };
+    std::unordered_map<std::string, std::string> msg;
+    
+    msg["id"] = idBS;
+    msg["data"] = std::string(reinterpret_cast<const char*>(LC), CHALLENGE_SIZE*PUF_SIZE);
+
     sm.sendMsgPack(msg);
     std::cout << "Sent LC to A;\n";
 
+    msg.clear();
+
     // Wait for the responses
-    msg = sm.receiveMsgPack();
-    printMsgPack(msg);
+    std::unordered_map<std::string, std::string> rsp = sm.receiveMsgPack();
+    printMsgPack(rsp);
 
     // Check if an error occurred
-    if (msg.empty()) {
+    if (rsp.empty()) {
         std::cerr << "Error occurred: content is empty!" << std::endl;
-        return -1;
     }
 
-    if(msg["data"].empty()){
-        std::cerr << "Error occurred: no member data" << std::endl;
-        return 1;
-    }
-    std::string receivedHexList = msg["data"];
-
-    // Convert each hex string back to unsigned char arrays
-    for (size_t i = 0; i < receivedHexList.size() && i < receivedHexList.size(); i++) {
-        fromHexString(receivedHexList, LR[i], PUF_SIZE);
-    }
+    extractValueFromMap(rsp,"data",LR[0],CHALLENGE_SIZE*PUF_SIZE);
 
     // Pre-enrolment done. Close connection.
     sm.closeConnection();
@@ -91,13 +84,14 @@ int main(){
     std::cout << "RA : "; print_hex(RA, PUF_SIZE);
 
     // BS sends CA and RA to C
-    msg = {
-        {"id", idBS}, 
-        {"idUAV", idA}, 
-        {"CA", toHexString(CA, PUF_SIZE)}, 
-        {"RA", toHexString(RA, PUF_SIZE)}
-    };
+
+    msg["id"] = idBS;
+    msg["CA"] = std::string(reinterpret_cast<const char*>(CA), 32);
+    msg["RA"] = std::string(reinterpret_cast<const char*>(RA), 32);
+
     sm.sendMsgPack(msg);
+
+    msg.clear();
 
     sm.closeConnection();
     std::cout << "\nGave to C A's credentials.\n";
