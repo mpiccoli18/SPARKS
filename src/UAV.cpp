@@ -694,7 +694,7 @@ int UAV::preEnrolmentRetrival(){
     std::cout << "\nC will now retrieve A's credentials.\n";
 
     // Wait for A's credentials
-    json rsp = C->socketModule.receiveMessage();
+    json rsp = this->socketModule.receiveMessage();
     printJSON(rsp);
 
     // Check if an error occurred
@@ -725,14 +725,14 @@ int UAV::preEnrolmentRetrival(){
     std::cout << "xLock : "; print_hex(xLock, PUF_SIZE);
 
     unsigned char lock[PUF_SIZE];
-    C->callPUF(xLock, lock);
+    this->callPUF(xLock, lock);
 
     unsigned char secret[PUF_SIZE];
     xor_buffers(RA, lock, PUF_SIZE, secret);
     std::cout << "secret : "; print_hex(secret, PUF_SIZE);
 
 
-    C->addUAV("A", nullptr, CA, nullptr, xLock, secret);
+    this->addUAV("A", nullptr, CA, nullptr, xLock, secret);
     std::cout << "\nC has retrieved A's credentials.\n";
 
     return 0;
@@ -914,12 +914,12 @@ int UAV::supplementaryAuthenticationInitial(){
 int UAV::supplementaryAuthenticationSup(){
 
     // C will now try to connect to A
-    json msg = {{"id", idC}};
-    C->socketModule.sendMessage(msg);
+    json msg = {{"id", this->getId()}};
+    this->socketModule.sendMessage(msg);
     std::cout << "Sent ID.\n";
 
     // Wait for answer
-    json rsp = C->socketModule.receiveMessage();
+    json rsp = this->socketModule.receiveMessage();
     printJSON(rsp);
 
     // Check if an error occurred
@@ -937,19 +937,19 @@ int UAV::supplementaryAuthenticationSup(){
     fromHexString(rsp["NA"].get<std::string>(), NA, PUF_SIZE);
 
     // C retrieve CA from memory and recover RA
-    const unsigned char * CA = C->getUAVData(idA)->getC();
+    const unsigned char * CA = this->getUAVData("A")->getC();
     if (CA == nullptr){
         std::cout << "No challenge in memory for the requested UAV.\n";
         return 1;
     }
     std::cout << "CA : "; print_hex(CA, PUF_SIZE);
 
-    const unsigned char * xLock = C->getUAVData(idA)->getXLock();
+    const unsigned char * xLock = this->getUAVData("A")->getXLock();
     std::cout << "xLock : "; print_hex(xLock, PUF_SIZE);
-    const unsigned char * secret = C->getUAVData(idA)->getSecret();
+    const unsigned char * secret = this->getUAVData("A")->getSecret();
     std::cout << "secret : "; print_hex(secret, PUF_SIZE);
     unsigned char lock[PUF_SIZE];
-    C->callPUF(xLock,lock);
+    this->callPUF(xLock,lock);
     unsigned char RA[PUF_SIZE];
     xor_buffers(lock, secret, PUF_SIZE, RA);
     std::cout << "RA : "; print_hex(RA, PUF_SIZE);
@@ -958,7 +958,7 @@ int UAV::supplementaryAuthenticationSup(){
     unsigned char gammaC[PUF_SIZE];
     unsigned char NC[PUF_SIZE];
     generate_random_bytes(gammaC);
-    C->callPUF(gammaC,NC);
+    this->callPUF(gammaC,NC);
     std::cout << "NC : "; print_hex(NC, PUF_SIZE);
 
     unsigned char M1[PUF_SIZE];
@@ -983,11 +983,11 @@ int UAV::supplementaryAuthenticationSup(){
         {"M1", toHexString(M1, PUF_SIZE)}, 
         {"hash1", toHexString(hash1, PUF_SIZE)}
     };
-    C->socketModule.sendMessage(msg);
+    this->socketModule.sendMessage(msg);
     std::cout << "Sent ID, CA, M1 and hash1.\n";
 
     // Wait for A's response 
-    rsp = C->socketModule.receiveMessage();
+    rsp = this->socketModule.receiveMessage();
     printJSON(rsp);
 
     // Check if an error occurred
@@ -1036,8 +1036,8 @@ int UAV::supplementaryAuthenticationSup(){
     std::cout << "A's hash has been verified. A is autenticated to C.\n";
 
     // B changes its values
-    C->getUAVData(idA)->setX(gammaC);
-    C->getUAVData(idA)->setR(RAp);
+    this->getUAVData("A")->setX(gammaC);
+    this->getUAVData("A")->setR(RAp);
 
     // B sends a hash of RAp, NB, NA as an ACK
     unsigned char hash3[PUF_SIZE];
@@ -1049,7 +1049,7 @@ int UAV::supplementaryAuthenticationSup(){
     std::cout << "hash3 : "; print_hex(hash3, PUF_SIZE);
     
     msg = {{"id", this->getId()}, {"hash3", toHexString(hash3, PUF_SIZE)}};
-    C->socketModule.sendMessage(msg);
+    this->socketModule.sendMessage(msg);
     std::cout << "Sent ID and hash3.\n";
 
     // Finished
