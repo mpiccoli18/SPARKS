@@ -41,35 +41,32 @@ int main(){
     }
 
     // This list is sent to the UAV to get the responses
-    json msg = {{"id", idBS}};
-    json dataArray = json::array();
-
-    for (int i = 0; i < CHALLENGE_SIZE; i++) {
-        dataArray.push_back(toHexString(LC[i], 32));
-    }   
-    msg["data"] = dataArray;
-    sm.sendMessage(msg);
+    std::map<std::string, std::string> msg = {
+        {"id", idBS},
+        {"data", toHexString(LC[0], CHALLENGE_SIZE)}
+    };
+    sm.sendMsgPack(msg);
     std::cout << "Sent LC to A;\n";
 
     // Wait for the responses
-    json rsp = sm.receiveMessage();
-    printJSON(rsp);
+    std::map<std::string, std::string> rsp = sm.receiveMsgPack();
+    printMsgPack(rsp);
 
     // Check if an error occurred
-    if (rsp.contains("error")) {
-        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+    if (rsp.empty()) {
+        std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
-    if(!rsp.contains("data")){
+    if(rsp["data"].empty()){
         std::cerr << "Error occurred: no member data" << std::endl;
         return 1;
     }
-    std::vector<std::string> receivedHexList = rsp["data"];
+    std::string receivedHexList = rsp["data"];
 
     // Convert each hex string back to unsigned char arrays
     for (size_t i = 0; i < receivedHexList.size() && i < receivedHexList.size(); i++) {
-        fromHexString(receivedHexList[i], LR[i], PUF_SIZE);
+        fromHexString(receivedHexList, LR[i], PUF_SIZE);
     }
 
     // Pre-enrolment done. Close connection.
@@ -100,7 +97,7 @@ int main(){
         {"CA", toHexString(CA, PUF_SIZE)}, 
         {"RA", toHexString(RA, PUF_SIZE)}
     };
-    sm.sendMessage(msg);
+    sm.sendMsgPack(msg);
 
     sm.closeConnection();
     std::cout << "\nGave to C A's credentials.\n";

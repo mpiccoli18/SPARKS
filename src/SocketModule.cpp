@@ -102,12 +102,6 @@ bool SocketModule::waitForConnection(int port) {
     return true;
 }
 
-/// @brief Send a message over the socket
-void SocketModule::sendMessage(const json& message) {
-    std::string jsonString = message.dump(); // Convert JSON to string
-    send(this->connection_fd, jsonString.c_str(), jsonString.size(), 0);
-}
-
 /// @brief Send a msgPack message over the socket
 /// @param msgPack The message to send
 void SocketModule::sendMsgPack(const std::map<std::string, std::string> &msgPack) {
@@ -115,46 +109,6 @@ void SocketModule::sendMsgPack(const std::map<std::string, std::string> &msgPack
     msgpack::sbuffer sbuf;
     msgpack::pack(sbuf, msgPack);
     send(this->connection_fd, sbuf.data(), sbuf.size(), 0);
-}
-
-/// @brief Receive a message on the connection socket.
-json SocketModule::receiveMessage() {
-    static std::string dataBuffer = "";  // Store partial data between calls
-    char buffer[1024] = {0};
-    
-    while (true) {
-        int bytesReceived = read(this->connection_fd, buffer, sizeof(buffer));
-        // std::cout << "Bytes received: " << bytesReceived << std::endl;
-        // std::cout << "Received data: " << buffer << std::endl;
-        if (bytesReceived > 0) {
-            // Append new data to buffer
-            dataBuffer += std::string(buffer, bytesReceived);
-
-            try {
-                // Attempt to parse JSON
-                json parsedJson = json::parse(dataBuffer);
-                dataBuffer.clear();  // Clear buffer after successful parsing
-                return parsedJson;
-            } catch (json::parse_error& e) {
-                std::cerr << "Parse error: " << e.what() << std::endl;
-                std::cerr << "Partial JSON received, waiting for more data..." << std::endl;
-                continue;  // Keep reading until we get a full JSON
-            }
-        } 
-        else if (bytesReceived == 0) {
-            std::cerr << "Connection closed by peer." << std::endl;
-            return json({{"error", "connection_closed"}});
-        } 
-        else {
-            if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                std::cerr << "Receive timeout!" << std::endl;
-                return json({{"error", "timeout"}});
-            } else {
-                perror("Receive failed");
-                return json({{"error", "read_failed"}});
-            }
-        }
-    }
 }
 
 /// @brief Receive a msgPack message on the socket

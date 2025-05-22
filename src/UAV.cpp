@@ -154,26 +154,29 @@ int UAV::enrolment_client(){
     std::cout << "CB : "; print_hex(CB, PUF_SIZE);
 
     // Sends CB
-    json msg = {{"id", this->getId()}, {"CB", toHexString(CB, PUF_SIZE)}};
-    this->socketModule.sendMessage(msg);
+    std::map<std::string, std::string> rsp = {
+        {"id", this->getId()}, 
+        {"CB", toHexString(CB, PUF_SIZE)}
+    };
+    this->socketModule.sendMsgPack(rsp);
     std::cout << "Sent CB.\n";
 
     // Wait for B's response (with RB)
-    json rsp = this->socketModule.receiveMessage();
-    printJSON(rsp);
+    rsp = this->socketModule.receiveMsgPack();
+    printMsgPack(rsp);
 
     // Check if an error occurred
-    if (rsp.contains("error")) {
-        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+    if (rsp.empty()) {
+        std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     unsigned char RB[PUF_SIZE];
-    if(!rsp.contains("RB")){
+    if(rsp["RB"].empty()){
         std::cerr << "Error occurred: no member RB" << std::endl;
         return 1;
     }
-    fromHexString(rsp["RB"].get<std::string>(), RB, PUF_SIZE);
+    fromHexString(rsp["RB"], RB, PUF_SIZE);
 
     this->getUAVData("B")->setR(RB);
 
@@ -181,21 +184,21 @@ int UAV::enrolment_client(){
 
     // B enroll with A
     // A receive CA. It saves CA.
-    rsp = this->socketModule.receiveMessage();
-    printJSON(rsp);
+    rsp = this->socketModule.receiveMsgPack();
+    printMsgPack(rsp);
 
     // Check if an error occurred
-    if (rsp.contains("error")) {
-        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+    if (rsp.empty()) {
+        std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     unsigned char CA[PUF_SIZE];
-    if(!rsp.contains("CA")){
+    if(rsp["CA"].empty()){
         std::cerr << "Error occurred: no member CA" << std::endl;
         return 1;
     }
-    fromHexString(rsp["CA"].get<std::string>(), CA, PUF_SIZE);
+    fromHexString(rsp["CA"], CA, PUF_SIZE);
     this->getUAVData("B")->setC(CA);
 
     // A computes RA
@@ -204,8 +207,11 @@ int UAV::enrolment_client(){
     std::cout << "RA : "; print_hex(RA, PUF_SIZE);
 
     // A sends RA
-    msg = {{"id", this->getId()}, {"RA", toHexString(RA, PUF_SIZE)}};
-    this->socketModule.sendMessage(msg);
+    rsp = {
+        {"id", this->getId()}, 
+        {"RA", toHexString(RA, PUF_SIZE)}
+    };
+    this->socketModule.sendMsgPack(rsp);
     std::cout << "Sent RA.\n";
 
     return 0;
@@ -234,33 +240,36 @@ int UAV::autentication_client(){
     std::cout << "M0 : "; print_hex(M0, PUF_SIZE);
 
     // A sends its ID and NA to B 
-    json msg = {{"id", this->getId()}, {"M0", toHexString(M0, PUF_SIZE)}};
-    this->socketModule.sendMessage(msg);
+    std::map<std::string, std::string> rsp = {
+        {"id", this->getId()}, 
+        {"M0", toHexString(M0, PUF_SIZE)}
+    };
+    this->socketModule.sendMsgPack(rsp);
     std::cout << "Sent ID and M0.\n";
 
     // A waits for the answer
-    json rsp = this->socketModule.receiveMessage();
-    printJSON(rsp);
+    rsp = this->socketModule.receiveMsgPack();
+    printMsgPack(rsp);
 
     // Check if an error occurred
-    if (rsp.contains("error")) {
-        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+    if (rsp.empty()) {
+        std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     // A recover M1 and the hash
     unsigned char M1[PUF_SIZE];
-    if(!rsp.contains("M1")){
+    if(rsp["M1"].empty()){
         std::cerr << "Error occurred: no member M1" << std::endl;
         return 1;
     }
-    fromHexString(rsp["M1"].get<std::string>(), M1, PUF_SIZE);
+    fromHexString(rsp["M1"], M1, PUF_SIZE);
     unsigned char hash1[PUF_SIZE];
-    if(!rsp.contains("hash1")){
+    if(rsp["hash1"].empty()){
         std::cerr << "Error occurred: no member hash1" << std::endl;
         return 1;
     }
-    fromHexString(rsp["hash1"].get<std::string>(), hash1, PUF_SIZE);
+    fromHexString(rsp["hash1"], hash1, PUF_SIZE);
 
     // A computes RA using CA in memory
     std::cout << "CA : "; print_hex(CA, PUF_SIZE);
@@ -368,24 +377,24 @@ int UAV::autentication_client(){
     std::cout << "hash2 : "; print_hex(hash2, PUF_SIZE);
 
     // Send M2, and a hash of NB, RA, RAp, NA
-    msg = {
+    rsp = {
         {"id", this->getId()},
         {"M2", toHexString(M2, PUF_SIZE)},
         {"hash2", toHexString(hash2, PUF_SIZE)}
     };
-    this->socketModule.sendMessage(msg);
+    this->socketModule.sendMsgPack(rsp);
     std::cout << "Sent ID, M2 and hash2.\n";
 
     // A waits for B's ACK
-    rsp = this->socketModule.receiveMessage();
-    printJSON(rsp);
+    rsp = this->socketModule.receiveMsgPack();
+    printMsgPack(rsp);
 
     // Check if an error occurred
-    if (rsp.contains("error")) {
-        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+    if (rsp.empty()) {
+        std::cerr << "Error occurred: content is empty" << std::endl;
 
         // A reach a timeout or didn't received the ACK 
-        std::cout << "Received an empty JSON message!" << std::endl;
+        std::cout << "Received an empty MsgPack message!" << std::endl;
     
         // A will save concealed current CA in CAOld
         unsigned char xLock[PUF_SIZE];
@@ -423,22 +432,22 @@ int UAV::enrolment_server(){
     std::cout << "\nEnrolment process begins.\n";
 
     // B waits for B's message  (with CB)
-    json rsp = this->socketModule.receiveMessage();
-    printJSON(rsp);
+    std::map<std::string, std::string> rsp = this->socketModule.receiveMsgPack();
+    printMsgPack(rsp);
 
     // Check if an error occurred
-    if (rsp.contains("error")) {
-        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+    if (rsp.empty()) {
+        std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     // B receive CB. It creates A in the memory of B and save CB.
     unsigned char CB[PUF_SIZE];
-    if(!rsp.contains("CB")){
+    if(rsp["CB"].empty()){
         std::cerr << "Error occurred: no member CB" << std::endl;
         return 1;
     }
-    fromHexString(rsp["CB"].get<std::string>(), CB, PUF_SIZE);
+    fromHexString(rsp["CB"], CB, PUF_SIZE);
     this->addUAV("A", nullptr, CB);
 
     // B computes RB
@@ -447,8 +456,11 @@ int UAV::enrolment_server(){
     std::cout << "RB : "; print_hex(RB, PUF_SIZE);
 
     // B sends RB
-    json msg = {{"id", this->getId()}, {"RB", toHexString(RB, PUF_SIZE)}};
-    this->socketModule.sendMessage(msg);
+    rsp = {
+        {"id", this->getId()}, 
+        {"RB", toHexString(RB, PUF_SIZE)}
+    };
+    this->socketModule.sendMsgPack(rsp);
     std::cout << "Sent RB.\n";
 
     // B enroll with A
@@ -466,26 +478,26 @@ int UAV::enrolment_server(){
     std::cout << "CA : "; print_hex(CA, PUF_SIZE);
 
     // Sends CA
-    msg = {{"id", this->getId()}, {"CA", toHexString(CA, PUF_SIZE)}};
-    this->socketModule.sendMessage(msg);
+    rsp = {{"id", this->getId()}, {"CA", toHexString(CA, PUF_SIZE)}};
+    this->socketModule.sendMsgPack(rsp);
     std::cout << "Sent CA.\n";
 
     // B receive RA and saves it. 
-    rsp = this->socketModule.receiveMessage();
-    printJSON(rsp);
+    rsp = this->socketModule.receiveMsgPack();
+    printMsgPack(rsp);
 
     // Check if an error occurred
-    if (rsp.contains("error")) {
-        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+    if (rsp.empty()) {
+        std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     unsigned char RA[PUF_SIZE];
-    if(!rsp.contains("RA")){
+    if(rsp["RA"].empty()){
         std::cerr << "Error occurred: no member RA" << std::endl;
         return 1;
     }
-    fromHexString(rsp["RA"].get<std::string>(), RA, PUF_SIZE);
+    fromHexString(rsp["RA"], RA, PUF_SIZE);
     this->getUAVData("A")->setR(RA);
     
     return 0;
@@ -499,22 +511,22 @@ int UAV::autentication_server(){
     std::cout << "\nAutentication process begins.\n";
 
     // B receive the initial message
-    json rsp = this->socketModule.receiveMessage();
-    printJSON(rsp);
+    std::map<std::string, std::string> rsp = this->socketModule.receiveMsgPack();
+    printMsgPack(rsp);
 
     // Check if an error occurred
-    if (rsp.contains("error")) {
-        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+    if (rsp.empty()) {
+        std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     // B recover M0
     unsigned char M0[PUF_SIZE];
-    if(!rsp.contains("M0")){
+    if(rsp["M0"].empty()){
         std::cerr << "Error occurred: no member M0" << std::endl;
         return 1;
     }
-    fromHexString(rsp["M0"].get<std::string>(), M0, PUF_SIZE);
+    fromHexString(rsp["M0"], M0, PUF_SIZE);
     
     // B retrieve xA from memory and computes CA
     const unsigned char * xA = this->getUAVData("A")->getX();
@@ -560,37 +572,37 @@ int UAV::autentication_server(){
     calculateHash(ctx, hash1);
     std::cout << "hash1 : "; print_hex(hash1, PUF_SIZE);
     
-    json msg = {
+    rsp = {
         {"id", this->getId()}, 
         {"M1", toHexString(M1, PUF_SIZE)}, 
         {"hash1", toHexString(hash1, PUF_SIZE)}
     };
-    this->socketModule.sendMessage(msg);
+    this->socketModule.sendMsgPack(rsp);
     std::cout << "Sent ID, M1 and hash1.\n";
 
     // B waits for A response (M2)
-    rsp = this->socketModule.receiveMessage();
-    printJSON(rsp);
+    rsp = this->socketModule.receiveMsgPack();
+    printMsgPack(rsp);
 
     // Check if an error occurred
-    if (rsp.contains("error")) {
-        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+    if (rsp.empty()) {
+        std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     // B recovers M2 and hash2
     unsigned char M2[PUF_SIZE];
-    if(!rsp.contains("M2")){
+    if(rsp["M2"].empty()){
         std::cerr << "Error occurred: no member M2" << std::endl;
         return 1;
     }
-    fromHexString(rsp["M2"].get<std::string>(), M2, PUF_SIZE);
+    fromHexString(rsp["M2"], M2, PUF_SIZE);
     unsigned char hash2[PUF_SIZE];
-    if(!rsp.contains("hash2")){
+    if(rsp["hash2"].empty()){
         std::cerr << "Error occurred: no member hash2" << std::endl;
         return 1;
     }
-    fromHexString(rsp["hash2"].get<std::string>(), hash2, PUF_SIZE);
+    fromHexString(rsp["hash2"], hash2, PUF_SIZE);
 
     // B retrieve RAp from M2
     unsigned char RAp[PUF_SIZE];
@@ -630,8 +642,8 @@ int UAV::autentication_server(){
     calculateHash(ctx, hash3);
     std::cout << "hash3 : "; print_hex(hash3, PUF_SIZE);
     
-    msg = {{"id", this->getId()}, {"hash3", toHexString(hash3, PUF_SIZE)}};
-    this->socketModule.sendMessage(msg);
+    rsp = {{"id", this->getId()}, {"hash3", toHexString(hash3, PUF_SIZE)}};
+    this->socketModule.sendMsgPack(rsp);
     std::cout << "Sent ID and hash3.\n";
 
     // Finished
@@ -647,26 +659,26 @@ int UAV::autentication_server(){
 int UAV::preEnrolment(){
 
     // A waits for BS's query
-    json rsp = this->socketModule.receiveMessage();
-    printJSON(rsp);
+    std::map<std::string, std::string> rsp = this->socketModule.receiveMsgPack();
+    printMsgPack(rsp);
 
     // Check if an error occurred
-    if (rsp.contains("error")) {
-        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+    if (rsp.empty()) {
+        std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
-    if(!rsp.contains("data")){
+    if(rsp["data"].empty()){
         std::cerr << "Error occurred: no member data" << std::endl;
         return 1;
     }
-    std::vector<std::string> receivedHexList = rsp["data"];
+    std::string receivedHexList = rsp["data"];
 
     // Convert each hex string back to unsigned char arrays
     unsigned char receivedArrays[CHALLENGE_SIZE][PUF_SIZE];
 
     for (size_t i = 0; i < receivedHexList.size() && i < receivedHexList.size(); i++) {
-        fromHexString(receivedHexList[i], receivedArrays[i], PUF_SIZE);
+        fromHexString(receivedHexList, receivedArrays[i], PUF_SIZE);
     }
 
     // Generates the responses
@@ -677,14 +689,11 @@ int UAV::preEnrolment(){
     }
 
     // Send the responses back
-    json msg = {{"id", this->getId()}};
-    json dataArray = json::array();
-
-    for (int i = 0; i < CHALLENGE_SIZE; i++) {
-        dataArray.push_back(toHexString(LR[i], 32));
-    }   
-    msg["data"] = dataArray;
-    this->socketModule.sendMessage(msg);
+    rsp = {
+        {"id", this->getId()},
+        {"data", toHexString(LR[0], CHALLENGE_SIZE)}
+    };
+    this->socketModule.sendMsgPack(rsp);
 
     return 0;
 }
@@ -694,28 +703,28 @@ int UAV::preEnrolmentRetrival(){
     std::cout << "\nC will now retrieve A's credentials.\n";
 
     // Wait for A's credentials
-    json rsp = this->socketModule.receiveMessage();
-    printJSON(rsp);
+    std::map<std::string, std::string> rsp = this->socketModule.receiveMsgPack();
+    printMsgPack(rsp);
 
     // Check if an error occurred
-    if (rsp.contains("error")) {
-        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+    if (rsp.empty()) {
+        std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
-    // Retrieve CA and RA from the msg
+    // Retrieve CA and RA from the rsp
     unsigned char CA[PUF_SIZE];
-    if(!rsp.contains("CA")){
+    if(rsp["CA"].empty()){
         std::cerr << "Error occurred: no member CA" << std::endl;
         return 1;
     }
-    fromHexString(rsp["CA"].get<std::string>(), CA, PUF_SIZE);
+    fromHexString(rsp["CA"], CA, PUF_SIZE);
     unsigned char RA[PUF_SIZE];
-    if(!rsp.contains("RA")){
+    if(rsp["RA"].empty()){
         std::cerr << "Error occurred: no member RA" << std::endl;
         return 1;
     }
-    fromHexString(rsp["RA"].get<std::string>(), RA, PUF_SIZE);
+    fromHexString(rsp["RA"], RA, PUF_SIZE);
     std::cout << "CA : "; print_hex(CA, PUF_SIZE);
     std::cout << "RA : "; print_hex(RA, PUF_SIZE);
 
@@ -744,17 +753,17 @@ int UAV::preEnrolmentRetrival(){
 int UAV::supplementaryAuthenticationInitial(){
 
     // Waits for C demands
-    json rsp = this->socketModule.receiveMessage();
-    printJSON(rsp);
+    std::map<std::string, std::string> rsp = this->socketModule.receiveMsgPack();
+    printMsgPack(rsp);
 
     // Check if an error occurred
-    if (rsp.contains("error")) {
-        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+    if (rsp.empty()) {
+        std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     // A retrieve the id of the UAV trying to connect
-    std::string idC = rsp["id"].get<std::string>();
+    std::string idC = rsp["id"];
     
     //  and search it's table for a corresponding UAV 
     UAVData* data = this->getUAVData(idC);
@@ -770,41 +779,41 @@ int UAV::supplementaryAuthenticationInitial(){
     generate_random_bytes(NA);
     std::cout << "NA : "; print_hex(NA, PUF_SIZE);
 
-    json msg = {{"id", "A"}, {"NA", toHexString(NA, PUF_SIZE)}};
+    rsp = {{"id", "A"}, {"NA", toHexString(NA, PUF_SIZE)}};
 
     // A sends 
-    this->socketModule.sendMessage(msg);
+    this->socketModule.sendMsgPack(rsp);
     std::cout << "Sent ID and NA.\n";
 
     // Waits for C's response 
-    rsp = this->socketModule.receiveMessage();
-    printJSON(rsp);
+    rsp = this->socketModule.receiveMsgPack();
+    printMsgPack(rsp);
 
     // Check if an error occurred
-    if (rsp.contains("error")) {
-        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+    if (rsp.empty()) {
+        std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     // A recover M1, CA and the hash
     unsigned char CA[PUF_SIZE];
-    if(!rsp.contains("CA")){
+    if(rsp["CA"].empty()){
         std::cerr << "Error occurred: no member CA" << std::endl;
         return 1;
     }
-    fromHexString(rsp["CA"].get<std::string>(), CA, PUF_SIZE);    
+    fromHexString(rsp["CA"], CA, PUF_SIZE);    
     unsigned char M1[PUF_SIZE];
-    if(!rsp.contains("M1")){
+    if(rsp["M1"].empty()){
         std::cerr << "Error occurred: no member M1" << std::endl;
         return 1;
     }
-    fromHexString(rsp["M1"].get<std::string>(), M1, PUF_SIZE);
+    fromHexString(rsp["M1"], M1, PUF_SIZE);
     unsigned char hash1[PUF_SIZE];
-    if(!rsp.contains("hash1")){
+    if(rsp["hash1"].empty()){
         std::cerr << "Error occurred: no member hash1" << std::endl;
         return 1;
     }
-    fromHexString(rsp["hash1"].get<std::string>(), hash1, PUF_SIZE);
+    fromHexString(rsp["hash1"], hash1, PUF_SIZE);
 
     // A computes RA using transmitted CA
     unsigned char RA[PUF_SIZE];
@@ -833,7 +842,6 @@ int UAV::supplementaryAuthenticationInitial(){
     if(res == 0){
         std::cout << "The autentication failed.\n";
         return res;
-
     }
 
     std::cout << "C's hash has been verified. C is autenticated to A.\n";
@@ -858,30 +866,30 @@ int UAV::supplementaryAuthenticationInitial(){
     std::cout << "hash2 : "; print_hex(hash2, PUF_SIZE);
 
     // TODO : send M2, and a hash of NB, RA, RAp, NA
-    msg = {
+    rsp = {
         {"id", this->getId()},
         {"M2", toHexString(M2, PUF_SIZE)},
         {"hash2", toHexString(hash2, PUF_SIZE)}
     };
-    this->socketModule.sendMessage(msg);
+    this->socketModule.sendMsgPack(rsp);
     std::cout << "Sent ID, M2 and hash2.\n";
 
     // A waits for C's ACK
-    rsp = this->socketModule.receiveMessage();
-    printJSON(rsp);
+    rsp = this->socketModule.receiveMsgPack();
+    printMsgPack(rsp);
 
     // Check if an error occurred
-    if (rsp.contains("error")) {
-        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+    if (rsp.empty()) {
+        std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     // Check if an error occurred
-    if (rsp.contains("error")) {
-        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+    if (rsp.empty()) {
+        std::cerr << "Error occurred: content is empty!" << std::endl;
 
         // A reach a timeout or didn't received the ACK 
-        std::cout << "Received an empty JSON message!" << std::endl;
+        std::cout << "Received an empty MsgPack message!" << std::endl;
     
         // A will save concealed current CA in CAOld
         unsigned char xLock[PUF_SIZE];
@@ -914,27 +922,27 @@ int UAV::supplementaryAuthenticationInitial(){
 int UAV::supplementaryAuthenticationSup(){
 
     // C will now try to connect to A
-    json msg = {{"id", this->getId()}};
-    this->socketModule.sendMessage(msg);
+    std::map<std::string, std::string> rsp = {{"id", this->getId()}};
+    this->socketModule.sendMsgPack(rsp);
     std::cout << "Sent ID.\n";
 
     // Wait for answer
-    json rsp = this->socketModule.receiveMessage();
-    printJSON(rsp);
+    rsp = this->socketModule.receiveMsgPack();
+    printMsgPack(rsp);
 
     // Check if an error occurred
-    if (rsp.contains("error")) {
-        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+    if (rsp.empty()) {
+        std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     // Retrieve NA 
     unsigned char NA[PUF_SIZE];
-    if(!rsp.contains("NA")){
+    if(rsp["NA"].empty()){
         std::cerr << "Error occurred: no member NA" << std::endl;
         return 1;
     }
-    fromHexString(rsp["NA"].get<std::string>(), NA, PUF_SIZE);
+    fromHexString(rsp["NA"], NA, PUF_SIZE);
 
     // C retrieve CA from memory and recover RA
     const unsigned char * CA = this->getUAVData("A")->getC();
@@ -977,38 +985,38 @@ int UAV::supplementaryAuthenticationSup(){
     calculateHash(ctx, hash1);
     std::cout << "hash1 : "; print_hex(hash1, PUF_SIZE);
     
-    msg = {
+    rsp = {
         {"id", this->getId()}, 
         {"CA", toHexString(CA, PUF_SIZE)}, 
         {"M1", toHexString(M1, PUF_SIZE)}, 
         {"hash1", toHexString(hash1, PUF_SIZE)}
     };
-    this->socketModule.sendMessage(msg);
+    this->socketModule.sendMsgPack(rsp);
     std::cout << "Sent ID, CA, M1 and hash1.\n";
 
     // Wait for A's response 
-    rsp = this->socketModule.receiveMessage();
-    printJSON(rsp);
+    rsp = this->socketModule.receiveMsgPack();
+    printMsgPack(rsp);
 
     // Check if an error occurred
-    if (rsp.contains("error")) {
-        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+    if (rsp.empty()) {
+        std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     // B recovers M2 and hash2
     unsigned char M2[PUF_SIZE];
-    if(!rsp.contains("M2")){
+    if(rsp["M2"].empty()){
         std::cerr << "Error occurred: no member M2" << std::endl;
         return 1;
     }
-    fromHexString(rsp["M2"].get<std::string>(), M2, PUF_SIZE);
+    fromHexString(rsp["M2"], M2, PUF_SIZE);
     unsigned char hash2[PUF_SIZE];
-    if(!rsp.contains("hash2")){
+    if(rsp["hash2"].empty()){
         std::cerr << "Error occurred: no member hash2" << std::endl;
         return 1;
     }
-    fromHexString(rsp["hash2"].get<std::string>(), hash2, PUF_SIZE);
+    fromHexString(rsp["hash2"], hash2, PUF_SIZE);
 
     // B retrieve RAp from M2
     unsigned char RAp[PUF_SIZE];
@@ -1048,8 +1056,11 @@ int UAV::supplementaryAuthenticationSup(){
     calculateHash(ctx, hash3);
     std::cout << "hash3 : "; print_hex(hash3, PUF_SIZE);
     
-    msg = {{"id", this->getId()}, {"hash3", toHexString(hash3, PUF_SIZE)}};
-    this->socketModule.sendMessage(msg);
+    rsp = {
+        {"id", this->getId()}, 
+        {"hash3", toHexString(hash3, PUF_SIZE)}
+    };
+    this->socketModule.sendMsgPack(rsp);
     std::cout << "Sent ID and hash3.\n";
 
     // Finished
@@ -1081,33 +1092,33 @@ int UAV::failed_autentication_client(){
     std::cout << "M0 : "; print_hex(M0, PUF_SIZE);
 
     // A sends its ID and NA to B 
-    json msg = {{"id", this->getId()}, {"M0", toHexString(M0, PUF_SIZE)}};
-    this->socketModule.sendMessage(msg);
+    std::map<std::string, std::string> rsp = {{"id", this->getId()}, {"M0", toHexString(M0, PUF_SIZE)}};
+    this->socketModule.sendMsgPack(rsp);
     std::cout << "Sent ID and M0.\n";
 
     // A waits for the answer
-    json rsp = this->socketModule.receiveMessage();
-    printJSON(rsp);
+    rsp = this->socketModule.receiveMsgPack();
+    printMsgPack(rsp);
 
     // Check if an error occurred
-    if (rsp.contains("error")) {
-        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+    if (rsp.empty()) {
+        std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     // A recover M1 and the hash
     unsigned char M1[PUF_SIZE];
-    if(!rsp.contains("M1")){
+    if(rsp["M1"].empty()){
         std::cerr << "Error occurred: no member M1" << std::endl;
         return 1;
     }
-    fromHexString(rsp["M1"].get<std::string>(), M1, PUF_SIZE);
+    fromHexString(rsp["M1"], M1, PUF_SIZE);
     unsigned char hash1[PUF_SIZE];
-    if(!rsp.contains("hash1")){
+    if(rsp["hash1"].empty()){
         std::cerr << "Error occurred: no member hash1" << std::endl;
         return 1;
     }
-    fromHexString(rsp["hash1"].get<std::string>(), hash1, PUF_SIZE);
+    fromHexString(rsp["hash1"], hash1, PUF_SIZE);
 
     // A computes RA using CA in memory
     unsigned char RA[PUF_SIZE];
@@ -1213,7 +1224,7 @@ int UAV::failed_autentication_client(){
     std::cout << "hash2 : "; print_hex(hash2, PUF_SIZE);
 
     // TODO : send M2, and a hash of NB, RA, RAp, NA
-    msg = {
+    rsp = {
         {"id", this->getId()},
         {"M2", toHexString(M2, PUF_SIZE)},
         {"hash2", toHexString(hash2, PUF_SIZE)}
@@ -1223,20 +1234,20 @@ int UAV::failed_autentication_client(){
     
     // The message is not sent to B
     
-    // A->socketModule.sendMessage(msg);
+    // A->socketModule.sendMsgPack(rsp);
     // std::cout << "Sent ID, M2 and hash2.\n";
     
     // ################################################################
 
     // A waits for B's ACK
-    rsp = this->socketModule.receiveMessage();
-    printJSON(rsp);
+    rsp = this->socketModule.receiveMsgPack();
+    printMsgPack(rsp);
 
     // Check if an error occurred
-    if (rsp.contains("error")) {
-        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
+    if (rsp.empty()) {
+        std::cerr << "Error occurred: content is empty!" << std::endl;
         // A reach a timeout or didn't received the ACK 
-        std::cout << "Received an empty JSON message!" << std::endl;
+        std::cout << "Received an empty MsgPack message!" << std::endl;
     
         // A will save concealed current CA in CAOld
         unsigned char xLock[PUF_SIZE];
