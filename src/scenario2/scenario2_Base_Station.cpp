@@ -52,15 +52,15 @@ int main(){
     msg.clear();
 
     // Wait for the responses
-    std::unordered_map<std::string, std::string> rsp = sm.receiveMsgPack();
-    printMsgPack(rsp);
+    msg = sm.receiveMsgPack();
+    printMsgPack(msg);
 
     // Check if an error occurred
-    if (rsp.empty()) {
+    if (msg.empty()) {
         std::cerr << "Error occurred: content is empty!" << std::endl;
     }
 
-    extractValueFromMap(rsp,"data",LR[0],CHALLENGE_SIZE*PUF_SIZE);
+    extractValueFromMap(msg,"data",LR[0],CHALLENGE_SIZE*PUF_SIZE);
 
     // Pre-enrolment done. Close connection.
     sm.closeConnection();

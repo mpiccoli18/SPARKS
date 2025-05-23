@@ -165,20 +165,20 @@ int UAV::enrolment_client(){
     msg.clear();
 
     // Wait for B's response (with RB)
-    std::unordered_map<std::string, std::string> rsp = this->socketModule.receiveMsgPack();
-    printMsgPack(rsp);
+    msg = this->socketModule.receiveMsgPack();
+    printMsgPack(msg);
 
     // Check if an error occurred
-    if (rsp.empty()) {
+    if (msg.empty()) {
         std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     unsigned char RB[PUF_SIZE];
-    extractValueFromMap(rsp,"RB",RB,PUF_SIZE);
+    extractValueFromMap(msg,"RB",RB,PUF_SIZE);
     std::cout << "RB : "; print_hex(RB, PUF_SIZE);
 
-    rsp.clear();
+    msg.clear();
 
     this->getUAVData("B")->setR(RB);
 
@@ -186,20 +186,20 @@ int UAV::enrolment_client(){
 
     // B enroll with A
     // A receive CA. It saves CA.
-    rsp = this->socketModule.receiveMsgPack();
-    printMsgPack(rsp);
+    msg = this->socketModule.receiveMsgPack();
+    printMsgPack(msg);
 
     // Check if an error occurred
-    if (rsp.empty()) {
+    if (msg.empty()) {
         std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     unsigned char CA[PUF_SIZE];
-    extractValueFromMap(rsp,"CA",CA,PUF_SIZE);
+    extractValueFromMap(msg,"CA",CA,PUF_SIZE);
     std::cout << "CA : "; print_hex(CA, PUF_SIZE);
     
-    rsp.clear();
+    msg.clear();
 
     this->getUAVData("B")->setC(CA);
 
@@ -252,23 +252,23 @@ int UAV::autentication_client(){
     msg.clear();
 
     // A waits for the answer
-    std::unordered_map<std::string, std::string> rsp = this->socketModule.receiveMsgPack();
-    printMsgPack(rsp);
+    msg = this->socketModule.receiveMsgPack();
+    printMsgPack(msg);
 
     // Check if an error occurred
-    if (rsp.empty()) {
+    if (msg.empty()) {
         std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     // A recover M1 and the hash
     unsigned char M1[PUF_SIZE];
-    extractValueFromMap(rsp,"M1",M1,PUF_SIZE);
+    extractValueFromMap(msg,"M1",M1,PUF_SIZE);
 
     unsigned char hash1[PUF_SIZE];
-    extractValueFromMap(rsp,"hash1",hash1,PUF_SIZE);
+    extractValueFromMap(msg,"hash1",hash1,PUF_SIZE);
 
-    rsp.clear();
+    msg.clear();
 
     // A computes RA using CA in memory
     unsigned char RA[PUF_SIZE];
@@ -386,11 +386,11 @@ int UAV::autentication_client(){
     msg.clear();
 
     // A waits for B's ACK
-    rsp = this->socketModule.receiveMsgPack();
-    printMsgPack(rsp);
+    msg = this->socketModule.receiveMsgPack();
+    printMsgPack(msg);
 
     // Check if an error occurred
-    if (rsp.empty()) {
+    if (msg.empty()) {
         std::cerr << "Error occurred: content is empty" << std::endl;
 
         // A reach a timeout or didn't received the ACK 
@@ -432,20 +432,20 @@ int UAV::enrolment_server(){
     std::cout << "\nEnrolment process begins.\n";
 
     // B waits for B's message  (with CB)
-    std::unordered_map<std::string, std::string> rsp = this->socketModule.receiveMsgPack();
-    printMsgPack(rsp);
+    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsgPack();
+    printMsgPack(msg);
     // Check if an error occurred
-    if (rsp.empty()) {
+    if (msg.empty()) {
         std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
     
     // B receive CB. It creates A in the memory of B and save CB.
     unsigned char CB[PUF_SIZE];
-    extractValueFromMap(rsp,"CB",CB,PUF_SIZE);
+    extractValueFromMap(msg,"CB",CB,PUF_SIZE);
     std::cout << "CB : "; print_hex(CB, PUF_SIZE);
 
-    rsp.clear();
+    msg.clear();
 
     this->addUAV("A", nullptr, CB);
 
@@ -455,7 +455,6 @@ int UAV::enrolment_server(){
     std::cout << "RB : "; print_hex(RB, PUF_SIZE);
 
     // B sends RB
-    std::unordered_map<std::string, std::string> msg;
     
     msg["id"] = this->getId();
     msg["RB"] = std::string(reinterpret_cast<const char*>(RB), 32);
@@ -489,17 +488,17 @@ int UAV::enrolment_server(){
     msg.clear();
 
     // B receive RA and saves it. 
-    rsp = this->socketModule.receiveMsgPack();
-    printMsgPack(rsp);
+    msg = this->socketModule.receiveMsgPack();
+    printMsgPack(msg);
 
     // Check if an error occurred
-    if (rsp.empty()) {
+    if (msg.empty()) {
         std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     unsigned char RA[PUF_SIZE];
-    extractValueFromMap(rsp,"RA",RA,PUF_SIZE);
+    extractValueFromMap(msg,"RA",RA,PUF_SIZE);
     std::cout << "RA : "; print_hex(RA, PUF_SIZE);
     
     this->getUAVData("A")->setR(RA);
@@ -515,20 +514,20 @@ int UAV::autentication_server(){
     std::cout << "\nAutentication process begins.\n";
 
     // B receive the initial message
-    std::unordered_map<std::string, std::string> rsp = this->socketModule.receiveMsgPack();
-    printMsgPack(rsp);
+    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsgPack();
+    printMsgPack(msg);
 
     // Check if an error occurred
-    if (rsp.empty()) {
+    if (msg.empty()) {
         std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     // B recover M0
     unsigned char M0[PUF_SIZE];
-    extractValueFromMap(rsp,"M0",M0,PUF_SIZE);
+    extractValueFromMap(msg,"M0",M0,PUF_SIZE);
 
-    rsp.clear();
+    msg.clear();
         
     // B retrieve xA from memory and computes CA
     const unsigned char * xA = this->getUAVData("A")->getX();
@@ -574,8 +573,6 @@ int UAV::autentication_server(){
     calculateHash(ctx, hash1);
     std::cout << "hash1 : "; print_hex(hash1, PUF_SIZE);
     
-    std::unordered_map<std::string, std::string> msg;
-
     msg["id"] = this->getId();
     msg["M1"] = std::string(reinterpret_cast<const char*>(M1), 32);
     msg["hash1"] = std::string(reinterpret_cast<const char*>(hash1), 32);
@@ -586,23 +583,23 @@ int UAV::autentication_server(){
     msg.clear();
 
     // B waits for A response (M2)
-    rsp = this->socketModule.receiveMsgPack();
-    printMsgPack(rsp);
+    msg = this->socketModule.receiveMsgPack();
+    printMsgPack(msg);
 
     // Check if an error occurred
-    if (rsp.empty()) {
+    if (msg.empty()) {
         std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     // B recovers M2 and hash2
     unsigned char M2[PUF_SIZE];
-    extractValueFromMap(rsp,"M2",M2,PUF_SIZE);
+    extractValueFromMap(msg,"M2",M2,PUF_SIZE);
 
     unsigned char hash2[PUF_SIZE];
-    extractValueFromMap(rsp,"hash2",hash2,PUF_SIZE);
+    extractValueFromMap(msg,"hash2",hash2,PUF_SIZE);
 
-    rsp.clear();
+    msg.clear();
 
     // B retrieve RAp from M2
     unsigned char RAp[PUF_SIZE];
@@ -662,16 +659,16 @@ int UAV::autentication_server(){
 /// @return 0 if succeded, 1 if failed
 int UAV::preEnrolment(){
     // A waits for BS's query
-    std::unordered_map<std::string, std::string> rsp = this->socketModule.receiveMsgPack();
-    printMsgPack(rsp);
+    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsgPack();
+    printMsgPack(msg);
 
     // Check if an error occurred
-    if (rsp.empty()) {
+    if (msg.empty()) {
         std::cerr << "Error occurred: content is empty!" << std::endl;
     }
 
     unsigned char LC[CHALLENGE_SIZE][PUF_SIZE];
-    extractValueFromMap(rsp,"data",LC[0],CHALLENGE_SIZE*PUF_SIZE);
+    extractValueFromMap(msg,"data",LC[0],CHALLENGE_SIZE*PUF_SIZE);
 
     // Generates the responses
     unsigned char LR[CHALLENGE_SIZE][PUF_SIZE];
@@ -683,7 +680,6 @@ int UAV::preEnrolment(){
     //std::cout << "After second for statement" << std::endl;
     
     // Send the responses back
-    std::unordered_map<std::string, std::string> msg;
 
     msg["id"] = this->getId();
     msg["data"] = std::string(reinterpret_cast<const char*>(LR), 5 * 32);
@@ -698,21 +694,21 @@ int UAV::preEnrolmentRetrival(){
     std::cout << "\nC will now retrieve A's credentials.\n";
 
     // Wait for A's credentials
-    std::unordered_map<std::string, std::string> rsp = this->socketModule.receiveMsgPack();
-    printMsgPack(rsp);
+    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsgPack();
+    printMsgPack(msg);
 
     // Check if an error occurred
-    if (rsp.empty()) {
+    if (msg.empty()) {
         std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
-    // Retrieve CA and RA from the rsp
+    // Retrieve CA and RA from the msg
     unsigned char CA[PUF_SIZE];
-    extractValueFromMap(rsp,"CA",CA,PUF_SIZE);
+    extractValueFromMap(msg,"CA",CA,PUF_SIZE);
     
     unsigned char RA[PUF_SIZE];
-    extractValueFromMap(rsp,"RA",RA,PUF_SIZE);
+    extractValueFromMap(msg,"RA",RA,PUF_SIZE);
 
     std::cout << "CA : "; print_hex(CA, PUF_SIZE);
     std::cout << "RA : "; print_hex(RA, PUF_SIZE);
@@ -742,19 +738,19 @@ int UAV::preEnrolmentRetrival(){
 int UAV::supplementaryAuthenticationInitial(){
 
     // Waits for C demands
-    std::unordered_map<std::string, std::string> rsp = this->socketModule.receiveMsgPack();
-    printMsgPack(rsp);
+    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsgPack();
+    printMsgPack(msg);
 
     // Check if an error occurred
-    if (rsp.empty()) {
+    if (msg.empty()) {
         std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     // A retrieve the id of the UAV trying to connect
-    std::string idC = rsp["id"];
+    std::string idC = msg["id"];
 
-    rsp.clear();
+    msg.clear();
     
     // and search it's table for a corresponding UAV 
     UAVData* data = this->getUAVData(idC);
@@ -770,7 +766,6 @@ int UAV::supplementaryAuthenticationInitial(){
     generate_random_bytes(NA);
     std::cout << "NA : "; print_hex(NA, PUF_SIZE);
 
-    std::unordered_map<std::string, std::string> msg;
     msg["id"] = this->getId();
     msg["NA"] = std::string(reinterpret_cast<const char *>(NA),32);
 
@@ -781,26 +776,26 @@ int UAV::supplementaryAuthenticationInitial(){
     msg.clear();
 
     // Waits for C's response 
-    rsp = this->socketModule.receiveMsgPack();
-    printMsgPack(rsp);
+    msg = this->socketModule.receiveMsgPack();
+    printMsgPack(msg);
 
     // Check if an error occurred
-    if (rsp.empty()) {
+    if (msg.empty()) {
         std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     // A recover M1, CA and the hash
     unsigned char CA[PUF_SIZE];
-    extractValueFromMap(rsp,"CA",CA,PUF_SIZE);
+    extractValueFromMap(msg,"CA",CA,PUF_SIZE);
 
     unsigned char M1[PUF_SIZE];
-    extractValueFromMap(rsp,"M1",M1,PUF_SIZE);
+    extractValueFromMap(msg,"M1",M1,PUF_SIZE);
 
     unsigned char hash1[PUF_SIZE];
-    extractValueFromMap(rsp,"hash1",hash1,PUF_SIZE);
+    extractValueFromMap(msg,"hash1",hash1,PUF_SIZE);
 
-    rsp.clear();
+    msg.clear();
 
     // A computes RA using transmitted CA
     unsigned char RA[PUF_SIZE];
@@ -864,17 +859,17 @@ int UAV::supplementaryAuthenticationInitial(){
     msg.clear();
 
     // A waits for C's ACK
-    rsp = this->socketModule.receiveMsgPack();
-    printMsgPack(rsp);
+    msg = this->socketModule.receiveMsgPack();
+    printMsgPack(msg);
 
     // Check if an error occurred
-    if (rsp.empty()) {
+    if (msg.empty()) {
         std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     // Check if an error occurred
-    if (rsp.empty()) {
+    if (msg.empty()) {
         std::cerr << "Error occurred: content is empty!" << std::endl;
 
         // A reach a timeout or didn't received the ACK 
@@ -921,20 +916,20 @@ int UAV::supplementaryAuthenticationSup(){
     msg.clear();
 
     // Wait for answer
-    std::unordered_map<std::string, std::string> rsp = this->socketModule.receiveMsgPack();
-    printMsgPack(rsp);
+    msg = this->socketModule.receiveMsgPack();
+    printMsgPack(msg);
 
     // Check if an error occurred
-    if (rsp.empty()) {
+    if (msg.empty()) {
         std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     // Retrieve NA 
     unsigned char NA[PUF_SIZE];
-    extractValueFromMap(rsp,"NA",NA,PUF_SIZE);
+    extractValueFromMap(msg,"NA",NA,PUF_SIZE);
 
-    rsp.clear();
+    msg.clear();
 
     // C retrieve CA from memory and recover RA
     const unsigned char * CA = this->getUAVData("A")->getC();
@@ -988,23 +983,23 @@ int UAV::supplementaryAuthenticationSup(){
     msg.clear();
 
     // Wait for A's response 
-    rsp = this->socketModule.receiveMsgPack();
-    printMsgPack(rsp);
+    msg = this->socketModule.receiveMsgPack();
+    printMsgPack(msg);
 
     // Check if an error occurred
-    if (rsp.empty()) {
+    if (msg.empty()) {
         std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     // B recovers M2 and hash2
     unsigned char M2[PUF_SIZE];
-    extractValueFromMap(rsp,"M2",M2,PUF_SIZE);
+    extractValueFromMap(msg,"M2",M2,PUF_SIZE);
 
     unsigned char hash2[PUF_SIZE];
-    extractValueFromMap(rsp,"hash2",hash2,PUF_SIZE);
+    extractValueFromMap(msg,"hash2",hash2,PUF_SIZE);
 
-    rsp.clear();
+    msg.clear();
 
     // B retrieve RAp from M2
     unsigned char RAp[PUF_SIZE];
@@ -1092,23 +1087,23 @@ int UAV::failed_autentication_client(){
     msg.clear();
 
     // A waits for the answer
-    std::unordered_map<std::string, std::string> rsp = this->socketModule.receiveMsgPack();
-    printMsgPack(rsp);
+    msg = this->socketModule.receiveMsgPack();
+    printMsgPack(msg);
 
     // Check if an error occurred
-    if (rsp.empty()) {
+    if (msg.empty()) {
         std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
 
     // A recover M1 and the hash
     unsigned char M1[PUF_SIZE];
-    extractValueFromMap(rsp,"M1",M1,PUF_SIZE);
+    extractValueFromMap(msg,"M1",M1,PUF_SIZE);
 
     unsigned char hash1[PUF_SIZE];
-    extractValueFromMap(rsp,"hash1",hash1,PUF_SIZE);
+    extractValueFromMap(msg,"hash1",hash1,PUF_SIZE);
 
-    rsp.clear();
+    msg.clear();
 
     // A computes RA using CA in memory
     unsigned char RA[PUF_SIZE];
@@ -1232,11 +1227,11 @@ int UAV::failed_autentication_client(){
     msg.clear();
 
     // A waits for B's ACK
-    rsp = this->socketModule.receiveMsgPack();
-    printMsgPack(rsp);
+    msg = this->socketModule.receiveMsgPack();
+    printMsgPack(msg);
 
     // Check if an error occurred
-    if (rsp.empty()) {
+    if (msg.empty()) {
         std::cerr << "Error occurred: content is empty" << std::endl;
 
         // A reach a timeout or didn't received the ACK 
