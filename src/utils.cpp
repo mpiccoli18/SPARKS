@@ -125,19 +125,6 @@ void calculateHash(EVP_MD_CTX* ctx, unsigned char * output){
 }
 
 /**
- * @brief Print the content of a JSON value.
- * 
- * @param msg 
- */
-void printJSON(json msg){
-    if (msg.empty()) {
-        std::cerr << "Error: JSON object is empty!" << std::endl;
-    } else {
-        std::cout << msg.dump(4) << std::endl;
-    }
-}
-
-/**
  * @brief Print the content of a MsgPack data.
  * 
  * @param msg 
@@ -168,39 +155,6 @@ void printMsgPack(std::unordered_map<std::string, std::string> data){
         }
 
         std::cout << "\n";
-    }
-}
-
-/**
- * @brief Transform an unsigned char buffer to a std::string for easier transportation
- * 
- * @param data 
- * @param length 
- * @return std::string 
- */
-std::string toHexString(const unsigned char* data, size_t length) {
-    std::ostringstream oss;
-    oss << std::hex << std::setfill('0');
-    for (size_t i = 0; i < length; i++) {
-        oss << std::setw(2) << static_cast<int>(data[i]);
-    }
-    return oss.str();
-}
-
-/**
- * @brief Retrieve a unsigned char number fron a std::string
- * 
- * @param hex 
- * @param output 
- * @param maxLength 
- */
-void fromHexString(const std::string& hex, unsigned char* output, size_t maxLength) {
-    size_t length = hex.length() / 2;
-    if (length > maxLength) length = maxLength; // Prevent buffer overflow
-
-    for (size_t i = 0; i < length; i++) {
-        std::string byteString = hex.substr(i * 2, 2);
-        output[i] = static_cast<unsigned char>(std::stoi(byteString, nullptr, 16));
     }
 }
 
@@ -246,20 +200,20 @@ double getCpuFrequency() {
 // Function to derive a key using HKDF (SHA256)
 void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const unsigned char* S,
     size_t keyLength, unsigned char* derivedKey) {
-// Combine NA and NB into the input key material (IKM)
-unsigned char input_key_material[64];  // 32 bytes + 32 bytes = 64 bytes
-std::memcpy(input_key_material, NA, 32);
-std::memcpy(input_key_material + 32, NB, 32);
+    // Combine NA and NB into the input key material (IKM)
+    unsigned char input_key_material[64];  // 32 bytes + 32 bytes = 64 bytes
+    std::memcpy(input_key_material, NA, 32);
+    std::memcpy(input_key_material + 32, NB, 32);
 
-// Prepare for HKDF with SHA256 as the hash function
-HKDF<SHA256> hkdf;
+    // Prepare for HKDF with SHA256 as the hash function
+    HKDF<SHA256> hkdf;
 
-// Define the salt and info for HKDF
-SecByteBlock salt(S, 32);  // 32 bytes salt
-SecByteBlock info;         // Optional info, can be empty (no extra context data)
+    // Define the salt and info for HKDF
+    SecByteBlock salt(S, 32);  // 32 bytes salt
+    SecByteBlock info;         // Optional info, can be empty (no extra context data)
 
-// Derive the key
-hkdf.DeriveKey(derivedKey, keyLength, input_key_material, sizeof(input_key_material), salt, salt.size(), info, info.size());
+    // Derive the key
+    hkdf.DeriveKey(derivedKey, keyLength, input_key_material, sizeof(input_key_material), salt, salt.size(), info, info.size());
 }
 
 void extractValueFromMap(std::unordered_map<std::string, std::string> map, std::string key , unsigned char * output, size_t size){

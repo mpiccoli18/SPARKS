@@ -104,38 +104,11 @@ void addToHash(EVP_MD_CTX* ctx, const std::string& str);
 void calculateHash(EVP_MD_CTX* ctx, unsigned char * output);
 
 /**
- * @brief Print the content of a JSON value.
- * 
- * @param msg 
- */
-void printJSON(json msg);
-
-
-/**
  * @brief Print the content of a MsgPack value.
  * 
  * @param msg 
  */
 void printMsgPack(std::unordered_map<std::string, std::string> data);
-
-/**
- * @brief Transform an unsigned char buffer to a std::string for easier transportation
- * 
- * @param data 
- * @param length 
- * @return std::string 
- */
-std::string toHexString(const unsigned char* data, size_t length);
-
-/**
- * @brief Retrieve a unsigned char number fron a std::string
- * 
- * @param hex 
- * @param output 
- * @param maxLength 
- */
-void fromHexString(const std::string& hex, unsigned char* output, size_t maxLength);
-
 
 /**
  * @brief Try to get the current CPU Frequency. Might be skewed, only to be used as a support option.
