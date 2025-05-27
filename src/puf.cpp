@@ -37,6 +37,16 @@ void puf::process(const unsigned char * input, size_t size, unsigned char * outp
     sha256_raw(input, size, this->salt, sizeof(this->salt), output);
 }
 
+/// @brief Verify the PUF response.
+bool puf::puf_verify(const std::string& challenge, const std::string& response) const{
+    unsigned char output[PUF_SIZE];
+    puf p;
+    p.process(reinterpret_cast<const unsigned char*>(challenge.c_str()), challenge.size(), output);
+    
+    std::string expectedResponse(reinterpret_cast<char*>(output), PUF_SIZE);
+    return expectedResponse == response;
+}
+
 
 
 

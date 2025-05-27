@@ -159,3 +159,8 @@ void SocketModule::closeConnection() {
 SocketModule::~SocketModule() {
     closeConnection();
 }
+
+/// @brief Check if the socket connection is open
+bool SocketModule::isOpen() const {
+    return connection_fd != -1;
+}

@@ -20,12 +20,17 @@
 class CycleCounter {
     private:
         int fddev;
+        int cycleCount;
     
     public:
         CycleCounter();
     
         ~CycleCounter();
 
+        void start();
+        void stop();
+        void reset();
+        int cycles() const;
         long long getCycles();
 };
 

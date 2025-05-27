@@ -32,6 +32,7 @@ public:
     bool initiateConnection(const std::string& ip, int port);
     bool waitForConnection(int port);
     
+    bool isOpen() const;
     void sendMessage(const json& message);
     json receiveMessage(); 
 

@@ -8,7 +8,8 @@
                 "/usr/include/nlohmann",
                 "/usr/include/openssl",
                 "/usr/include/x86_64-linux-gnu",
-                "/usr/include/msgpack"
+                "/usr/include/msgpack",
+                "/usr/src/gtest/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
