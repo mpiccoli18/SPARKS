@@ -17,6 +17,7 @@
 #include <sstream>  // For std::ostringstream
 #include <cstring> 
 #include <nlohmann/json.hpp> 
+#include <msgpack.hpp>
 #include <fstream>
 
 #include <cryptopp/cryptlib.h>
@@ -27,6 +28,7 @@
 using namespace CryptoPP;
 
 using json = nlohmann::json;
+
 
 #define PUF_SIZE 32 // 256 bits = 32 bytes
 #define CHALLENGE_SIZE 5
@@ -102,30 +104,11 @@ void addToHash(EVP_MD_CTX* ctx, const std::string& str);
 void calculateHash(EVP_MD_CTX* ctx, unsigned char * output);
 
 /**
- * @brief Print the content of a JSON value.
+ * @brief Print the content of a MsgPack value.
  * 
  * @param msg 
  */
-void printJSON(json msg);
-
-/**
- * @brief Transform an unsigned char buffer to a std::string for easier transportation
- * 
- * @param data 
- * @param length 
- * @return std::string 
- */
-std::string toHexString(const unsigned char* data, size_t length);
-
-/**
- * @brief Retrieve a unsigned char number fron a std::string
- * 
- * @param hex 
- * @param output 
- * @param maxLength 
- */
-void fromHexString(const std::string& hex, unsigned char* output, size_t maxLength);
-
+void printMsgPack(std::unordered_map<std::string, std::string> data);
 
 /**
  * @brief Try to get the current CPU Frequency. Might be skewed, only to be used as a support option.
@@ -137,3 +120,6 @@ double getCpuFrequency();
 // Function to derive a key using HKDF (SHA256)
 void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const unsigned char* S, size_t keyLength, unsigned char* derivedKey);
 #endif
+
+
+void extractValueFromMap(std::unordered_map<std::string, std::string> map, std::string key , unsigned char * output, size_t size);
