@@ -1,3 +1,10 @@
+/**
+ * @file 3_auth_client_key.cpp
+ * @brief This file's goal is to measure the overheads of the authentication + key function. The output is the total time taken by the function to execute. 
+ * If the project is compiled with -DMEASUREMENTS, The output also includes the active and idle time of the function execution.
+ * 
+ */
+
 #include <string>
 #include <chrono> 
 #include <thread> 

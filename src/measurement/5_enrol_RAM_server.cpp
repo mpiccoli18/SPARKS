@@ -1,4 +1,8 @@
-#include <string>
+/**
+ * @file 5_enrol_RAM_server.cpp
+ * @brief This file's goal is to measure the RAM usage of the enrolment function.
+ * 
+ */
 #include <chrono> 
 #include <thread>
 

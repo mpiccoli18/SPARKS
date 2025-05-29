@@ -1,3 +1,10 @@
+/**
+ * @file 3_auth_server_key.cpp
+ * @brief This file's goal is to measure the overheads of the authentication + key function. The output is the total time taken by the function to execute. 
+ * If the project is compiled with -DMEASUREMENTS, The output also includes the active and idle time of the function execution.
+ * 
+ */
+
 #include <string>
 #include <chrono> 
 #include <thread> 
@@ -26,6 +33,10 @@ void warmup(UAV * A){
     generate_random_bytes(rand);
     unsigned char out[PUF_SIZE];
     A->callPUF(rand, out);
+    unsigned char S[PUF_SIZE];
+    generate_random_bytes(rand);
+    unsigned char K[PUF_SIZE];
+    deriveKeyUsingHKDF(rand, out, S, PUF_SIZE, K);
     // print_hex(out, PUF_SIZE);
 }
 
@@ -204,6 +215,12 @@ int autentication_server(UAV * B){
         return 1;
     }
     fromHexString(rsp["M2"].get<std::string>(), M2, PUF_SIZE);
+    unsigned char MK[PUF_SIZE];
+    if(!rsp.contains("MK")){
+        std::cerr << "Error occurred: no member MK" << std::endl;
+        return 1;
+    }
+    fromHexString(rsp["MK"].get<std::string>(), MK, PUF_SIZE);
     unsigned char hash2[PUF_SIZE];
     if(!rsp.contains("hash2")){
         std::cerr << "Error occurred: no member hash2" << std::endl;
@@ -216,6 +233,16 @@ int autentication_server(UAV * B){
     xor_buffers(M2, NA, PUF_SIZE, RAp);
     // std::cout << "RAp : "; print_hex(RAp, PUF_SIZE);
 
+    // B retrieve S from MK
+    unsigned char S[PUF_SIZE];
+    xor_buffers(MK, NA, PUF_SIZE, S);
+    xor_buffers(S, NB, PUF_SIZE, S);
+    // std::cout << "S : "; print_hex(S, PUF_SIZE);
+
+    unsigned char K[PUF_SIZE];
+    deriveKeyUsingHKDF(NA, NB, S, PUF_SIZE, K);
+    // std::cout << "K : "; print_hex(K, PUF_SIZE);
+
     // B verify the hash
     unsigned char hash2Check[PUF_SIZE];
     ctx = initHash();
@@ -223,6 +250,7 @@ int autentication_server(UAV * B){
     addToHash(ctx, RA, PUF_SIZE);
     addToHash(ctx, RAp, PUF_SIZE);
     addToHash(ctx, NA, PUF_SIZE);
+    addToHash(ctx, K, PUF_SIZE);
     calculateHash(ctx, hash2Check);
     // std::cout << "hash2Check : "; print_hex(hash2Check, PUF_SIZE);
 
