@@ -125,48 +125,36 @@ void calculateHash(hash_state* ctx, unsigned char * output){
 }
 
 /**
- * @brief Print the content of a JSON value.
+ * @brief Print the content of a MsgPack data.
  * 
  * @param msg 
  */
-void printJSON(json msg){
-    if (msg.empty()) {
-        std::cerr << "Error: JSON object is empty!" << std::endl;
-    } else {
-        std::cout << msg.dump(4) << std::endl;
+void printMsgPack(std::unordered_map<std::string, std::string> data){
+    if(data.empty()){
+        std::cerr << "Error: MsgPack data is empty!" << std::endl;
+        return;
     }
-}
+    
+    std::cout << "MsgPack content:\n";
+    for (const auto& pair : data) {
+        const std::string& key = pair.first;
+        const std::string& value = pair.second;
 
-/**
- * @brief Transform an unsigned char buffer to a std::string for easier transportation
- * 
- * @param data 
- * @param length 
- * @return std::string 
- */
-std::string toHexString(const unsigned char* data, size_t length) {
-    std::ostringstream oss;
-    oss << std::hex << std::setfill('0');
-    for (size_t i = 0; i < length; i++) {
-        oss << std::setw(2) << static_cast<int>(data[i]);
-    }
-    return oss.str();
-}
+        std::cout << "  " << key << ": ";
 
-/**
- * @brief Retrieve a unsigned char number fron a std::string
- * 
- * @param hex 
- * @param output 
- * @param maxLength 
- */
-void fromHexString(const std::string& hex, unsigned char* output, size_t maxLength) {
-    size_t length = hex.length() / 2;
-    if (length > maxLength) length = maxLength; // Prevent buffer overflow
+        if (key == "id") {
+            // Always treat "id" as printable text
+            std::cout << value;
+        } else {
+            // Print other values as hex
+            std::cout << "[" << value.size() << " bytes] ";
+            for (unsigned char c : value) {
+                std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)c;
+            }
+            std::cout << std::dec;  // reset to decimal
+        }
 
-    for (size_t i = 0; i < length; i++) {
-        std::string byteString = hex.substr(i * 2, 2);
-        output[i] = static_cast<unsigned char>(std::stoi(byteString, nullptr, 16));
+        std::cout << "\n";
     }
 }
 
@@ -213,20 +201,20 @@ double getCpuFrequency() {
 // Function to derive a key using HKDF (SHA256)
 void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const unsigned char* S,
     size_t keyLength, unsigned char* derivedKey) {
-// Combine NA and NB into the input key material (IKM)
-unsigned char input_key_material[64];  // 32 bytes + 32 bytes = 64 bytes
-std::memcpy(input_key_material, NA, 32);
-std::memcpy(input_key_material + 32, NB, 32);
+    // Combine NA and NB into the input key material (IKM)
+    unsigned char input_key_material[64];  // 32 bytes + 32 bytes = 64 bytes
+    std::memcpy(input_key_material, NA, 32);
+    std::memcpy(input_key_material + 32, NB, 32);
 
-// Prepare for HKDF with SHA256 as the hash function
-HKDF<SHA256> hkdf;
+    // Prepare for HKDF with SHA256 as the hash function
+    HKDF<SHA256> hkdf;
 
-// Define the salt and info for HKDF
-SecByteBlock salt(S, 32);  // 32 bytes salt
-SecByteBlock info;         // Optional info, can be empty (no extra context data)
+    // Define the salt and info for HKDF
+    SecByteBlock salt(S, 32);  // 32 bytes salt
+    SecByteBlock info;         // Optional info, can be empty (no extra context data)
 
-// Derive the key
-hkdf.DeriveKey(derivedKey, keyLength, input_key_material, sizeof(input_key_material), salt, salt.size(), info, info.size());
+    // Derive the key
+    hkdf.DeriveKey(derivedKey, keyLength, input_key_material, sizeof(input_key_material), salt, salt.size(), info, info.size());
 }
 */
 
@@ -274,4 +262,19 @@ void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const 
         std::memcpy(prev, T, hash_len);
         ctr++;
     }
+}
+
+void extractValueFromMap(std::unordered_map<std::string, std::string> map, std::string key , unsigned char * output, size_t size){
+
+    auto it = map.find(key);
+    if (it == map.end()) {
+        std::cerr << "Error: key " << key << " not found.\n";
+    }
+
+    const std::string& valStr = it->second;
+
+    if (valStr.size() != size) {
+        std::cerr << "Error: value has incorrect size (" << valStr.size() << ").\n";
+    }
+    std::memcpy(output, valStr.data(), size);
 }

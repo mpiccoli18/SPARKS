@@ -13,9 +13,8 @@
 #include <cstring>
 #include <unistd.h>
 #include <arpa/inet.h>
-#include <nlohmann/json.hpp>
+#include <msgpack.hpp>
 
-using json = nlohmann::json;
 #define TIMEOUT_VALUE  5
 
 /// @brief Socket module class. Its job is to manage everything connection related for a server and a client.
@@ -32,8 +31,8 @@ public:
     bool initiateConnection(const std::string& ip, int port);
     bool waitForConnection(int port);
     
-    void sendMessage(const json& message);
-    json receiveMessage(); 
+    void sendMsgPack(const std::unordered_map<std::string, std::string> &msgPack);
+    std::unordered_map<std::string, std::string> receiveMsgPack();
 
     void closeConnection();
 };
