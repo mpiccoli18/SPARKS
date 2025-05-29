@@ -5,7 +5,7 @@
 #include "UAV.hpp"
 #include "utils.hpp"
 
-/*
+
 // CycleCounter tests
 TEST(CycleCounterTest, BasicCounting) {
     CycleCounter cc;
@@ -20,7 +20,7 @@ TEST(CycleCounterTest, Reset) {
     cc.stop();
     cc.reset();
     EXPECT_EQ(cc.cycles(), 0);
-}*/
+}
 
 // puf tests
 TEST(PufTest, GenerateAndVerify) {

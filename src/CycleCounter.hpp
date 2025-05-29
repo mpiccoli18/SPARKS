@@ -9,6 +9,7 @@
 #ifndef CYCLECOUNTER_HPP
 #define CYCLECOUNTER_HPP
 
+#include <iostream>
 #include <fstream>
 #include <linux/perf_event.h>
 #include <sys/syscall.h>

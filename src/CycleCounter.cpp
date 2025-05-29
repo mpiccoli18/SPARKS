@@ -29,6 +29,8 @@ CycleCounter::CycleCounter() : cycleCount(0){
         perror("perf_event_open failed");  // Print error message
         exit(EXIT_FAILURE);               // Exit program on failure
     }
+    /*std::cerr <<"errno: " << errno << std::endl;  // Print the error number for debugging
+    exit(EXIT_FAILURE);*/
 }
 
 /// @brief Destructor
