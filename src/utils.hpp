@@ -10,7 +10,6 @@
 #define UTILS_HPP
 
 #include <sstream>  // For std::ostringstream for rasp pi 4
-#include <openssl/evp.h>
 #include <iostream>
 #include <random>
 #include <iomanip>
@@ -20,12 +19,12 @@
 #include <msgpack.hpp>
 #include <fstream>
 
-#include <cryptopp/cryptlib.h>
+/*#include <cryptopp/cryptlib.h>
 #include <cryptopp/hkdf.h>
 #include <cryptopp/sha.h>
-#include <cryptopp/hex.h>
+#include <cryptopp/hex.h> */
 
-using namespace CryptoPP;
+#include <tomcrypt.h>
 
 using json = nlohmann::json;
 
@@ -64,7 +63,7 @@ void xor_buffers(const unsigned char* input1, const unsigned char* input2, size_
  * 
  * @return * Function* 
  */
-EVP_MD_CTX* initHash();
+hash_state* initHash();
 
 /**
  * @brief Basinc variadic template that allow to add different types of data to a hash.
@@ -74,8 +73,8 @@ EVP_MD_CTX* initHash();
  * @return * Basic 
  */
 template <typename T>
-inline void addToHash(EVP_MD_CTX* ctx, const T& value){
-    EVP_DigestUpdate(ctx, &value, sizeof(T));  
+inline void addToHash(hash_state* ctx, const T& value){
+    sha256_process(ctx, reinterpret_cast<const unsigned char*>(&value), sizeof(T));
 }
 
 /**
@@ -85,7 +84,7 @@ inline void addToHash(EVP_MD_CTX* ctx, const T& value){
  * @param data 
  * @param size 
  */
-void addToHash(EVP_MD_CTX* ctx, const unsigned char* data, size_t size);
+void addToHash(hash_state* ctx, const unsigned char* data, size_t size);
 
 /**
  * @brief Specialization of the variadic template for std::string type
@@ -93,7 +92,7 @@ void addToHash(EVP_MD_CTX* ctx, const unsigned char* data, size_t size);
  * @param ctx 
  * @param str 
  */
-void addToHash(EVP_MD_CTX* ctx, const std::string& str);
+void addToHash(hash_state* ctx, const std::string& str);
 
 /**
  * @brief Calculate the hash value with every elements added to the context
@@ -101,7 +100,7 @@ void addToHash(EVP_MD_CTX* ctx, const std::string& str);
  * @param ctx 
  * @param output 
  */
-void calculateHash(EVP_MD_CTX* ctx, unsigned char * output);
+void calculateHash(hash_state* ctx, unsigned char * output);
 
 /**
  * @brief Print the content of a MsgPack value.

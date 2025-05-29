@@ -9,7 +9,6 @@
 #ifndef PUF_HPP
 #define PUF_HPP
 
-#include <openssl/evp.h>
 
 #include "utils.hpp"
 #include "puf.hpp"
