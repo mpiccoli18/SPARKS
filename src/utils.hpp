@@ -15,22 +15,37 @@
 #include <iomanip>
 #include <sstream>  // For std::ostringstream
 #include <cstring> 
-#include <nlohmann/json.hpp> 
 #include <msgpack.hpp>
 #include <fstream>
-
-/*#include <cryptopp/cryptlib.h>
-#include <cryptopp/hkdf.h>
-#include <cryptopp/sha.h>
-#include <cryptopp/hex.h> */
-
 #include <tomcrypt.h>
-
-using json = nlohmann::json;
-
 
 #define PUF_SIZE 32 // 256 bits = 32 bytes
 #define CHALLENGE_SIZE 5
+
+//// MACRO
+
+#pragma once
+
+#if defined(MEASUREMENTS)
+
+    // Basic measurements: exclude both measurement and prod-only logs
+    #define MEASURE_ONLY(code) do {} while (0)
+    #define PROD_ONLY(code)    do {} while (0)
+
+#elif defined(MEASUREMENTS_DETAILLED)
+
+    // Detailed measurements: include measurement code, exclude prod-only logs
+    #define MEASURE_ONLY(code) do { code } while (0)
+    #define PROD_ONLY(code)    do {} while (0)
+
+#else
+
+    // Production: exclude measurement code, include prod-only logs
+    #define MEASURE_ONLY(code) do {} while (0)
+    #define PROD_ONLY(code)    do { code } while (0)
+
+#endif
+
 
 /**
  * @brief Generates a random 256 bits unsigned char.

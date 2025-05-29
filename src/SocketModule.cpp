@@ -123,7 +123,7 @@ std::unordered_map<std::string, std::string> SocketModule::receiveMsgPack(){
         int bytesReceived = read(this->connection_fd, buffer, sizeof(buffer));
         if (bytesReceived > 0) {
             // Append new data to buffer
-            std::cout << "Received " << bytesReceived << "bytes." << std::endl;
+            PROD_ONLY({std::cout << "Received " << bytesReceived << "bytes." << std::endl;});
             dataBuffer += std::string(buffer, bytesReceived);
             try {
                 // Attempt to parse MsgPack

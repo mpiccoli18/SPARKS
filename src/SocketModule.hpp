@@ -15,6 +15,8 @@
 #include <arpa/inet.h>
 #include <msgpack.hpp>
 
+#include "utils.hpp"
+
 #define TIMEOUT_VALUE  5
 
 /// @brief Socket module class. Its job is to manage everything connection related for a server and a client.
