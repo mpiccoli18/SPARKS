@@ -122,4 +122,4 @@ void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const 
 #endif
 
 
-void extractValueFromMap(std::unordered_map<std::string, std::string> map, std::string key , unsigned char * output, size_t size);
+bool extractValueFromMap(std::unordered_map<std::string, std::string> map, std::string key , unsigned char * output, size_t size);

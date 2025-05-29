@@ -88,9 +88,11 @@ public:
     void callPUF(const unsigned char * input, unsigned char * response);
 
     int enrolment_client();
-    int autentication_client();
     int enrolment_server();
+    int autentication_client();
     int autentication_server();
+    int autentication_key_client();
+    int autentication_key_server();
     int preEnrolment();
     int preEnrolmentRetrival();
     int supplementaryAuthenticationSup();

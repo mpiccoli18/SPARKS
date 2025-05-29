@@ -389,8 +389,280 @@ int UAV::autentication_client(){
     msg = this->socketModule.receiveMsgPack();
     printMsgPack(msg);
 
+    bool messageInvalid = false;
+
+    unsigned char hash3[PUF_SIZE];
+    unsigned char hash3Check[PUF_SIZE];
+
+    // Verify hash
+    if (msg.empty()) {
+        std::cerr << "Error: message is empty" << std::endl;
+        std::cout << "Received an empty MsgPack message!" << std::endl;
+        messageInvalid = true;
+    } 
+    else if (!extractValueFromMap(msg,"hash3",hash3,PUF_SIZE)){
+        std::cerr << "Error: message structure or fields are invalid" << std::endl;
+        messageInvalid = true;
+    }
+    else{
+        // Verify hash3
+        ctx = initHash();
+        addToHash(ctx, RAp, PUF_SIZE);
+        addToHash(ctx, NB, PUF_SIZE);
+        addToHash(ctx, NA, PUF_SIZE);
+        calculateHash(ctx, hash3Check);
+        std::cout << "hash3Check : "; print_hex(hash3Check, PUF_SIZE);
+    }
+
+    // Check if an error occurred
+    if (messageInvalid || memcmp(hash3, hash3Check, PUF_SIZE) != 0) {
+        std::cerr << "Error occurred: content is empty" << std::endl;
+
+        // A reach a timeout or didn't received the ACK 
+        std::cout << "Received an empty MsgPack message!" << std::endl;
+    
+        // A will save concealed current CA in CAOld
+        unsigned char xLock[PUF_SIZE];
+        generate_random_bytes(xLock);
+    
+        unsigned char lock[PUF_SIZE];
+        this->callPUF(xLock, lock);
+    
+        unsigned char concealedCA[PUF_SIZE];
+        xor_buffers(CA,lock,PUF_SIZE,concealedCA);
+    
+        this->getUAVData("B")->setXLock(xLock);
+        this->getUAVData("B")->setSecret(concealedCA);
+
+        // Then A saves the new challenge in CA
+        this->getUAVData("B")->setC(NB);
+
+        return 1;
+    }
+
+    // Then A saves the new challenge in CA
+    this->getUAVData("B")->setC(NB);
+
+    // Finished
+    std::cout << "\nThe two UAV autenticated each other.\n";
+    
+    return 0;
+}
+
+/// @brief Authenticate the UAV and establish a session key K.
+/// @param none
+/// @return 0 if success, 1 if failure
+int UAV::autentication_key_client(){
+    // The client initiate the authentication process
+    std::cout << "\nAutentication process begins.\n";
+
+    // A generates a nonce NA 
+    unsigned char NA[PUF_SIZE];
+    generate_random_bytes(NA);
+    std::cout << "NA : "; print_hex(NA, PUF_SIZE);
+
+    const unsigned char * CA = this->getUAVData("B")->getC();
+    if (CA == nullptr){
+        std::cout << "No expected challenge in memory for this UAV.\n";
+        return 1;
+    }
+    
+    unsigned char M0[PUF_SIZE];
+    xor_buffers(NA,CA,PUF_SIZE,M0);
+    std::cout << "M0 : "; print_hex(M0, PUF_SIZE);
+
+    // A sends its ID and NA to B 
+    std::unordered_map<std::string, std::string> msg;
+    
+    msg["id"] = this->getId();
+    msg["M0"] = std::string(reinterpret_cast<const char*>(M0), 32);
+
+    this->socketModule.sendMsgPack(msg);
+    std::cout << "Sent ID and M0.\n";
+
+    msg.clear();
+
+    // A waits for the answer
+    msg = this->socketModule.receiveMsgPack();
+    printMsgPack(msg);
+
     // Check if an error occurred
     if (msg.empty()) {
+        std::cerr << "Error occurred: content is empty!" << std::endl;
+        return -1;
+    }
+
+    // A recover M1 and the hash
+    unsigned char M1[PUF_SIZE];
+    extractValueFromMap(msg,"M1",M1,PUF_SIZE);
+
+    unsigned char hash1[PUF_SIZE];
+    extractValueFromMap(msg,"hash1",hash1,PUF_SIZE);
+
+    msg.clear();
+
+    // A computes RA using CA in memory
+    unsigned char RA[PUF_SIZE];
+    this->callPUF(CA,RA);
+    std::cout << "RA : "; print_hex(RA, PUF_SIZE);
+    
+    // A retrieve NB from M1 
+    unsigned char NB[PUF_SIZE];
+    xor_buffers(M1, NA, PUF_SIZE, NB);
+    xor_buffers(NB, RA, PUF_SIZE, NB);
+    std::cout << "NB : "; print_hex(NB, PUF_SIZE);
+
+    // A verify the hash
+    unsigned char hash1Check[PUF_SIZE];
+    EVP_MD_CTX * ctx = initHash();
+    addToHash(ctx, CA, PUF_SIZE);
+    addToHash(ctx, NB, PUF_SIZE);
+    addToHash(ctx, RA, PUF_SIZE);
+    addToHash(ctx, NA, PUF_SIZE);
+    calculateHash(ctx, hash1Check);
+    std::cout << "hash1Check : "; print_hex(hash1Check, PUF_SIZE);
+
+    bool res = memcmp(hash1, hash1Check, PUF_SIZE) == 0;
+    std::cout << "A verify B's hash : " << res << "\n";
+
+    if(res == 0){
+        std::cout << "The autentication failed. A will try to verify the hash with an old challenge if it exists.\n";
+
+        // A will recover the old challenge 
+        const unsigned char * xLock = this->getUAVData("B")->getXLock();
+        if (xLock == nullptr){
+            std::cout << "No old challenge in memory for the requested UAV.\n";
+            return 1;
+        }
+        const unsigned char * secret = this->getUAVData("B")->getSecret();
+        if (secret == nullptr){
+            std::cout << "No old challenge in memory for the requested UAV.\n";
+            return 1;
+        }
+        unsigned char lock[PUF_SIZE];
+        this->callPUF(xLock, lock);
+        unsigned char CAOld[PUF_SIZE]; 
+        xor_buffers(lock, secret, PUF_SIZE, CAOld);
+
+        // A will calculate the Nonce A that the server calculated with the wrong CA 
+        unsigned char NAOld[PUF_SIZE];
+        xor_buffers(M0, CAOld, PUF_SIZE, NAOld);
+        std::cout << "NAOld : "; print_hex(NAOld, PUF_SIZE);
+
+        // A will calculate the old response 
+        unsigned char RAOld[PUF_SIZE];
+        this->callPUF(CAOld, RAOld);
+        std::cout << "RAOld : "; print_hex(RAOld, PUF_SIZE);
+
+        // A will deduce NB from the old response
+        unsigned char NBOld[PUF_SIZE];
+        xor_buffers(M1, RAOld, PUF_SIZE, NBOld);
+        xor_buffers(NBOld, NAOld, PUF_SIZE, NBOld);
+        std::cout << "NBOld : "; print_hex(NBOld, PUF_SIZE);
+
+        // A now tries to verify the hash with this value
+        ctx = initHash();
+        addToHash(ctx, CAOld, PUF_SIZE);
+        addToHash(ctx, NBOld, PUF_SIZE);
+        addToHash(ctx, RAOld, PUF_SIZE);
+        addToHash(ctx, NAOld, PUF_SIZE);
+        calculateHash(ctx, hash1Check);
+
+        res = memcmp(hash1, hash1Check, PUF_SIZE) == 0;
+        if (res == 0){
+            std::cout << "Even with the old challenge, autentication has failed.\n";
+            return 1;
+        }
+        std::cout << "B has been autenticated by A with the old challenge.\n";
+
+        // A will now change the values to be the one obtained of the old challenge
+        this->getUAVData("B")->setC(CAOld);
+        memcpy(RA, RAOld, PUF_SIZE);
+        memcpy(NB, NBOld, PUF_SIZE);
+        memcpy(NA, NAOld, PUF_SIZE);
+        memcpy(NA, NAOld, PUF_SIZE);
+
+    }
+
+    std::cout << "B's hash has been verified. B is autenticated to A.\n";
+
+    // A will now conputes the new challenge and M2
+    unsigned char RAp[PUF_SIZE];
+    this->callPUF(NB,RAp);
+    std::cout << "RAp : "; print_hex(RAp, PUF_SIZE);
+
+    unsigned char M2[PUF_SIZE];
+    xor_buffers(NA,RAp,PUF_SIZE,M2);
+    std::cout << "M2 : "; print_hex(M2, PUF_SIZE);
+
+    // Generates key
+    unsigned char S[PUF_SIZE];
+    generate_random_bytes(S);
+    std::cout << "S : "; print_hex(S, PUF_SIZE);
+
+    unsigned char MK[PUF_SIZE];
+    xor_buffers(S,NA,PUF_SIZE,MK);
+    xor_buffers(MK,NB,PUF_SIZE,MK);
+
+    unsigned char K[PUF_SIZE];
+    deriveKeyUsingHKDF(NA, NB, S, PUF_SIZE, K);
+    std::cout << "K : "; print_hex(K, PUF_SIZE);
+
+    // A sends M2, and a hash of NB, RA, RAp, NA, K
+    unsigned char hash2[PUF_SIZE];
+    ctx = initHash();
+    addToHash(ctx, NB, PUF_SIZE);
+    addToHash(ctx, RA, PUF_SIZE);
+    addToHash(ctx, RAp, PUF_SIZE);
+    addToHash(ctx, NA, PUF_SIZE);
+    addToHash(ctx, K, PUF_SIZE);
+    calculateHash(ctx, hash2);
+    std::cout << "hash2 : "; print_hex(hash2, PUF_SIZE);
+
+    // Send M2, MK, and a hash of NB, RA, RAp, NA, K
+
+    msg["id"] = this->getId();
+    msg["M2"] = std::string(reinterpret_cast<const char*>(M2), 32);
+    msg["MK"] = std::string(reinterpret_cast<const char*>(MK), 32);
+    msg["hash2"] = std::string(reinterpret_cast<const char*>(hash2), 32);
+
+    this->socketModule.sendMsgPack(msg);
+    std::cout << "Sent ID, M2, MK and hash2.\n";
+
+    msg.clear();
+
+    // A waits for B's ACK
+    msg = this->socketModule.receiveMsgPack();
+    printMsgPack(msg);
+
+    bool messageInvalid = false;
+
+    unsigned char hash3[PUF_SIZE];
+    unsigned char hash3Check[PUF_SIZE];
+
+    // Verify hash
+    if (msg.empty()) {
+        std::cerr << "Error: message is empty" << std::endl;
+        std::cout << "Received an empty MsgPack message!" << std::endl;
+        messageInvalid = true;
+    } 
+    else if (!extractValueFromMap(msg,"hash3",hash3,PUF_SIZE)){
+        std::cerr << "Error: message structure or fields are invalid" << std::endl;
+        messageInvalid = true;
+    }
+    else{
+        // Verify hash3
+        ctx = initHash();
+        addToHash(ctx, RAp, PUF_SIZE);
+        addToHash(ctx, K, PUF_SIZE);
+        addToHash(ctx, NB, PUF_SIZE);
+        addToHash(ctx, NA, PUF_SIZE);
+        calculateHash(ctx, hash3Check);
+        std::cout << "hash3Check : "; print_hex(hash3Check, PUF_SIZE);
+    }
+
+    // Check if an error occurred
+    if (messageInvalid || memcmp(hash3, hash3Check, PUF_SIZE) != 0) {
         std::cerr << "Error occurred: content is empty" << std::endl;
 
         // A reach a timeout or didn't received the ACK 
@@ -653,6 +925,167 @@ int UAV::autentication_server(){
     return 0;
 }
 
+/// @brief Authenticate the UAV and establish a session key K.
+/// @param none
+/// @return 0 if success, 1 if failure
+int UAV::autentication_key_server(){
+    // The client initiate the autentication process
+    std::cout << "\nAutentication process begins.\n";
+
+    // B receive the initial message
+    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsgPack();
+    printMsgPack(msg);
+
+    // Check if an error occurred
+    if (msg.empty()) {
+        std::cerr << "Error occurred: content is empty!" << std::endl;
+        return -1;
+    }
+
+    // B recover M0
+    unsigned char M0[PUF_SIZE];
+    extractValueFromMap(msg,"M0",M0,PUF_SIZE);
+
+    msg.clear();
+        
+    // B retrieve xA from memory and computes CA
+    const unsigned char * xA = this->getUAVData("A")->getX();
+    if (xA == nullptr){
+        std::cout << "No challenge in memory for the requested UAV.\n";
+        return 1;
+    }
+    std::cout << "xA : "; print_hex(xA, PUF_SIZE);
+    
+    unsigned char CA[PUF_SIZE];
+    this->callPUF(xA,CA);
+    std::cout << "CA : "; print_hex(CA, PUF_SIZE);
+    
+    unsigned char NA[PUF_SIZE];
+    xor_buffers(M0, CA, PUF_SIZE, NA);
+    std::cout << "NA : "; print_hex(NA, PUF_SIZE);
+
+    // B then creates a nonce NB and the secret message M1 
+    unsigned char gammaB[PUF_SIZE];
+    unsigned char NB[PUF_SIZE];
+    generate_random_bytes(gammaB);
+    this->callPUF(gammaB,NB);
+    std::cout << "NB : "; print_hex(NB, PUF_SIZE);
+
+    unsigned char M1[PUF_SIZE];
+    const unsigned char * RA = this->getUAVData("A")->getR();
+    if (RA == nullptr){
+        std::cout << "No response in memory for the requested UAV.\n";
+        return 1;
+    }
+    std::cout << "RA : "; print_hex(RA, PUF_SIZE);
+    xor_buffers(RA,NA,PUF_SIZE,M1);
+    xor_buffers(M1,NB,PUF_SIZE,M1);
+    std::cout << "M1 : "; print_hex(M1, PUF_SIZE);
+
+    // B sends its ID, M1 and a hash of CA, NB, RA, NA to A
+    unsigned char hash1[PUF_SIZE];
+    EVP_MD_CTX * ctx = initHash();
+    addToHash(ctx, CA, PUF_SIZE);
+    addToHash(ctx, NB, PUF_SIZE);
+    addToHash(ctx, RA, PUF_SIZE);
+    addToHash(ctx, NA, PUF_SIZE);
+    calculateHash(ctx, hash1);
+    std::cout << "hash1 : "; print_hex(hash1, PUF_SIZE);
+    
+    msg["id"] = this->getId();
+    msg["M1"] = std::string(reinterpret_cast<const char*>(M1), 32);
+    msg["hash1"] = std::string(reinterpret_cast<const char*>(hash1), 32);
+
+    this->socketModule.sendMsgPack(msg);
+    std::cout << "Sent ID, M1 and hash1.\n";
+
+    msg.clear();
+
+    // B waits for A response (M2)
+    msg = this->socketModule.receiveMsgPack();
+    printMsgPack(msg);
+
+    // Check if an error occurred
+    if (msg.empty()) {
+        std::cerr << "Error occurred: content is empty!" << std::endl;
+        return -1;
+    }
+
+    // B recovers M2, MK and hash2
+    unsigned char M2[PUF_SIZE];
+    extractValueFromMap(msg,"M2",M2,PUF_SIZE);
+
+    unsigned char MK[PUF_SIZE];
+    extractValueFromMap(msg,"MK",MK,PUF_SIZE);
+
+    unsigned char hash2[PUF_SIZE];
+    extractValueFromMap(msg,"hash2",hash2,PUF_SIZE);
+
+    msg.clear();
+
+    // B retrieve RAp from M2
+    unsigned char RAp[PUF_SIZE];
+    xor_buffers(M2, NA, PUF_SIZE, RAp);
+    std::cout << "RAp : "; print_hex(RAp, PUF_SIZE);
+
+    // B retrieve S from MK
+    unsigned char S[PUF_SIZE];
+    xor_buffers(MK, NA, PUF_SIZE, S);
+    xor_buffers(S, NB, PUF_SIZE, S);
+    std::cout << "S : "; print_hex(S, PUF_SIZE);
+
+    unsigned char K[PUF_SIZE];
+    deriveKeyUsingHKDF(NA, NB, S, PUF_SIZE, K);
+    std::cout << "K : "; print_hex(K, PUF_SIZE);
+
+    // B verify the hash
+    unsigned char hash2Check[PUF_SIZE];
+    ctx = initHash();
+    addToHash(ctx, NB, PUF_SIZE);
+    addToHash(ctx, RA, PUF_SIZE);
+    addToHash(ctx, RAp, PUF_SIZE);
+    addToHash(ctx, NA, PUF_SIZE);
+    addToHash(ctx, K, PUF_SIZE);
+    calculateHash(ctx, hash2Check);
+    std::cout << "hash2Check : "; print_hex(hash2Check, PUF_SIZE);
+
+    int res = memcmp(hash2, hash2Check, PUF_SIZE) == 0;
+    std::cout << "B verify A's hash : " << res << "\n";
+
+    if(res == 0){
+        std::cout << "The hashes do not correspond.\n";
+        return 1;
+    }
+
+    std::cout << "A's hash has been verified. A is autenticated to B.\n";
+
+    // B changes its values
+    this->getUAVData("A")->setX(gammaB);
+    this->getUAVData("A")->setR(RAp);
+
+    // B sends a hash of RAp, K, NB, NA as an ACK
+    unsigned char hash3[PUF_SIZE];
+    ctx = initHash();
+    addToHash(ctx, RAp, PUF_SIZE);
+    addToHash(ctx, K, PUF_SIZE);
+    addToHash(ctx, NB, PUF_SIZE);
+    addToHash(ctx, NA, PUF_SIZE);
+    calculateHash(ctx, hash3);
+    std::cout << "hash3 : "; print_hex(hash3, PUF_SIZE);
+
+    msg["id"] = this->getId();
+    msg["hash3"] = std::string(reinterpret_cast<const char*>(hash3), 32);
+
+    this->socketModule.sendMsgPack(msg);
+    std::cout << "Sent ID and hash3.\n";
+
+    msg.clear();
+
+    // Finished
+    std::cout << "\nThe two UAV autenticated each other.\n";
+
+    return 0;
+}
 
 /// @brief Pre-enrolment function for initialize the authentication of UAV A
 /// @param none

@@ -216,17 +216,20 @@ void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const 
     hkdf.DeriveKey(derivedKey, keyLength, input_key_material, sizeof(input_key_material), salt, salt.size(), info, info.size());
 }
 
-void extractValueFromMap(std::unordered_map<std::string, std::string> map, std::string key , unsigned char * output, size_t size){
+bool extractValueFromMap(std::unordered_map<std::string, std::string> map, std::string key , unsigned char * output, size_t size){
 
     auto it = map.find(key);
     if (it == map.end()) {
         std::cerr << "Error: key " << key << " not found.\n";
+        return false;
     }
 
     const std::string& valStr = it->second;
 
     if (valStr.size() != size) {
         std::cerr << "Error: value has incorrect size (" << valStr.size() << ").\n";
+        return false;
     }
     std::memcpy(output, valStr.data(), size);
+    return true;
 }
