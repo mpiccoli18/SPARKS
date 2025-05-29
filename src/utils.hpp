@@ -15,18 +15,9 @@
 #include <iomanip>
 #include <sstream>  // For std::ostringstream
 #include <cstring> 
-#include <nlohmann/json.hpp> 
 #include <msgpack.hpp>
 #include <fstream>
-
-/*#include <cryptopp/cryptlib.h>
-#include <cryptopp/hkdf.h>
-#include <cryptopp/sha.h>
-#include <cryptopp/hex.h> */
-
 #include <tomcrypt.h>
-
-using json = nlohmann::json;
 
 
 #define PUF_SIZE 32 // 256 bits = 32 bytes
@@ -116,7 +107,7 @@ void printMsgPack(std::unordered_map<std::string, std::string> data);
  */
 double getCpuFrequency();
 
-// Function to derive a key using HKDF (SHA256)
+/// @brief Function to derive a key using HKDF with the help of LibTomCrypt(SHA256)
 void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const unsigned char* S, size_t keyLength, unsigned char* derivedKey);
 #endif
 

@@ -1,6 +1,6 @@
 # Compiler
 CXX = g++
-CXXFLAGS = -Wall -Wextra -O3 -std=c++11 -I/usr/include/crypto++ -I/home/sparks/Desktop/msgpack/include
+CXXFLAGS = -Wall -Wextra -O3 -std=c++14 -I/home/sparks/Desktop/msgpack/include -I/usr/src/gtest
 
 # Directories
 SRC_DIR := src
@@ -65,13 +65,15 @@ test_pmc : $(OBJS) $(SRC_DIR)/measurement/pmc_test.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
 
 # Rule to compile the scenarios
-scenarii: scenario1 scenario2 scenario3
+scenarii: scenario1 scenario2 scenario3 test_all
 
 scenario1: scenario1_A scenario1_B
 
 scenario2: scenario2_A scenario2_Base_Station scenario2_C
 
 scenario3: scenario3_A scenario3_B
+
+test: test_all
 
 scenario1_A: $(OBJS) $(SRC_DIR)/scenario1/scenario1_A.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
@@ -93,6 +95,9 @@ scenario3_A: $(OBJS) $(SRC_DIR)/scenario3/scenario3_A.cpp | $(BIN_DIR)
 
 scenario3_B: $(OBJS) $(SRC_DIR)/scenario3/scenario3_B.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
+
+test_all: $(OBJS) $(SRC_DIR)/test_all.cpp | $(BIN_DIR) 
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt -lgtest -lpthread
 
 $(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@

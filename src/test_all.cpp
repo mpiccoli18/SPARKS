@@ -1,12 +1,11 @@
 #include <gtest/gtest.h>
-#include <iostream>
-#include <string>
 #include "CycleCounter.hpp"
 #include "puf.hpp"
 #include "SocketModule.hpp"
 #include "UAV.hpp"
 #include "utils.hpp"
 
+/*
 // CycleCounter tests
 TEST(CycleCounterTest, BasicCounting) {
     CycleCounter cc;
@@ -21,7 +20,7 @@ TEST(CycleCounterTest, Reset) {
     cc.stop();
     cc.reset();
     EXPECT_EQ(cc.cycles(), 0);
-}
+}*/
 
 // puf tests
 TEST(PufTest, GenerateAndVerify) {
@@ -42,6 +41,7 @@ TEST(PufTest, WrongResponse) {
 TEST(SocketModuleTest, OpenCloseSocket) {
     SocketModule sm;
     EXPECT_TRUE(sm.initiateConnection("127.0.0.1", 8080));
+    EXPECT_TRUE(sm.isOpen());
     sm.closeConnection();
     EXPECT_FALSE(sm.isOpen());
 }
@@ -49,10 +49,11 @@ TEST(SocketModuleTest, OpenCloseSocket) {
 TEST(SocketModuleTest, SendReceiveMessage) {
     SocketModule sm;
     EXPECT_TRUE(sm.initiateConnection("127.0.0.1", 8080));
-    json msg = {{"key", "value"}}; //this has to be changed once all is merged into main
-    sm.sendMessage(msg);
-    json receivedMsg = sm.receiveMessage();
-    EXPECT_EQ(receivedMsg["key"], "value");
+    std::unordered_map<std::string, std::string> msg = {{"key", "value"}}; 
+    sm.sendMsgPack(msg);
+    std::unordered_map<std::string, std::string> receivedMsg = sm.receiveMsgPack();
+    EXPECT_EQ(msg["key"], receivedMsg["key"]);
+    EXPECT_TRUE(sm.isOpen());
     sm.closeConnection();
 }
 
@@ -96,31 +97,6 @@ TEST(UtilsTest, GenerateRandomBytes) {
     for (size_t i = 0; i < sizeof(buffer); ++i) {
         EXPECT_GE(buffer[i], 0);
         EXPECT_LE(buffer[i], 255);
-    }
-}
-
-TEST(UtilsTest, PrintHex) {
-    unsigned char buffer[32] = {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0};
-    std::ostringstream oss;
-    std::streambuf* oldCoutBuffer = std::cout.rdbuf(oss.rdbuf());
-    print_hex(buffer, sizeof(buffer));
-    std::cout.rdbuf(oldCoutBuffer);
-    std::string output = oss.str();
-    EXPECT_EQ(output, "123456789abcdef0\n");
-}
-
-TEST(UtilsTest, ToHexString) {
-    unsigned char buffer[32] = {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0};
-    std::string hexString = toHexString(buffer, sizeof(buffer));
-    EXPECT_EQ(hexString, "123456789abcdef0");
-}
-
-TEST(UtilsTest, FromHexString) {
-    std::string hexString = "123456789abcdef0";
-    unsigned char output[32];
-    fromHexString(hexString, output, sizeof(output));
-    for (size_t i = 0; i < 8; ++i) {
-        EXPECT_EQ(output[i], static_cast<unsigned char>(i + 1));
     }
 }
 

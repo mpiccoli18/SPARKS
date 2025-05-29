@@ -11,7 +11,6 @@
 
 
 #include "utils.hpp"
-#include "puf.hpp"
 
 /// @brief This class models a PUF.
 class puf
