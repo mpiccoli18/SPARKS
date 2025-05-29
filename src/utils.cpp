@@ -87,9 +87,9 @@ void xor_buffers(const unsigned char* input1, const unsigned char* input2, size_
  * @brief Initiate a hashing context
  * 
  * @return * Function* 
- */EVP_MD_CTX* initHash(){
-    EVP_MD_CTX* ctx = EVP_MD_CTX_new();
-    EVP_DigestInit_ex(ctx, EVP_sha256(), NULL);
+ */hash_state* initHash(){
+    hash_state* ctx = new hash_state;
+    sha256_init(ctx);
     return ctx;
 }
 
@@ -100,8 +100,8 @@ void xor_buffers(const unsigned char* input1, const unsigned char* input2, size_
  * @param data 
  * @param size 
  */
-void addToHash(EVP_MD_CTX* ctx, const unsigned char* data, size_t size){
-    EVP_DigestUpdate(ctx, data, size);
+void addToHash(hash_state* ctx, const unsigned char* data, size_t size){
+    sha256_process(ctx, data, size);
 }
 
 /**
@@ -109,8 +109,8 @@ void addToHash(EVP_MD_CTX* ctx, const unsigned char* data, size_t size){
  * 
  * @param ctx 
  * @param str 
- */void addToHash(EVP_MD_CTX* ctx, const std::string& str){
-    EVP_DigestUpdate(ctx, str.data(), str.size());
+ */void addToHash(hash_state* ctx, const std::string& str){
+    sha256_process(ctx, reinterpret_cast<const unsigned char*>(str.data()), str.size());
 }
 
 /**
@@ -119,9 +119,9 @@ void addToHash(EVP_MD_CTX* ctx, const unsigned char* data, size_t size){
  * @param ctx 
  * @param output 
  */
-void calculateHash(EVP_MD_CTX* ctx, unsigned char * output){
-    EVP_DigestFinal_ex(ctx, output, NULL); 
-    EVP_MD_CTX_free(ctx); 
+void calculateHash(hash_state* ctx, unsigned char * output){
+    sha256_done(ctx, output);
+    delete ctx;
 }
 
 /**
@@ -197,6 +197,7 @@ double getCpuFrequency() {
     return frequency / 1000.0;  // Convert MHz to GHz
 }
 
+/*
 // Function to derive a key using HKDF (SHA256)
 void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const unsigned char* S,
     size_t keyLength, unsigned char* derivedKey) {
@@ -215,8 +216,55 @@ void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const 
     // Derive the key
     hkdf.DeriveKey(derivedKey, keyLength, input_key_material, sizeof(input_key_material), salt, salt.size(), info, info.size());
 }
+*/
 
-bool extractValueFromMap(std::unordered_map<std::string, std::string> map, std::string key , unsigned char * output, size_t size){
+// Function to derive a key using HKDF with the help of LibTomCrypt(SHA256)
+void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const unsigned char* S,
+    size_t keyLength, unsigned char* derivedKey) {
+    // Combine NA and NB into the input key material (IKM)
+    unsigned char input_key_material[64];  // 32 bytes + 32 bytes = 64 bytes
+    std::memcpy(input_key_material, NA, 32);
+    std::memcpy(input_key_material + 32, NB, 32);
+
+    // LibTomCrypt HKDF setup
+    int err;
+    unsigned char prk[32]; // Pseudorandom Key (SHA256 output size)
+    unsigned char T[32];
+    unsigned int hash_len = 32;
+    unsigned int n = (keyLength + hash_len - 1) / hash_len;
+    unsigned int outpos = 0;
+    unsigned char ctr = 1;
+    unsigned long hash_len_l = hash_len;
+    // Extract step: PRK = HMAC-Hash(salt, IKM)
+    err = hmac_memory(find_hash("sha256"), S, 32, input_key_material, sizeof(input_key_material), prk, &hash_len_l);
+    if (err != CRYPT_OK) {
+        // handle error
+        return;
+    }
+
+    // Expand step
+    unsigned long tlen = 0;
+    unsigned char prev[32];
+    hmac_state hmac;
+    for (unsigned int i = 0; i < n; ++i) {
+        hmac_init(&hmac, find_hash("sha256"), prk, hash_len);
+
+        if (i > 0) {
+            hmac_process(&hmac, prev, hash_len);
+        }
+        // info is empty, so skip
+        hmac_process(&hmac, &ctr, 1);
+        hmac_done(&hmac, T, &tlen);
+
+        unsigned int to_copy = (outpos + hash_len > keyLength) ? (keyLength - outpos) : hash_len;
+        std::memcpy(derivedKey + outpos, T, to_copy);
+        outpos += to_copy;
+        std::memcpy(prev, T, hash_len);
+        ctr++;
+    }
+}
+
+void extractValueFromMap(std::unordered_map<std::string, std::string> map, std::string key , unsigned char * output, size_t size){
 
     auto it = map.find(key);
     if (it == map.end()) {

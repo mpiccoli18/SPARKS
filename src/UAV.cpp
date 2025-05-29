@@ -283,7 +283,7 @@ int UAV::autentication_client(){
 
     // A verify the hash
     unsigned char hash1Check[PUF_SIZE];
-    EVP_MD_CTX * ctx = initHash();
+    hash_state* ctx = initHash();
     addToHash(ctx, CA, PUF_SIZE);
     addToHash(ctx, NB, PUF_SIZE);
     addToHash(ctx, RA, PUF_SIZE);
@@ -837,7 +837,7 @@ int UAV::autentication_server(){
 
     // B sends its ID, M1 and a hash of CA, NB, RA, NA to A
     unsigned char hash1[PUF_SIZE];
-    EVP_MD_CTX * ctx = initHash();
+    hash_state * ctx = initHash();
     addToHash(ctx, CA, PUF_SIZE);
     addToHash(ctx, NB, PUF_SIZE);
     addToHash(ctx, RA, PUF_SIZE);
@@ -1242,7 +1242,7 @@ int UAV::supplementaryAuthenticationInitial(){
 
     // A verify the hash
     unsigned char hash1Check[PUF_SIZE];
-    EVP_MD_CTX * ctx = initHash();
+    hash_state * ctx = initHash();
     addToHash(ctx, idC);
     addToHash(ctx, CA, PUF_SIZE);
     addToHash(ctx, NC, PUF_SIZE);
@@ -1396,7 +1396,7 @@ int UAV::supplementaryAuthenticationSup(){
 
     // C sends its ID, M1 and a hash of idC, CA, NB, RA, NA to A
     unsigned char hash1[PUF_SIZE];
-    EVP_MD_CTX * ctx = initHash();
+    hash_state * ctx = initHash();
     addToHash(ctx, this->getId());
     addToHash(ctx, CA, PUF_SIZE);
     addToHash(ctx, NC, PUF_SIZE);
@@ -1551,7 +1551,7 @@ int UAV::failed_autentication_client(){
 
     // A verify the hash
     unsigned char hash1Check[PUF_SIZE];
-    EVP_MD_CTX * ctx = initHash();
+    hash_state * ctx = initHash();
     addToHash(ctx, CA, PUF_SIZE);
     addToHash(ctx, NB, PUF_SIZE);
     addToHash(ctx, RA, PUF_SIZE);
