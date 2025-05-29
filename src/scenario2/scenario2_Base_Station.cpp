@@ -41,36 +41,26 @@ int main(){
     }
 
     // This list is sent to the UAV to get the responses
-    json msg = {{"id", idBS}};
-    json dataArray = json::array();
+    std::unordered_map<std::string, std::string> msg;
+    
+    msg["id"] = idBS;
+    msg["data"] = std::string(reinterpret_cast<const char*>(LC), CHALLENGE_SIZE*PUF_SIZE);
 
-    for (int i = 0; i < CHALLENGE_SIZE; i++) {
-        dataArray.push_back(toHexString(LC[i], 32));
-    }   
-    msg["data"] = dataArray;
-    sm.sendMessage(msg);
+    sm.sendMsgPack(msg);
     std::cout << "Sent LC to A;\n";
 
+    msg.clear();
+
     // Wait for the responses
-    json rsp = sm.receiveMessage();
-    printJSON(rsp);
+    msg = sm.receiveMsgPack();
+    printMsgPack(msg);
 
     // Check if an error occurred
-    if (rsp.contains("error")) {
-        std::cerr << "Error occurred: " << rsp["error"] << std::endl;
-        return -1;
+    if (msg.empty()) {
+        std::cerr << "Error occurred: content is empty!" << std::endl;
     }
 
-    if(!rsp.contains("data")){
-        std::cerr << "Error occurred: no member data" << std::endl;
-        return 1;
-    }
-    std::vector<std::string> receivedHexList = rsp["data"];
-
-    // Convert each hex string back to unsigned char arrays
-    for (size_t i = 0; i < receivedHexList.size() && i < receivedHexList.size(); i++) {
-        fromHexString(receivedHexList[i], LR[i], PUF_SIZE);
-    }
+    extractValueFromMap(msg,"data",LR[0],CHALLENGE_SIZE*PUF_SIZE);
 
     // Pre-enrolment done. Close connection.
     sm.closeConnection();
@@ -94,13 +84,14 @@ int main(){
     std::cout << "RA : "; print_hex(RA, PUF_SIZE);
 
     // BS sends CA and RA to C
-    msg = {
-        {"id", idBS}, 
-        {"idUAV", idA}, 
-        {"CA", toHexString(CA, PUF_SIZE)}, 
-        {"RA", toHexString(RA, PUF_SIZE)}
-    };
-    sm.sendMessage(msg);
+
+    msg["id"] = idBS;
+    msg["CA"] = std::string(reinterpret_cast<const char*>(CA), 32);
+    msg["RA"] = std::string(reinterpret_cast<const char*>(RA), 32);
+
+    sm.sendMsgPack(msg);
+
+    msg.clear();
 
     sm.closeConnection();
     std::cout << "\nGave to C A's credentials.\n";

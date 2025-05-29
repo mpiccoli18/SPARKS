@@ -102,52 +102,55 @@ bool SocketModule::waitForConnection(int port) {
     return true;
 }
 
-/// @brief Send a message over the socket
-void SocketModule::sendMessage(const json& message) {
-    std::string jsonString = message.dump(); // Convert JSON to string
-    send(this->connection_fd, jsonString.c_str(), jsonString.size(), 0);
+/// @brief Send a msgPack message over the socket
+/// @param msgPack The message to send
+void SocketModule::sendMsgPack(const std::unordered_map<std::string, std::string> &msgPack) {
+    // Serialize the map using msgpack
+    msgpack::sbuffer sbuf;
+    msgpack::pack(sbuf, msgPack);
+    send(this->connection_fd, sbuf.data(), sbuf.size(), 0);
 }
 
-/// @brief Receive a message on the connection socket.
-json SocketModule::receiveMessage() {
+/// @brief Receive a msgPack message on the socket
+/// @param none
+/// @return The received message as a string
+std::unordered_map<std::string, std::string> SocketModule::receiveMsgPack(){
     static std::string dataBuffer = "";  // Store partial data between calls
     char buffer[1024] = {0};
-    
-    while (true) {
+    msgpack::object_handle msgpack_obj;
+    while(true)
+    {
         int bytesReceived = read(this->connection_fd, buffer, sizeof(buffer));
-        // std::cout << "Bytes received: " << bytesReceived << std::endl;
-        // std::cout << "Received data: " << buffer << std::endl;
         if (bytesReceived > 0) {
             // Append new data to buffer
+            std::cout << "Received " << bytesReceived << "bytes." << std::endl;
             dataBuffer += std::string(buffer, bytesReceived);
-
             try {
-                // Attempt to parse JSON
-                json parsedJson = json::parse(dataBuffer);
+                // Attempt to parse MsgPack
+                msgpack_obj = msgpack::unpack(dataBuffer.data(), dataBuffer.size());
                 dataBuffer.clear();  // Clear buffer after successful parsing
-                return parsedJson;
-            } catch (json::parse_error& e) {
-                std::cerr << "Parse error: " << e.what() << std::endl;
-                std::cerr << "Partial JSON received, waiting for more data..." << std::endl;
-                continue;  // Keep reading until we get a full JSON
+                return msgpack_obj.get().as<std::unordered_map<std::string, std::string>>();
+            } catch (msgpack::unpack_error& e) {
+                std::cerr << "MsgPack parse error: " << e.what() << std::endl;
+                std::cerr << "Partial MsgPack received, waiting for more data..." << std::endl;
+                continue;  // Keep reading until we get a full MsgPack
             }
         } 
         else if (bytesReceived == 0) {
             std::cerr << "Connection closed by peer." << std::endl;
-            return json({{"error", "connection_closed"}});
+            return {};
         } 
         else {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 std::cerr << "Receive timeout!" << std::endl;
-                return json({{"error", "timeout"}});
-            } else {
+                return {};
+           } else {
                 perror("Receive failed");
-                return json({{"error", "read_failed"}});
+                return {};
             }
         }
     }
 }
-
 
 /// @brief Close the connection
 void SocketModule::closeConnection() {
