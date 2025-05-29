@@ -65,13 +65,15 @@ test_pmc : $(OBJS) $(SRC_DIR)/measurement/pmc_test.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
 
 # Rule to compile the scenarios
-scenarii: scenario1 scenario2 scenario3
+scenarii: scenario1 scenario2 scenario3 scenario4
 
 scenario1: scenario1_A scenario1_B
 
 scenario2: scenario2_A scenario2_Base_Station scenario2_C
 
 scenario3: scenario3_A scenario3_B
+
+scenario4: scenario4_A scenario4_B
 
 scenario1_A: $(OBJS) $(SRC_DIR)/scenario1/scenario1_A.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
@@ -93,6 +95,13 @@ scenario3_A: $(OBJS) $(SRC_DIR)/scenario3/scenario3_A.cpp | $(BIN_DIR)
 
 scenario3_B: $(OBJS) $(SRC_DIR)/scenario3/scenario3_B.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
+
+scenario4_A: $(OBJS) $(SRC_DIR)/scenario4/scenario4_A.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
+
+scenario4_B: $(OBJS) $(SRC_DIR)/scenario4/scenario4_B.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
+
 
 $(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
