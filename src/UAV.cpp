@@ -186,7 +186,9 @@ int UAV::enrolment_client(){
 
     // B enroll with A
     // A receive CA. It saves CA.
+    std::cout << this->socketModule.isOpen() << std::endl;
     msg = this->socketModule.receiveMsgPack();
+    std::cout << this->socketModule.getSocketFd() << std::endl;
     printMsgPack(msg);
 
     // Check if an error occurred
@@ -294,6 +296,7 @@ int UAV::autentication_client(){
     bool res = memcmp(hash1, hash1Check, PUF_SIZE) == 0;
     std::cout << "A verify B's hash : " << res << "\n";
 
+    //ctx.clear();
     if(res == 0){
         std::cout << "The autentication failed. A will try to verify the hash with an old challenge if it exists.\n";
 
@@ -515,6 +518,7 @@ int UAV::autentication_key_client(){
     // A verify the hash
     unsigned char hash1Check[PUF_SIZE];
     hash_state * ctx = initHash();
+    std::cout << &ctx << std::endl;
     addToHash(ctx, CA, PUF_SIZE);
     addToHash(ctx, NB, PUF_SIZE);
     addToHash(ctx, RA, PUF_SIZE);
@@ -562,6 +566,7 @@ int UAV::autentication_key_client(){
 
         // A now tries to verify the hash with this value
         ctx = initHash();
+        std::cout << &ctx << std::endl;
         addToHash(ctx, CAOld, PUF_SIZE);
         addToHash(ctx, NBOld, PUF_SIZE);
         addToHash(ctx, RAOld, PUF_SIZE);
@@ -610,7 +615,8 @@ int UAV::autentication_key_client(){
 
     // A sends M2, and a hash of NB, RA, RAp, NA, K
     unsigned char hash2[PUF_SIZE];
-    ctx = initHash();
+    //ctx = initHash();
+    std::cout << &ctx << std::endl;
     addToHash(ctx, NB, PUF_SIZE);
     addToHash(ctx, RA, PUF_SIZE);
     addToHash(ctx, RAp, PUF_SIZE);
@@ -760,7 +766,9 @@ int UAV::enrolment_server(){
     msg.clear();
 
     // B receive RA and saves it. 
+    std::cout << this->socketModule.isOpen() << std::endl;
     msg = this->socketModule.receiveMsgPack();
+    std::cout << this->socketModule.getConnectionFd() << std::endl;
     printMsgPack(msg);
 
     // Check if an error occurred

@@ -162,3 +162,18 @@ void SocketModule::closeConnection() {
 SocketModule::~SocketModule() {
     closeConnection();
 }
+
+/// @brief Check if the socket is open
+bool SocketModule::isOpen() const {
+    return (socket_fd != -1 && connection_fd != -1);
+}
+
+/// @brief Get the socket file descriptor
+int SocketModule::getSocketFd() const {
+    return socket_fd;
+}
+
+/// @brief Get the connection file descriptor
+int SocketModule::getConnectionFd() const {
+    return connection_fd;
+}
