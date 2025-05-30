@@ -254,6 +254,7 @@ void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const 
         }
         // info is empty, so skip
         hmac_process(&hmac, &ctr, 1);
+        tlen = hash_len;
         hmac_done(&hmac, T, &tlen);
 
         unsigned int to_copy = (outpos + hash_len > keyLength) ? (keyLength - outpos) : hash_len;
