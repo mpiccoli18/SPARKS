@@ -218,49 +218,36 @@ void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const 
 }
 */
 
-// Function to derive a key using HKDF with the help of LibTomCrypt(SHA256)
+/// @brief Function to derive a key using HKDF with the help of LibTomCrypt(SHA256)
+/// @param NA Nonce A
+/// @param NB Nonce B
+/// @param S Salt
+/// @param keyLength Length of the derived key
+/// @param derivedKey Buffer to store the derived key
 void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const unsigned char* S,
     size_t keyLength, unsigned char* derivedKey) {
     // Combine NA and NB into the input key material (IKM)
+    int err, sha256_idx;
+    unsigned long keyLen = keyLength;
     unsigned char input_key_material[64];  // 32 bytes + 32 bytes = 64 bytes
     std::memcpy(input_key_material, NA, 32);
     std::memcpy(input_key_material + 32, NB, 32);
 
-    // LibTomCrypt HKDF setup
-    int err;
-    unsigned char prk[32]; // Pseudorandom Key (SHA256 output size)
-    unsigned char T[32];
-    unsigned int hash_len = 32;
-    unsigned int n = (keyLength + hash_len - 1) / hash_len;
-    unsigned int outpos = 0;
-    unsigned char ctr = 1;
-    unsigned long hash_len_l = hash_len;
-    // Extract step: PRK = HMAC-Hash(salt, IKM)
-    err = hmac_memory(find_hash("sha256"), S, 32, input_key_material, sizeof(input_key_material), prk, &hash_len_l);
-    if (err != CRYPT_OK) {
-        // handle error
+    // Prepare for HKDF with SHA256 as the hash function
+    if(register_hash(&sha256_desc) != CRYPT_OK) {
+        std::cerr << "Error registering SHA256 hash function." << std::endl;
         return;
     }
 
-    // Expand step
-    unsigned long tlen = 0;
-    unsigned char prev[32];
-    hmac_state hmac;
-    for (unsigned int i = 0; i < n; ++i) {
-        hmac_init(&hmac, find_hash("sha256"), prk, hash_len);
+    sha256_idx = find_hash("sha256");
+    /*if((err = hmac_memory(sha256_idx, input_key_material, sizeof(input_key_material), S, sizeof(S), derivedKey, &keyLen)) != CRYPT_OK) {
+        std::cerr << "Error deriving key using HKDF: " << error_to_string(err) << std::endl;
+        return;
+    }*/
 
-        if (i > 0) {
-            hmac_process(&hmac, prev, hash_len);
-        }
-        // info is empty, so skip
-        hmac_process(&hmac, &ctr, 1);
-        hmac_done(&hmac, T, &tlen);
-
-        unsigned int to_copy = (outpos + hash_len > keyLength) ? (keyLength - outpos) : hash_len;
-        std::memcpy(derivedKey + outpos, T, to_copy);
-        outpos += to_copy;
-        std::memcpy(prev, T, hash_len);
-        ctr++;
+    if((err = hkdf(sha256_idx, S, 32, nullptr, 0, input_key_material, sizeof(input_key_material), derivedKey, keyLen)) != CRYPT_OK) {
+        std::cerr << "Error deriving key using HKDF: " << error_to_string(err) << std::endl;
+        return;
     }
 }
 
