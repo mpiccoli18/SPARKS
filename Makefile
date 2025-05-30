@@ -45,8 +45,8 @@ MEASUREMENT_BIN := \
 	4_supp_auth_overheads_supplementary \
 	5_pmc_test \
 	6_warmup_impact \
-	7_json_impact_client \
-	7_json_impact_server \
+	7_msgPack_impact_client \
+	7_msgPack_impact_server \
 
 # Default target
 all: scenarii
