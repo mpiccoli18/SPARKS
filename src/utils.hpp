@@ -19,10 +19,6 @@
 #include <fstream>
 #include <tomcrypt.h>
 
-<<<<<<< HEAD
-
-=======
->>>>>>> main
 #define PUF_SIZE 32 // 256 bits = 32 bytes
 #define CHALLENGE_SIZE 5
 
@@ -135,9 +131,6 @@ void printMsgPack(std::unordered_map<std::string, std::string> data);
  */
 double getCpuFrequency();
 
-<<<<<<< HEAD
-/// @brief Function to derive a key using HKDF with the help of LibTomCrypt(SHA256)
-=======
 /**
  * @brief Function to derive a key using HKDF (SHA256)
  * 
@@ -148,7 +141,6 @@ double getCpuFrequency();
  * @param derivedKey 
  * @return * void 
  */
->>>>>>> main
 void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const unsigned char* S, size_t keyLength, unsigned char* derivedKey);
 #endif
 
