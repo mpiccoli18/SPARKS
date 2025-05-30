@@ -18,6 +18,10 @@
 #include "puf.hpp"
 #include "SocketModule.hpp"
 
+#ifdef MEASUREMENTS_DETAILLED
+#include "CycleCounter.hpp"
+#endif
+
 #define PUF_SIZE 32  // 256 bits = 32 bytes
 
 /// @brief This class defines the data structure holded by UAVs' table to describe other UAVs.
@@ -67,7 +71,7 @@ private:
     const puf PUF;
 
 public:
-    SocketModule socketModule = SocketModule(); 
+    SocketModule socketModule; 
     UAV(std::string id);
     UAV(std::string id, unsigned char * salt);
     std::string getId();

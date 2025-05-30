@@ -1,4 +1,8 @@
-#include <chrono>
+/**
+ * @file 9_json_impact_client.cpp
+ * @brief This file's goal is to measure the overheads of using JSON as a serialization method.
+ * 
+ */
 #include <thread>
 
 #include "../UAV.hpp"

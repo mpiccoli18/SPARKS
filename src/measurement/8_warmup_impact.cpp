@@ -1,4 +1,8 @@
-#include <chrono>
+/**
+ * @file 8_warmup_impact.cpp
+ * @brief This file's goal is to measure the impact of the warmup stage on the overheads of several functions.
+ * 
+ */
 
 #include "../UAV.hpp"
 #include "../utils.hpp"

@@ -268,3 +268,7 @@ bool extractValueFromMap(std::unordered_map<std::string, std::string> map, std::
     std::memcpy(output, valStr.data(), size);
     return true;
 }
+
+void warmup(){
+    register_hash(&sha256_desc);
+}
