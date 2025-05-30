@@ -37,6 +37,12 @@ SCENARII_BIN := \
 MEASUREMENT_BIN := \
     1_enrol_overheads_client \
     1_enrol_overheads_server \
+	2_auth_overheads_client \
+    2_auth_overheads_server \
+	3_auth_key_overheads_client \
+	3_auth_key_overheads_server \
+	4_supp_auth_overheads_initial \
+	4_supp_auth_overheads_supplementary \
 
 # Default target
 all: scenarii
@@ -48,6 +54,12 @@ measure: $(MEASUREMENT_BIN)
 	$(CXX) $(CXXFLAGS) $(PROCFLAGS) $^ -o $@ -ltomcrypt
 
 %_server: $(OBJS_MEASURE) $(SRC_DIR)/measurement/%_server.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $(PROCFLAGS) $^ -o $@ -ltomcrypt
+
+%_initial: $(OBJS_MEASURE) $(SRC_DIR)/measurement/%_initial.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $(PROCFLAGS) $^ -o $@ -ltomcrypt
+
+%_supplementary: $(OBJS_MEASURE) $(SRC_DIR)/measurement/%_supplementary.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $(PROCFLAGS) $^ -o $@ -ltomcrypt
 
 # 1_enrol_overheads_client : $(OBJS) $(SRC_DIR)/measurement/$@.cpp | $(BIN_DIR)
