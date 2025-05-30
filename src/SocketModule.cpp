@@ -104,7 +104,7 @@ bool SocketModule::waitForConnection(int port) {
 
 /// @brief Send a msgPack message over the socket
 /// @param msgPack The message to send
-void SocketModule::sendMsgPack(const std::unordered_map<std::string, std::string> &msgPack) {
+void SocketModule::sendMsg(const std::unordered_map<std::string, std::string> &msgPack) {
     // Serialize the map using msgpack
     msgpack::sbuffer sbuf;
     msgpack::pack(sbuf, msgPack);
@@ -115,7 +115,7 @@ void SocketModule::sendMsgPack(const std::unordered_map<std::string, std::string
 /// @brief Receive a msgPack message on the socket
 /// @param none
 /// @return The received message as a string
-std::unordered_map<std::string, std::string> SocketModule::receiveMsgPack(){
+std::unordered_map<std::string, std::string> SocketModule::receiveMsg(){
     char buffer[1024] = {0};
     msgpack::object_handle msgpack_obj;
 
