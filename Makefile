@@ -75,6 +75,9 @@ scenario3: scenario3_A scenario3_B
 
 test: test_all
 
+debug: $(OBJS) $(SRC_DIR)/debug.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
+
 scenario1_A: $(OBJS) $(SRC_DIR)/scenario1/scenario1_A.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
 

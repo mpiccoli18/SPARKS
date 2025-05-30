@@ -205,6 +205,7 @@ void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const 
     std::memcpy(input_key_material, NA, 32);
     std::memcpy(input_key_material + 32, NB, 32);
 
+    
     // LibTomCrypt HKDF setup
     int err;
     unsigned char prk[32]; // Pseudorandom Key (SHA256 output size)
@@ -215,12 +216,18 @@ void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const 
     unsigned char ctr = 1;
     unsigned long hash_len_l = hash_len;
     // Extract step: PRK = HMAC-Hash(salt, IKM)
+    static bool hash_registered = false;
+    if (!hash_registered) {
+        register_hash(&sha256_desc);
+        hash_registered = true;
+    }
     err = hmac_memory(find_hash("sha256"), S, 32, input_key_material, sizeof(input_key_material), prk, &hash_len_l);
     if (err != CRYPT_OK) {
         // handle error
+        std::cout << "err = " << err << std::endl;
         return;
     }
-
+    
     // Expand step
     unsigned long tlen = 0;
     unsigned char prev[32];
@@ -233,6 +240,7 @@ void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const 
         }
         // info is empty, so skip
         hmac_process(&hmac, &ctr, 1);
+        tlen = hash_len;
         hmac_done(&hmac, T, &tlen);
 
         unsigned int to_copy = (outpos + hash_len > keyLength) ? (keyLength - outpos) : hash_len;
