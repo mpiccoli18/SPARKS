@@ -88,7 +88,7 @@ void xor_buffers(const unsigned char* input1, const unsigned char* input2, size_
  * 
  * @return * Function* 
  */hash_state* initHash(){
-    hash_state* ctx = new hash_state;
+    hash_state* ctx = new hash_state();
     sha256_init(ctx);
     return ctx;
 }

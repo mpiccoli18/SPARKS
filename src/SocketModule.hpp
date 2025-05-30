@@ -48,6 +48,9 @@ public:
     std::unordered_map<std::string, std::string> receiveMsgPack();
 
     void closeConnection();
+    bool isOpen() const;
+    int getSocketFd() const;
+    int getConnectionFd() const;
 };
 
 #endif
