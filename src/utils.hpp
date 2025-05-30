@@ -131,9 +131,33 @@ void printMsgPack(std::unordered_map<std::string, std::string> data);
  */
 double getCpuFrequency();
 
-// Function to derive a key using HKDF (SHA256)
+/**
+ * @brief Function to derive a key using HKDF (SHA256)
+ * 
+ * @param NA 
+ * @param NB 
+ * @param S 
+ * @param keyLength 
+ * @param derivedKey 
+ * @return * void 
+ */
 void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const unsigned char* S, size_t keyLength, unsigned char* derivedKey);
 #endif
 
-
+/**
+ * @brief This function is a helper to extract a unsigned char table 'output' indexed at 'key' an unordered map 'map'. 
+ * 
+ * @param map 
+ * @param key 
+ * @param output 
+ * @param size 
+ * @return true 
+ * @return false 
+ */
 bool extractValueFromMap(std::unordered_map<std::string, std::string> map, std::string key , unsigned char * output, size_t size);
+
+/**
+ * @brief Warmup for LibTomCrypt
+ * 
+ */
+void warmup();

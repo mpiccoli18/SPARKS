@@ -274,32 +274,33 @@ int UAV::enrolment_server(){
         long long idlCycles = 0;
         long long opCycles = 0;
         CycleCounter counter;
-    #endif
-
-    MEASURE_ONLY({
-        start = counter.getCycles();
-    });
-
-    // B waits for B's message  (with CB)
-    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsgPack();
-    PROD_ONLY({printMsgPack(msg);});
-    MEASURE_ONLY({
-        end = counter.getCycles();
-        idlCycles += end - start;
-        start = counter.getCycles();
-    });
-
-    // Check if an error occurred
-    if (msg.empty()) {
-        std::cerr << "Error occurred: content is empty!" << std::endl;
-        return -1;
-    }
-    
-    // B receive CB. It creates A in the memory of B and save CB.
-    unsigned char CB[PUF_SIZE];
-    extractValueFromMap(msg,"CB",CB,PUF_SIZE);
-    PROD_ONLY({std::cout << "CB : "; print_hex(CB, PUF_SIZE);});
-
+        #endif
+        
+        MEASURE_ONLY({
+            start = counter.getCycles();
+        });
+        std::cout << "DEBUG1" << std::endl;
+        // B waits for B's message  (with CB)
+        std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsgPack();
+        PROD_ONLY({printMsgPack(msg);});
+        MEASURE_ONLY({
+            end = counter.getCycles();
+            idlCycles += end - start;
+            start = counter.getCycles();
+        });
+        std::cout << "DEBUG2" << std::endl;
+        
+        // Check if an error occurred
+        if (msg.empty()) {
+            std::cerr << "Error occurred: content is empty!" << std::endl;
+            return -1;
+        }
+        
+        // B receive CB. It creates A in the memory of B and save CB.
+        unsigned char CB[PUF_SIZE];
+        extractValueFromMap(msg,"CB",CB,PUF_SIZE);
+        PROD_ONLY({std::cout << "CB : "; print_hex(CB, PUF_SIZE);});
+        
     msg.clear();
 
     this->addUAV("A", nullptr, CB);

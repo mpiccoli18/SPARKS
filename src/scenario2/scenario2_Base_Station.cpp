@@ -14,10 +14,10 @@ int main(){
 
     // Creation of the base station
 
-    puf BSpuf = puf();
+    puf BSpuf;
     unsigned char Lx[CHALLENGE_SIZE][PUF_SIZE];
     unsigned char LR[CHALLENGE_SIZE][PUF_SIZE];
-    SocketModule sm = SocketModule();
+    SocketModule sm;
 
     // Wait for a connection
     sm.waitForConnection(8080);

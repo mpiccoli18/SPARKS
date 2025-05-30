@@ -71,7 +71,7 @@ private:
     const puf PUF;
 
 public:
-    SocketModule socketModule = SocketModule(); 
+    SocketModule socketModule; 
     UAV(std::string id);
     UAV(std::string id, unsigned char * salt);
     std::string getId();

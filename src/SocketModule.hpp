@@ -25,9 +25,20 @@ private:
     int socket_fd;         // Socket file descriptor
     int connection_fd;     // Used when acting as a server
     struct sockaddr_in address;
+    msgpack::unpacker pac;
 
 public:
     SocketModule();  // Constructor
+    
+    // Delete copy constructor and copy assignment operator
+    SocketModule(const SocketModule&) = delete;
+    SocketModule& operator=(const SocketModule&) = delete;
+
+    // Delete move constructor and move assignment operator
+    SocketModule(SocketModule&&) = delete;
+    SocketModule& operator=(SocketModule&&) = delete;
+
+
     ~SocketModule(); // Destructor
 
     bool initiateConnection(const std::string& ip, int port);

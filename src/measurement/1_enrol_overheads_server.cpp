@@ -26,19 +26,19 @@ long long end;
 
 CycleCounter counter;
 
-void warmup(UAV * A){
-    unsigned char rand[PUF_SIZE];
-    generate_random_bytes(rand);
-    unsigned char out[PUF_SIZE];
-    A->callPUF(rand, out);
-    // print_hex(out, PUF_SIZE);
-    register_hash(&sha256_desc);
-}
+// void warmup(UAV * A){
+//     unsigned char rand[PUF_SIZE];
+//     generate_random_bytes(rand);
+//     unsigned char out[PUF_SIZE];
+//     A->callPUF(rand, out);
+//     // print_hex(out, PUF_SIZE);
+//     register_hash(&sha256_desc);
+// }
 
 int main() {
     // Creation of the UAV
 
-    UAV A = UAV(idA);
+    UAV A(idA);
     A.addUAV(idB);
 
     // std::cout << "The client drone id is : " <<A.getId() << ".\n"; 
@@ -48,7 +48,7 @@ int main() {
     // When the programm reaches this point, the UAV are connected
     
     // We now warm up the functions 
-    warmup(&A);    
+    warmup();    
     
     // We start the measurements
     start = counter.getCycles();

@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
 
     // Creation of the UAV
 
-    UAV A = UAV(idA);
+    UAV A(idA);
 
     std::cout << "The client drone id is : " <<A.getId() << ".\n"; 
 
