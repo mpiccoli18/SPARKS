@@ -1,13 +1,13 @@
 /**
- * @file 1_enrol_client.cpp
- * @brief This file's goal is to measure the overheads of the enrolment function. The output is the total time taken by the function to execute. 
+ * @file 3_auth_client_key.cpp
+ * @brief This file's goal is to measure the overheads of the authentication + key function. The output is the total time taken by the function to execute. 
  * If the project is compiled with -DMEASUREMENTS, The output also includes the active and idle time of the function execution.
  * 
  */
 
 #include <string>
 #include <chrono> 
-#include <thread>
+#include <thread> 
 
 #include "../UAV.hpp"
 #include "../puf.hpp"
@@ -44,17 +44,24 @@ int main(int argc, char* argv[]) {
     // Warming up LibTomCrypt 
     warmup();    
     
-    // We start the measurements
-    start = counter.getCycles(); 
-
     int ret = A.enrolment_client();
     if (ret == 1){
         return ret;
     }
+
+    start = counter.getCycles(); 
+
+    ret = A.autentication_key_client();
+    
     end = counter.getCycles(); 
     totalTime = end - start;
 
-    std::cout << "Enrolment procedure elapsed CPU cycles : " << totalTime << " cycles" << std::endl;
+    if (ret == 1){
+        // std::cout << "There was a problem" << std::endl;
+        return ret;
+    }
+
+    std::cout << "Authentication + key procedure elapsed CPU cycles : " << totalTime << " cycles" << std::endl;
     A.socketModule.closeConnection();
     return 0;
 }
