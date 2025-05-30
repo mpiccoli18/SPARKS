@@ -115,25 +115,23 @@ void SocketModule::sendMsgPack(const std::unordered_map<std::string, std::string
 /// @param none
 /// @return The received message as a string
 std::unordered_map<std::string, std::string> SocketModule::receiveMsgPack(){
-    static std::string dataBuffer = "";  // Store partial data between calls
     char buffer[1024] = {0};
     msgpack::object_handle msgpack_obj;
+
+    if (pac.next(msgpack_obj)) { // This is true only if there is a complete parsed message in the unpacker 'pac'
+        return msgpack_obj.get().as<std::unordered_map<std::string, std::string>>();
+    }
     while(true)
     {
         int bytesReceived = read(this->connection_fd, buffer, sizeof(buffer));
-        if (bytesReceived > 0) {
-            // Append new data to buffer
-            std::cout << "Received " << bytesReceived << "bytes." << std::endl;
-            dataBuffer += std::string(buffer, bytesReceived);
-            try {
-                // Attempt to parse MsgPack
-                msgpack_obj = msgpack::unpack(dataBuffer.data(), dataBuffer.size());
-                dataBuffer.clear();  // Clear buffer after successful parsing
+        if (bytesReceived > 0) { 
+            PROD_ONLY({std::cout << "Received " << bytesReceived << "bytes." << std::endl;});
+            pac.reserve_buffer(bytesReceived);
+            std::memcpy(pac.buffer(), buffer, bytesReceived);
+            pac.buffer_consumed(bytesReceived);
+
+            if (pac.next(msgpack_obj)) { // Check whether there is a complete message
                 return msgpack_obj.get().as<std::unordered_map<std::string, std::string>>();
-            } catch (msgpack::unpack_error& e) {
-                std::cerr << "MsgPack parse error: " << e.what() << std::endl;
-                std::cerr << "Partial MsgPack received, waiting for more data..." << std::endl;
-                continue;  // Keep reading until we get a full MsgPack
             }
         } 
         else if (bytesReceived == 0) {
@@ -163,7 +161,17 @@ SocketModule::~SocketModule() {
     closeConnection();
 }
 
-/// @brief Check if the socket connection is open
+/// @brief Check if the socket is open
 bool SocketModule::isOpen() const {
-    return connection_fd != -1;
+    return (socket_fd != -1 && connection_fd != -1);
+}
+
+/// @brief Get the socket file descriptor
+int SocketModule::getSocketFd() const {
+    return socket_fd;
+}
+
+/// @brief Get the connection file descriptor
+int SocketModule::getConnectionFd() const {
+    return connection_fd;
 }

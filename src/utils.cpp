@@ -88,7 +88,7 @@ void xor_buffers(const unsigned char* input1, const unsigned char* input2, size_
  * 
  * @return * Function* 
  */hash_state* initHash(){
-    hash_state* ctx = new hash_state;
+    hash_state* ctx = new hash_state();
     sha256_init(ctx);
     return ctx;
 }
@@ -257,17 +257,24 @@ void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const 
 /// @param key 
 /// @param output 
 /// @param size 
-void extractValueFromMap(std::unordered_map<std::string, std::string> map, std::string key , unsigned char * output, size_t size){
+bool extractValueFromMap(std::unordered_map<std::string, std::string> map, std::string key , unsigned char * output, size_t size){
 
     auto it = map.find(key);
     if (it == map.end()) {
         std::cerr << "Error: key " << key << " not found.\n";
+        return false;
     }
 
     const std::string& valStr = it->second;
 
     if (valStr.size() != size) {
         std::cerr << "Error: value has incorrect size (" << valStr.size() << ").\n";
+        return false;
     }
     std::memcpy(output, valStr.data(), size);
+    return true;
+}
+
+void warmup(){
+    register_hash(&sha256_desc);
 }

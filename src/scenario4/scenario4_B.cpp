@@ -1,6 +1,5 @@
 #include <string>
 #include <chrono> 
-#include <thread>
 
 #include "../UAV.hpp"
 #include "../puf.hpp"
@@ -24,23 +23,14 @@ int main(){
     // When the programm reaches this point, the UAV are connected
 
     int ret = B.enrolment_server();
-    if (ret != 0){
+    if (ret == 1){
         return ret;
     }
 
-    ret = B.autentication_server();
-    std::cout << "The autentication failed because of a timeout.\n";
-
-    // Expected output is a fail
-    // The client timed out. The next autentication should still work tho.
-    
-    B.socketModule.closeConnection();
-    B.socketModule.waitForConnection(8080);
-
-    ret = B.autentication_server();
-    if (ret != 0){
+    ret = B.autentication_key_server();
+    if (ret == 1){
         return ret;
-    }   
+    }
     
     B.socketModule.closeConnection();
 

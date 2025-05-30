@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
 
     // Creation of the UAV
 
-    UAV C = UAV(idC);
+    UAV C(idC);
 
     std::cout << "The supplementary drone id is : " << C.getId() << ".\n"; 
 

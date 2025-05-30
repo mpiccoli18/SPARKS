@@ -1,14 +1,40 @@
+/**
+ * @file 2_auth_server.cpp
+ * @brief This file's goal is to measure the overheads of the authentication function. The output is the total time taken by the function to execute. 
+ * If the project is compiled with -DMEASUREMENTS, The output also includes the active and idle time of the function execution.
+ * 
+ */
+
 #include <string>
 #include <chrono> 
+#include <thread> 
 
 #include "../UAV.hpp"
 #include "../puf.hpp"
 #include "../utils.hpp"
 #include "../SocketModule.hpp"
+#include "../CycleCounter.hpp"
 
 std::string idA = "A";
 std::string idB = "B";
 bool server = true;
+
+CycleCounter counter;
+
+long long start;
+long long start_init;
+long long end;
+long long m1;
+long long idlcycles = 0;
+long long opCycles = 0;
+
+void warmup(UAV * A){
+    unsigned char rand[PUF_SIZE];
+    generate_random_bytes(rand);
+    unsigned char out[PUF_SIZE];
+    A->callPUF(rand, out);
+    // print_hex(out, PUF_SIZE);
+}
 
 int enrolment_server(UAV * B){
     // std::cout << "\nEnrolment process begins.\n";
@@ -16,7 +42,6 @@ int enrolment_server(UAV * B){
     // B waits for B's message  (with CB)
     json rsp = B->socketModule.receiveMessage();
     // printJSON(rsp);
-
     // Check if an error occurred
     if (rsp.contains("error")) {
         std::cerr << "Error occurred: " << rsp["error"] << std::endl;
@@ -41,6 +66,9 @@ int enrolment_server(UAV * B){
     json msg = {{"id", idB}, {"RB", toHexString(RB, PUF_SIZE)}};
     B->socketModule.sendMessage(msg);
     // std::cout << "Sent RB.\n";
+
+    // Wait 0.5 sec
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     // B enroll with A
     // Computes xA
@@ -83,6 +111,7 @@ int enrolment_server(UAV * B){
 }
 
 int autentication_server(UAV * B){
+    start = counter.getCycles();
     // The client initiate the autentication process
     // std::cout << "\nAutentication process begins.\n";
 
@@ -90,6 +119,9 @@ int autentication_server(UAV * B){
     json rsp = B->socketModule.receiveMessage();
     // printJSON(rsp);
 
+    end = counter.getCycles();
+    idlcycles += end - start;
+    start = counter.getCycles();
     // Check if an error occurred
     if (rsp.contains("error")) {
         std::cerr << "Error occurred: " << rsp["error"] << std::endl;
@@ -103,7 +135,7 @@ int autentication_server(UAV * B){
         return 1;
     }
     fromHexString(rsp["M0"].get<std::string>(), M0, PUF_SIZE);
-    
+
     // B retrieve xA from memory and computes CA
     const unsigned char * xA = B->getUAVData(idA)->getX();
     if (xA == nullptr){
@@ -111,11 +143,11 @@ int autentication_server(UAV * B){
         return 1;
     }
     // std::cout << "xA : "; print_hex(xA, PUF_SIZE);
-    
+
     unsigned char CA[PUF_SIZE];
     B->callPUF(xA,CA);
     // std::cout << "CA : "; print_hex(CA, PUF_SIZE);
-    
+
     unsigned char NA[PUF_SIZE];
     xor_buffers(M0, CA, PUF_SIZE, NA);
     // std::cout << "NA : "; print_hex(NA, PUF_SIZE);
@@ -134,8 +166,8 @@ int autentication_server(UAV * B){
         return 1;
     }
     // std::cout << "RA : "; print_hex(RA, PUF_SIZE);
-    xor_buffers(RA,NA,PUF_SIZE,M1);
-    xor_buffers(M1,NB,PUF_SIZE,M1);
+    xor_buffers(RA,NB,PUF_SIZE,M1);
+    xor_buffers(M1,NA,PUF_SIZE,M1);
     // std::cout << "M1 : "; print_hex(M1, PUF_SIZE);
 
     // B sends its ID, M1 and a hash of CA, NB, RA, NA to A
@@ -155,11 +187,17 @@ int autentication_server(UAV * B){
     };
     B->socketModule.sendMessage(msg);
     // std::cout << "Sent ID, M1 and hash1.\n";
+    end = counter.getCycles();
+    opCycles += end - start;
+    start = counter.getCycles();
 
     // B waits for A response (M2)
     rsp = B->socketModule.receiveMessage();
     // printJSON(rsp);
 
+    end = counter.getCycles();
+    idlcycles += end - start;
+    start = counter.getCycles();
     // Check if an error occurred
     if (rsp.contains("error")) {
         std::cerr << "Error occurred: " << rsp["error"] << std::endl;
@@ -182,7 +220,7 @@ int autentication_server(UAV * B){
 
     // B retrieve RAp from M2
     unsigned char RAp[PUF_SIZE];
-    xor_buffers(M2, NB, PUF_SIZE, RAp);
+    xor_buffers(M2, NA, PUF_SIZE, RAp);
     // std::cout << "RAp : "; print_hex(RAp, PUF_SIZE);
 
     // B verify the hash
@@ -223,8 +261,9 @@ int autentication_server(UAV * B){
     // std::cout << "Sent ID and hash3.\n";
 
     // Finished
-    std::cout << "\nThe two UAV autenticated each other.\n";
-
+    // std::cout << "\nThe two UAV autenticated each other.\n";
+    end = counter.getCycles();
+    opCycles += end - start;
     return 0;
 }
 
@@ -234,22 +273,32 @@ int main(){
 
     UAV B = UAV(idB);
 
-    // std::cout << "The server drone id is : " <<B.getId() << ".\n"; 
-
     B.socketModule.waitForConnection(8080);
 
     // When the programm reaches this point, the UAV are connected
+
+    warmup(&B);
 
     int ret = enrolment_server(&B);
     if (ret == 1){
         return ret;
     }
 
+    
+    start_init = counter.getCycles(); 
+    
     ret = autentication_server(&B);
+    
+    end = counter.getCycles(); 
+    m1 = end - start_init;
+
     if (ret == 1){
         return ret;
     }
-    
+
+    std::cout << "m1 Elapsed CPU cycles server authentication: " << m1 << " cycles" << std::endl;
+    std::cout << "operational Elapsed CPU cycles server authentication: " << opCycles << " cycles" << std::endl;
+    std::cout << "idle Elapsed CPU cycles server authentication: " << idlcycles << " cycles" << std::endl;
     B.socketModule.closeConnection();
 
     return 0;

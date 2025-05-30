@@ -14,7 +14,7 @@ int main(){
 
     // Creation of the UAV
 
-    UAV B = UAV(idB);
+    UAV B(idB);
 
     std::cout << "The server drone id is : " <<B.getId() << ".\n"; 
 

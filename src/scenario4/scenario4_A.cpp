@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
         return ret;
     }
 
-    ret = A.autentication_client();
+    ret = A.autentication_key_client();
     if (ret == 1){
         return ret;
     }

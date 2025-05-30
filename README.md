@@ -72,6 +72,11 @@ This scenario represents a simple authentication process between a UAV A and B w
 
 To run the scenario, launch `scenario3_B` then `scenario3_A`. `scenario3_A` takes the other UAV IP in argument, ex : `./scenario3_A "127.0.0.1"` or `./scenario3_A "192.168.193.215"`.
 
+#### Scenario 4:
+This scenario represents a simple authentication process with establishment of a session key between a UAV A and B. 
+
+To run the scenario, launch `scenario4_B` then `scenario4_A`. `scenario4_A` takes the other UAV IP in argument, ex : `./scenario4_A "127.0.0.1"` or `./scenario4_A "192.168.193.215"`
+
 ### 📊 Run Measurement Tools
 To compile all performance and measurement-related binaries, run:
 

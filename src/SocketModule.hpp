@@ -15,6 +15,8 @@
 #include <arpa/inet.h>
 #include <msgpack.hpp>
 
+#include "utils.hpp"
+
 #define TIMEOUT_VALUE  5
 
 /// @brief Socket module class. Its job is to manage everything connection related for a server and a client.
@@ -23,9 +25,20 @@ private:
     int socket_fd;         // Socket file descriptor
     int connection_fd;     // Used when acting as a server
     struct sockaddr_in address;
+    msgpack::unpacker pac;
 
 public:
     SocketModule();  // Constructor
+    
+    // Delete copy constructor and copy assignment operator
+    SocketModule(const SocketModule&) = delete;
+    SocketModule& operator=(const SocketModule&) = delete;
+
+    // Delete move constructor and move assignment operator
+    SocketModule(SocketModule&&) = delete;
+    SocketModule& operator=(SocketModule&&) = delete;
+
+
     ~SocketModule(); // Destructor
 
     bool initiateConnection(const std::string& ip, int port);
@@ -36,6 +49,9 @@ public:
     std::unordered_map<std::string, std::string> receiveMsgPack();
 
     void closeConnection();
+    bool isOpen() const;
+    int getSocketFd() const;
+    int getConnectionFd() const;
 };
 
 #endif

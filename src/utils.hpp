@@ -19,9 +19,37 @@
 #include <fstream>
 #include <tomcrypt.h>
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> main
 #define PUF_SIZE 32 // 256 bits = 32 bytes
 #define CHALLENGE_SIZE 5
+
+//// MACRO
+
+#pragma once
+
+#if defined(MEASUREMENTS)
+
+    // Basic measurements: exclude both measurement and prod-only logs
+    #define MEASURE_ONLY(code) do {} while (0)
+    #define PROD_ONLY(code)    do {} while (0)
+
+#elif defined(MEASUREMENTS_DETAILLED)
+
+    // Detailed measurements: include measurement code, exclude prod-only logs
+    #define MEASURE_ONLY(code) do { code } while (0)
+    #define PROD_ONLY(code)    do {} while (0)
+
+#else
+
+    // Production: exclude measurement code, include prod-only logs
+    #define MEASURE_ONLY(code) do {} while (0)
+    #define PROD_ONLY(code)    do { code } while (0)
+
+#endif
+
 
 /**
  * @brief Generates a random 256 bits unsigned char.
@@ -107,9 +135,37 @@ void printMsgPack(std::unordered_map<std::string, std::string> data);
  */
 double getCpuFrequency();
 
+<<<<<<< HEAD
 /// @brief Function to derive a key using HKDF with the help of LibTomCrypt(SHA256)
+=======
+/**
+ * @brief Function to derive a key using HKDF (SHA256)
+ * 
+ * @param NA 
+ * @param NB 
+ * @param S 
+ * @param keyLength 
+ * @param derivedKey 
+ * @return * void 
+ */
+>>>>>>> main
 void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const unsigned char* S, size_t keyLength, unsigned char* derivedKey);
 #endif
 
+/**
+ * @brief This function is a helper to extract a unsigned char table 'output' indexed at 'key' an unordered map 'map'. 
+ * 
+ * @param map 
+ * @param key 
+ * @param output 
+ * @param size 
+ * @return true 
+ * @return false 
+ */
+bool extractValueFromMap(std::unordered_map<std::string, std::string> map, std::string key , unsigned char * output, size_t size);
 
-void extractValueFromMap(std::unordered_map<std::string, std::string> map, std::string key , unsigned char * output, size_t size);
+/**
+ * @brief Warmup for LibTomCrypt
+ * 
+ */
+void warmup();
