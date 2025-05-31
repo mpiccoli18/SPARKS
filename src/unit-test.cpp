@@ -45,8 +45,8 @@ TEST(SocketModuleTest, SendReceiveMessage) {
     SocketModule sm;
     EXPECT_TRUE(sm.initiateConnection("127.0.0.1", 8080));
     std::unordered_map<std::string, std::string> msg = {{"key", "value"}}; 
-    sm.sendMsgPack(msg);
-    std::unordered_map<std::string, std::string> receivedMsg = sm.receiveMsgPack();
+    sm.sendMsg(msg);
+    std::unordered_map<std::string, std::string> receivedMsg = sm.receiveMsg();
     EXPECT_EQ(msg["key"], receivedMsg["key"]);
     EXPECT_TRUE(sm.isOpen());
     sm.closeConnection();
