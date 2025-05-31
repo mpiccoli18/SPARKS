@@ -1142,7 +1142,7 @@ int UAV::autentication_key_server(){
     });
     // B receive the initial message
     std::unordered_map<std::string, std::string> msg;
-    msg.reserve(3);
+    msg.reserve(4);
     this->socketModule.receiveMsg(msg);
     PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
