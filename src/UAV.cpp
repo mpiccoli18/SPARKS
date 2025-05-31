@@ -171,7 +171,7 @@ int UAV::enrolment_client(){
     msg["id"] = this->getId();
     msg["CB"] = std::string(reinterpret_cast<const char*>(CB), 32);
 
-    this->socketModule.sendMsgPack(msg);
+    this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent CB.\n";});
     MEASURE_ONLY({
         end = counter.getCycles();
@@ -182,8 +182,8 @@ int UAV::enrolment_client(){
     msg.clear();
 
     // Wait for B's response (with RB)
-    msg = this->socketModule.receiveMsgPack();
-    PROD_ONLY({printMsgPack(msg);});
+    msg = this->socketModule.receiveMsg();
+    PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
         end = counter.getCycles();
         idlCycles += end - start;
@@ -219,8 +219,8 @@ int UAV::enrolment_client(){
     // B enroll with A
     // A receive CA. It saves CA.
     //std::cout << this->socketModule.isOpen() << std::endl;
-    msg = this->socketModule.receiveMsgPack();
-    PROD_ONLY({printMsgPack(msg);});
+    msg = this->socketModule.receiveMsg();
+    PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
         end = counter.getCycles();
         idlCycles += end - start;
@@ -250,7 +250,7 @@ int UAV::enrolment_client(){
     msg["id"] = this->getId();
     msg["RA"] = std::string(reinterpret_cast<const char*>(RA), 32);
 
-    this->socketModule.sendMsgPack(msg);
+    this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent RA.\n";});
     MEASURE_ONLY({
         end = counter.getCycles();
@@ -314,7 +314,7 @@ int UAV::enrolment_server(){
     msg["id"] = this->getId();
     msg["RB"] = std::string(reinterpret_cast<const char*>(RB), 32);
 
-    this->socketModule.sendMsgPack(msg);
+    this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent RB.\n";}); 
     MEASURE_ONLY({
         end = counter.getCycles();
@@ -345,7 +345,7 @@ int UAV::enrolment_server(){
     msg["id"] = this->getId();
     msg["CA"] = std::string(reinterpret_cast<const char*>(CA), 32);
 
-    this->socketModule.sendMsgPack(msg);
+    this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent CA.\n";});
     MEASURE_ONLY({
         end = counter.getCycles();
@@ -356,8 +356,8 @@ int UAV::enrolment_server(){
     msg.clear();
 
     // B receive RA and saves it. 
-    msg = this->socketModule.receiveMsgPack();
-    PROD_ONLY({printMsgPack(msg);});
+    msg = this->socketModule.receiveMsg();
+    PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
         end = counter.getCycles();
         idlCycles += end - start;
@@ -427,7 +427,7 @@ int UAV::autentication_client(){
     msg["id"] = this->getId();
     msg["M0"] = std::string(reinterpret_cast<const char*>(M0), 32);
 
-    this->socketModule.sendMsgPack(msg);
+    this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID and M0.\n";});
     MEASURE_ONLY({
         end = counter.getCycles();
@@ -572,7 +572,7 @@ int UAV::autentication_client(){
     msg["M2"] = std::string(reinterpret_cast<const char*>(M2), 32);
     msg["hash2"] = std::string(reinterpret_cast<const char*>(hash2), 32);
 
-    this->socketModule.sendMsgPack(msg);
+    this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID, M2 and hash2.\n";});
     MEASURE_ONLY({
         end = counter.getCycles();
@@ -696,7 +696,7 @@ int UAV::autentication_key_client(){
     msg["id"] = this->getId();
     msg["M0"] = std::string(reinterpret_cast<const char*>(M0), 32);
 
-    this->socketModule.sendMsgPack(msg);
+    this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID and M0.\n";});
     MEASURE_ONLY({
         end = counter.getCycles();
@@ -858,7 +858,7 @@ int UAV::autentication_key_client(){
     msg["MK"] = std::string(reinterpret_cast<const char*>(MK), 32);
     msg["hash2"] = std::string(reinterpret_cast<const char*>(hash2), 32);
 
-    this->socketModule.sendMsgPack(msg);
+    this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID, M2, MK and hash2.\n";});
     MEASURE_ONLY({
         end = counter.getCycles();
@@ -1031,7 +1031,7 @@ int UAV::autentication_server(){
     msg["M1"] = std::string(reinterpret_cast<const char*>(M1), 32);
     msg["hash1"] = std::string(reinterpret_cast<const char*>(hash1), 32);
 
-    this->socketModule.sendMsgPack(msg);
+    this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID, M1 and hash1.\n";});
     MEASURE_ONLY({
         end = counter.getCycles();
@@ -1207,7 +1207,7 @@ int UAV::autentication_key_server(){
     msg["M1"] = std::string(reinterpret_cast<const char*>(M1), 32);
     msg["hash1"] = std::string(reinterpret_cast<const char*>(hash1), 32);
 
-    this->socketModule.sendMsgPack(msg);
+    this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID, M1 and hash1.\n";});
     MEASURE_ONLY({
         end = counter.getCycles();
@@ -1315,8 +1315,8 @@ int UAV::autentication_key_server(){
 /// @return 0 if succeded, 1 if failed
 int UAV::preEnrolment(){
     // A waits for BS's query
-    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsgPack();
-    PROD_ONLY({printMsgPack(msg);});
+    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsg();
+    PROD_ONLY({printMsg(msg);});
 
     // Check if an error occurred
     if (msg.empty()) {
@@ -1340,7 +1340,7 @@ int UAV::preEnrolment(){
     msg["id"] = this->getId();
     msg["data"] = std::string(reinterpret_cast<const char*>(LR), 5 * 32);
 
-    this->socketModule.sendMsgPack(msg);
+    this->socketModule.sendMsg(msg);
 
     return 0;
 }
@@ -1350,8 +1350,8 @@ int UAV::preEnrolmentRetrival(){
     PROD_ONLY({std::cout << "\nC will now retrieve A's credentials.\n";});
 
     // Wait for A's credentials
-    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsgPack();
-    PROD_ONLY({printMsgPack(msg);});
+    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsg();
+    PROD_ONLY({printMsg(msg);});
 
     // Check if an error occurred
     if (msg.empty()) {
@@ -1394,8 +1394,8 @@ int UAV::preEnrolmentRetrival(){
 int UAV::supplementaryAuthenticationInitial(){
 
     // Waits for C demands
-    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsgPack();
-    PROD_ONLY({printMsgPack(msg);});
+    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsg();
+    PROD_ONLY({printMsg(msg);});
 
     // Check if an error occurred
     if (msg.empty()) {
@@ -1426,14 +1426,14 @@ int UAV::supplementaryAuthenticationInitial(){
     msg["NA"] = std::string(reinterpret_cast<const char *>(NA),32);
 
     // A sends 
-    this->socketModule.sendMsgPack(msg);
+    this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID and NA.\n";});
 
     msg.clear();
 
     // Waits for C's response 
-    msg = this->socketModule.receiveMsgPack();
-    PROD_ONLY({printMsgPack(msg);});
+    msg = this->socketModule.receiveMsg();
+    PROD_ONLY({printMsg(msg);});
 
     // Check if an error occurred
     if (msg.empty()) {
@@ -1509,14 +1509,14 @@ int UAV::supplementaryAuthenticationInitial(){
     msg["M2"] = std::string(reinterpret_cast<const char *>(M2),32);
     msg["hash2"] = std::string(reinterpret_cast<const char *>(hash2),32);
 
-    this->socketModule.sendMsgPack(msg);
+    this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID, M2 and hash2.\n";});
 
     msg.clear();
 
     // A waits for C's ACK
-    msg = this->socketModule.receiveMsgPack();
-    PROD_ONLY({printMsgPack(msg);});
+    msg = this->socketModule.receiveMsg();
+    PROD_ONLY({printMsg(msg);});
 
     // Check if an error occurred
     if (msg.empty()) {
@@ -1566,14 +1566,14 @@ int UAV::supplementaryAuthenticationSup(){
     
     msg["id"] = this->getId();
 
-    this->socketModule.sendMsgPack(msg);
+    this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID.\n";});
 
     msg.clear();
 
     // Wait for answer
-    msg = this->socketModule.receiveMsgPack();
-    PROD_ONLY({printMsgPack(msg);});
+    msg = this->socketModule.receiveMsg();
+    PROD_ONLY({printMsg(msg);});
 
     // Check if an error occurred
     if (msg.empty()) {
@@ -1633,14 +1633,14 @@ int UAV::supplementaryAuthenticationSup(){
     msg["M1"] = std::string(reinterpret_cast<const char *>(M1),32);
     msg["hash1"] = std::string(reinterpret_cast<const char *>(hash1),32);
 
-    this->socketModule.sendMsgPack(msg);
+    this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID, CA, M1 and hash1.\n";});
 
     msg.clear();
 
     // Wait for A's response 
-    msg = this->socketModule.receiveMsgPack();
-    PROD_ONLY({printMsgPack(msg);});
+    msg = this->socketModule.receiveMsg();
+    PROD_ONLY({printMsg(msg);});
 
     // Check if an error occurred
     if (msg.empty()) {
@@ -1698,7 +1698,7 @@ int UAV::supplementaryAuthenticationSup(){
     msg["id"] = this->getId();
     msg["hash3"] = std::string(reinterpret_cast<const char*>(hash3), 32);
 
-    this->socketModule.sendMsgPack(msg);
+    this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID and hash3.\n";});
 
     msg.clear();
@@ -1737,14 +1737,14 @@ int UAV::failed_autentication_client(){
     msg["id"] = this->getId();
     msg["M0"] = std::string(reinterpret_cast<const char*>(M0), 32);
 
-    this->socketModule.sendMsgPack(msg);
+    this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID and M0.\n";});
 
     msg.clear();
 
     // A waits for the answer
-    msg = this->socketModule.receiveMsgPack();
-    PROD_ONLY({printMsgPack(msg);});
+    msg = this->socketModule.receiveMsg();
+    PROD_ONLY({printMsg(msg);});
 
     // Check if an error occurred
     if (msg.empty()) {
@@ -1875,7 +1875,7 @@ int UAV::failed_autentication_client(){
     
     // The message is not sent to B
     
-    // this->socketModule.sendMsgPack(msg);
+    // this->socketModule.sendMsg(msg);
     // PROD_ONLY({std::cout << "Sent ID, M2 and hash2.\n";});
     
     // ################################################################
@@ -1883,8 +1883,8 @@ int UAV::failed_autentication_client(){
     msg.clear();
 
     // A waits for B's ACK
-    msg = this->socketModule.receiveMsgPack();
-    PROD_ONLY({printMsgPack(msg);});
+    msg = this->socketModule.receiveMsg();
+    PROD_ONLY({printMsg(msg);});
 
     // Check if an error occurred
     if (msg.empty()) {
