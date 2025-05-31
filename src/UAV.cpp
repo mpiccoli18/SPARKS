@@ -487,7 +487,6 @@ int UAV::autentication_client(){
     bool res = memcmp(hash1, hash1Check, PUF_SIZE) == 0;
     PROD_ONLY({std::cout << "A verify B's hash : " << res << "\n";});
 
-    //ctx.clear();
     if(res == 0){
         PROD_ONLY({std::cout << "The autentication failed. A will try to verify the hash with an old challenge if it exists.\n";});
 
