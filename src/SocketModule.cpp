@@ -152,6 +152,9 @@ void SocketModule::receiveMsg(std::unordered_map<std::string, std::string> &msg)
     for(uint32_t i = 0; i < obj.via.map.size; ++i){
         const msgpack::object_kv& kv = obj.via.map.ptr[i];
         
+        if(kv.key.is_nil() || kv.val.is_nil()){
+            continue;
+        }
         kv.key.convert(key);
         kv.val.convert(value);
         msg.emplace(std::move(key), std::move(value));
