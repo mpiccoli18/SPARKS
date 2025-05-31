@@ -115,52 +115,79 @@ void SocketModule::sendMsg(const std::unordered_map<std::string, std::string> &m
     send(this->connection_fd, sbuf.data(), sbuf.size(), 0);
 }
 
-/// @brief Receive a msgPack message on the socket
-/// @param existingMap Pointer to an existing map to store the received message
-/// @return The received message as a string
-void SocketModule::receiveMsg(std::unordered_map<std::string, std::string> &msg) {
+/**
+ * @brief Receive a message on the msgPack format and return it in the unordered_map msg.  
+ * 
+ * @param msg 
+ */
+void SocketModule::receiveMsg(std::unordered_map<std::string, std::string> &msg){
     char buffer[1024] = {0};
     msgpack::object_handle msgpack_obj;
-    msgpack::object obj = msgpack_obj.get();
-    msgpack::unpacker pac;
-    std::string key, value;
-    int bytesReceived;
-    if(this->isOpen() == false) {
-        std::cerr << "Error: Connection is not open!" << std::endl;
-        return;
-    }
+
     if (pac.next(msgpack_obj)) { // This is true only if there is a complete parsed message in the unpacker 'pac'
+        msgpack::object obj = msgpack_obj.get();
+
+        if (obj.type != msgpack::type::MAP) {
+            throw std::runtime_error("Expected a map");
+        }
+
+        for (uint32_t i = 0; i < obj.via.map.size; ++i) {
+            const msgpack::object_kv& kv = obj.via.map.ptr[i];
+
+            std::string key;
+            std::string value;
+
+            kv.key.convert(key);    
+            kv.val.convert(value);   
+
+            msg.emplace(std::move(key), std::move(value));  // Insert directly
+        }
         return;
     }
+    while(true)
+    {
+        int bytesReceived = read(this->connection_fd, buffer, sizeof(buffer));
+        if (bytesReceived > 0) { 
+            PROD_ONLY({std::cout << "Received " << bytesReceived << "bytes." << std::endl;});
+            pac.reserve_buffer(bytesReceived);
+            std::memcpy(pac.buffer(), buffer, bytesReceived);
+            pac.buffer_consumed(bytesReceived);
 
-    bytesReceived = read(this->connection_fd, buffer, sizeof(buffer));
-    if (bytesReceived <= 0) {
-        if (bytesReceived == 0) {
+            if (pac.next(msgpack_obj)) { // Check whether there is a complete message
+                msgpack::object obj = msgpack_obj.get();    // Get the object
+
+                if (obj.type != msgpack::type::MAP) {       // Verify that it's a map
+                    throw std::runtime_error("Expected a map");
+                }
+
+                for (uint32_t i = 0; i < obj.via.map.size; ++i) {       // For all key-value in the map 
+                    const msgpack::object_kv& kv = obj.via.map.ptr[i];  // Get the kv object
+
+                    std::string key;
+                    std::string value;
+
+                    kv.key.convert(key);        // Extract the key    
+                    kv.val.convert(value);      // Extract the value
+
+                    msg.emplace(std::move(key), std::move(value));  // Insert directly with emplace
+                }
+                return;
+            }
+        } 
+        else if (bytesReceived == 0) {
             std::cerr << "Connection closed by peer." << std::endl;
-        } else {
-            perror("Receive failed");
+            return;
+        } 
+        else {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                std::cerr << "Receive timeout!" << std::endl;
+                return;
+           } else {
+                perror("Receive failed");
+                return;
+            }
         }
-        return;
     }
-    // Deserialize the map
-    msgpack::unpack(msgpack_obj, buffer, sizeof(buffer));
-    obj = msgpack_obj.get();
-    if(bytesReceived > 0) {
-        PROD_ONLY({std::cout << "Received " << bytesReceived << " bytes." << std::endl;});
-    }
-
-    for(uint32_t i = 0; i < obj.via.map.size; ++i){
-        const msgpack::object_kv& kv = obj.via.map.ptr[i];
-        
-        if(kv.key.is_nil() || kv.val.is_nil()){
-            continue;
-        }
-        kv.key.convert(key);
-        kv.val.convert(value);
-        msg.emplace(std::move(key), std::move(value));
-    }
-
-    return;
 }
 
 /// @brief Close the connection
