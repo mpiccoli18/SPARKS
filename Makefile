@@ -1,6 +1,6 @@
 # Compiler
 CXX = g++
-CXXFLAGS = -Wall -Wextra -O3 -std=c++11 -I/usr/include/crypto++ -I/home/sparks/Desktop/msgpack/include
+CXXFLAGS = -Wall -Wextra -O3 -std=c++14 -I/home/sparks/Desktop/msgpack/include
 
 ifdef MEASUREMENTS_DETAILLED
 PROCFLAGS = -DMEASUREMENTS_DETAILLED
@@ -28,6 +28,8 @@ SCENARIO3_BIN := scenario3_A scenario3_B
 
 SCENARIO4_BIN := scenario4_A scenario4_B
 
+TESTING_BIN := testing-unit
+
 SCENARII_BIN := \
     $(SCENARIO1_BIN) \
     $(SCENARIO2_BIN) \
@@ -39,7 +41,7 @@ MEASUREMENT_BIN := \
     1_enrol_overheads_server \
 
 # Default target
-all: scenarii
+all: scenarii testing-unit
 
 # Rule to compile measurement
 measure: $(MEASUREMENT_BIN)
@@ -115,7 +117,7 @@ scenario3: $(SCENARIO3_BIN)
 
 scenario4: $(SCENARIO4_BIN)
 
-test: test_all
+testing-unit: $(TESTING_BIN)
 
 debug: $(OBJS) $(SRC_DIR)/debug.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
@@ -147,7 +149,7 @@ scenario4_A: $(OBJS) $(SRC_DIR)/scenario4/scenario4_A.cpp | $(BIN_DIR)
 scenario4_B: $(OBJS) $(SRC_DIR)/scenario4/scenario4_B.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
 
-test_all: $(OBJS) $(SRC_DIR)/test_all.cpp | $(BIN_DIR) 
+testing-unit: $(OBJS) $(SRC_DIR)/unit-test.cpp | $(BIN_DIR) 
 	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt -lgtest -lpthread
 
 # Normal object rule

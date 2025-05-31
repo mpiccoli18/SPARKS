@@ -787,7 +787,7 @@ int UAV::autentication_key_client(){
 
     // A sends M2, and a hash of NB, RA, RAp, NA, K
     unsigned char hash2[PUF_SIZE];
-    //ctx = initHash();
+    ctx = initHash();
     std::cout << &ctx << std::endl;
     addToHash(ctx, NB, PUF_SIZE);
     addToHash(ctx, RA, PUF_SIZE);
