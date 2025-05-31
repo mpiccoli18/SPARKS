@@ -487,7 +487,6 @@ int UAV::autentication_client(){
     bool res = memcmp(hash1, hash1Check, PUF_SIZE) == 0;
     PROD_ONLY({std::cout << "A verify B's hash : " << res << "\n";});
 
-    //ctx.clear();
     if(res == 0){
         PROD_ONLY({std::cout << "The autentication failed. A will try to verify the hash with an old challenge if it exists.\n";});
 
@@ -524,7 +523,7 @@ int UAV::autentication_client(){
         PROD_ONLY({std::cout << "NBOld : "; print_hex(NBOld, PUF_SIZE);});
 
         // A now tries to verify the hash with this value
-        //ctx = initHash();
+        ctx = initHash();
         addToHash(ctx, CAOld, PUF_SIZE);
         addToHash(ctx, NBOld, PUF_SIZE);
         addToHash(ctx, RAOld, PUF_SIZE);
@@ -560,7 +559,7 @@ int UAV::autentication_client(){
 
     // A sends M2, and a hash of NB, RA, RAp, NA
     unsigned char hash2[PUF_SIZE];
-    //ctx = initHash();
+    ctx = initHash();
     addToHash(ctx, NB, PUF_SIZE);
     addToHash(ctx, RA, PUF_SIZE);
     addToHash(ctx, RAp, PUF_SIZE);
@@ -610,7 +609,7 @@ int UAV::autentication_client(){
     }
     else{
         // Verify hash3
-        //ctx = initHash();
+        ctx = initHash();
         addToHash(ctx, RAp, PUF_SIZE);
         addToHash(ctx, NB, PUF_SIZE);
         addToHash(ctx, NA, PUF_SIZE);
@@ -793,7 +792,7 @@ int UAV::autentication_key_client(){
         PROD_ONLY({std::cout << "NBOld : "; print_hex(NBOld, PUF_SIZE);});
 
         // A now tries to verify the hash with this value
-        //ctx = initHash();
+        ctx = initHash();
         std::cout << &ctx << std::endl;
         addToHash(ctx, CAOld, PUF_SIZE);
         addToHash(ctx, NBOld, PUF_SIZE);
@@ -843,7 +842,7 @@ int UAV::autentication_key_client(){
 
     // A sends M2, and a hash of NB, RA, RAp, NA, K
     unsigned char hash2[PUF_SIZE];
-    //ctx = initHash();
+    ctx = initHash();
     //std::cout << &ctx << std::endl;
     addToHash(ctx, NB, PUF_SIZE);
     addToHash(ctx, RA, PUF_SIZE);
@@ -895,7 +894,7 @@ int UAV::autentication_key_client(){
     }
     else{
         // Verify hash3
-        //ctx = initHash();
+        ctx = initHash();
         addToHash(ctx, RAp, PUF_SIZE);
         addToHash(ctx, K, PUF_SIZE);
         addToHash(ctx, NB, PUF_SIZE);
@@ -1075,7 +1074,7 @@ int UAV::autentication_server(){
 
     // B verify the hash
     unsigned char hash2Check[PUF_SIZE];
-    //ctx = initHash();
+    ctx = initHash();
     addToHash(ctx, NB, PUF_SIZE);
     addToHash(ctx, RA, PUF_SIZE);
     addToHash(ctx, RAp, PUF_SIZE);
@@ -1099,7 +1098,7 @@ int UAV::autentication_server(){
 
     // B sends a hash of RAp, NB, NA as an ACK
     unsigned char hash3[PUF_SIZE];
-    //ctx = initHash();
+    ctx = initHash();
     addToHash(ctx, RAp, PUF_SIZE);
     addToHash(ctx, NB, PUF_SIZE);
     addToHash(ctx, NA, PUF_SIZE);
@@ -1266,7 +1265,7 @@ int UAV::autentication_key_server(){
 
     // B verify the hash
     unsigned char hash2Check[PUF_SIZE];
-    //ctx = initHash();
+    ctx = initHash();
     addToHash(ctx, NB, PUF_SIZE);
     addToHash(ctx, RA, PUF_SIZE);
     addToHash(ctx, RAp, PUF_SIZE);
@@ -1291,7 +1290,7 @@ int UAV::autentication_key_server(){
 
     // B sends a hash of RAp, K, NB, NA as an ACK
     unsigned char hash3[PUF_SIZE];
-    //ctx = initHash();
+    ctx = initHash();
     addToHash(ctx, RAp, PUF_SIZE);
     addToHash(ctx, K, PUF_SIZE);
     addToHash(ctx, NB, PUF_SIZE);
@@ -1506,7 +1505,7 @@ int UAV::supplementaryAuthenticationInitial(){
 
     // A sends M2, and a hash of NB, RA, RAp, NA
     unsigned char hash2[PUF_SIZE];
-    //ctx = initHash();
+    ctx = initHash();
     addToHash(ctx, NC, PUF_SIZE);
     addToHash(ctx, RA, PUF_SIZE);
     addToHash(ctx, RAp, PUF_SIZE);
@@ -1675,7 +1674,7 @@ int UAV::supplementaryAuthenticationSup(){
 
     // B verify the hash
     unsigned char hash2Check[PUF_SIZE];
-    //ctx = initHash();
+    ctx = initHash();
     addToHash(ctx, NC, PUF_SIZE);
     addToHash(ctx, RA, PUF_SIZE);
     addToHash(ctx, RAp, PUF_SIZE);
@@ -1699,7 +1698,7 @@ int UAV::supplementaryAuthenticationSup(){
 
     // B sends a hash of RAp, NB, NA as an ACK
     unsigned char hash3[PUF_SIZE];
-    //ctx = initHash();
+    ctx = initHash();
     addToHash(ctx, RAp, PUF_SIZE);
     addToHash(ctx, NC, PUF_SIZE);
     addToHash(ctx, NA, PUF_SIZE);
@@ -1832,7 +1831,7 @@ int UAV::failed_autentication_client(){
         PROD_ONLY({std::cout << "NBOld : "; print_hex(NBOld, PUF_SIZE);});
 
         // A now tries to verify the hash with this value
-        //ctx = initHash();
+        ctx = initHash();
         addToHash(ctx, CAOld, PUF_SIZE);
         addToHash(ctx, NBOld, PUF_SIZE);
         addToHash(ctx, RAOld, PUF_SIZE);
@@ -1868,7 +1867,7 @@ int UAV::failed_autentication_client(){
 
     // A sends M2, and a hash of NB, RA, RAp, NA
     unsigned char hash2[PUF_SIZE];
-    //ctx = initHash();
+    ctx = initHash();
     addToHash(ctx, NB, PUF_SIZE);
     addToHash(ctx, RA, PUF_SIZE);
     addToHash(ctx, RAp, PUF_SIZE);
