@@ -108,7 +108,6 @@ void SocketModule::sendMsg(const std::unordered_map<std::string, std::string> &m
     // Serialize the map using msgpack
     msgpack::sbuffer sbuf;
     msgpack::pack(sbuf, msgPack);
-    std::cout << "Send Socket fd: " << connection_fd << std::endl;
     send(this->connection_fd, sbuf.data(), sbuf.size(), 0);
 }
 

@@ -210,7 +210,7 @@ int UAV::enrolment_client(){
         opCycles += end - start;
         std::cout << "Elapsed CPU cycles active enrolment: " << opCycles + idlCycles << " cycles" << std::endl;
         std::cout << "operational Elapsed CPU cycles active enrolment: " << opCycles << " cycles" << std::endl;
-        std::cout << "idle Elapsed CPU cycles active enrolment: " << idlCycles << " cycles" << std::endl;
+        std::cout << "idle Elapsed CPU cycles active enrolment: " << idlCycles << " cycles\n" << std::endl;
         idlCycles = 0;
         opCycles = 0;
         start = counter.getCycles();
@@ -257,7 +257,7 @@ int UAV::enrolment_client(){
         opCycles += end - start;
         std::cout << "Elapsed CPU cycles passive enrolment: " << opCycles + idlCycles << " cycles" << std::endl;
         std::cout << "operational Elapsed CPU cycles passive enrolment: " << opCycles << " cycles" << std::endl;
-        std::cout << "idle Elapsed CPU cycles passive enrolment: " << idlCycles << " cycles" << std::endl;
+        std::cout << "idle Elapsed CPU cycles passive enrolment: " << idlCycles << " cycles\n" << std::endl;
     });
     
     return 0;
@@ -275,32 +275,30 @@ int UAV::enrolment_server(){
         long long idlCycles = 0;
         long long opCycles = 0;
         CycleCounter counter;
-        #endif
-        
-        MEASURE_ONLY({
-            start = counter.getCycles();
-        });
-        std::cout << "DEBUG1" << std::endl;
-        // B waits for B's message  (with CB)
-        std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsg();
-        PROD_ONLY({printMsg(msg);});
-        MEASURE_ONLY({
-            end = counter.getCycles();
-            idlCycles += end - start;
-            start = counter.getCycles();
-        });
-        std::cout << "DEBUG2" << std::endl;
-        
-        // Check if an error occurred
-        if (msg.empty()) {
-            std::cerr << "Error occurred: content is empty!" << std::endl;
-            return -1;
-        }
-        
-        // B receive CB. It creates A in the memory of B and save CB.
-        unsigned char CB[PUF_SIZE];
-        extractValueFromMap(msg,"CB",CB,PUF_SIZE);
-        PROD_ONLY({std::cout << "CB : "; print_hex(CB, PUF_SIZE);});
+    #endif
+    
+    MEASURE_ONLY({
+        start = counter.getCycles();
+    });
+    // B waits for B's message  (with CB)
+    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsgPack();
+    PROD_ONLY({printMsgPack(msg);});
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        idlCycles += end - start;
+        start = counter.getCycles();
+    });
+    
+    // Check if an error occurred
+    if (msg.empty()) {
+        std::cerr << "Error occurred: content is empty!" << std::endl;
+        return -1;
+    }
+    
+    // B receive CB. It creates A in the memory of B and save CB.
+    unsigned char CB[PUF_SIZE];
+    extractValueFromMap(msg,"CB",CB,PUF_SIZE);
+    PROD_ONLY({std::cout << "CB : "; print_hex(CB, PUF_SIZE);});
         
     msg.clear();
 
@@ -323,7 +321,7 @@ int UAV::enrolment_server(){
         opCycles += end - start;
         std::cout << "Elapsed CPU cycles passive enrolment: " << opCycles + idlCycles << " cycles" << std::endl;
         std::cout << "operational Elapsed CPU cycles passive enrolment: " << opCycles << " cycles" << std::endl;
-        std::cout << "idle Elapsed CPU cycles passive enrolment: " << idlCycles << " cycles" << std::endl;
+        std::cout << "idle Elapsed CPU cycles passive enrolment: " << idlCycles << " cycles\n" << std::endl;
         start = counter.getCycles();
     });
 
@@ -383,10 +381,7 @@ int UAV::enrolment_server(){
         opCycles += end - start;
         std::cout << "Elapsed CPU cycles active enrolment: " << opCycles + idlCycles << " cycles" << std::endl;
         std::cout << "operational Elapsed CPU cycles active enrolment: " << opCycles << " cycles" << std::endl;
-        std::cout << "idle Elapsed CPU cycles active enrolment: " << idlCycles << " cycles" << std::endl;
-        idlCycles = 0;
-        opCycles = 0;
-        start = counter.getCycles();
+        std::cout << "idle Elapsed CPU cycles active enrolment: " << idlCycles << " cycles\n" << std::endl;
     });
     
     return 0;
@@ -398,6 +393,18 @@ int UAV::enrolment_server(){
 int UAV::autentication_client(){
     // The client initiate the authentication process
     PROD_ONLY({std::cout << "\nAutentication process begins.\n";});
+
+    #ifdef MEASUREMENTS_DETAILLED
+        long long start;
+        long long end;
+        long long idlCycles = 0;
+        long long opCycles = 0;
+        CycleCounter counter;
+    #endif
+    
+    MEASURE_ONLY({
+        start = counter.getCycles();
+    });
 
     // A generates a nonce NA 
     unsigned char NA[PUF_SIZE];
@@ -422,12 +429,22 @@ int UAV::autentication_client(){
 
     this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID and M0.\n";});
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        opCycles += end - start;
+        start = counter.getCycles();
+    });
 
     msg.clear();
 
     // A waits for the answer
-    msg = this->socketModule.receiveMsg();
-    PROD_ONLY({printMsg(msg);});
+    msg = this->socketModule.receiveMsgPack();
+    PROD_ONLY({printMsgPack(msg);});
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        idlCycles += end - start;
+        start = counter.getCycles();
+    });
 
     // Check if an error occurred
     if (msg.empty()) {
@@ -557,12 +574,22 @@ int UAV::autentication_client(){
 
     this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID, M2 and hash2.\n";});
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        opCycles += end - start;
+        start = counter.getCycles();
+    });
 
     msg.clear();
 
     // A waits for B's ACK
-    msg = this->socketModule.receiveMsg();
-    PROD_ONLY({printMsg(msg);});
+    msg = this->socketModule.receiveMsgPack();
+    PROD_ONLY({printMsgPack(msg);});
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        idlCycles += end - start;
+        start = counter.getCycles();
+    });
 
     bool messageInvalid = false;
 
@@ -620,6 +647,13 @@ int UAV::autentication_client(){
 
     // Finished
     PROD_ONLY({std::cout << "\nThe two UAV autenticated each other.\n";});
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        opCycles += end - start;
+        std::cout << "Elapsed CPU cycles authentication: " << opCycles + idlCycles << " cycles" << std::endl;
+        std::cout << "operational Elapsed CPU cycles authentication: " << opCycles << " cycles" << std::endl;
+        std::cout << "idle Elapsed CPU cycles active authentication: " << idlCycles << " cycles\n" << std::endl;
+    });
     
     return 0;
 }
@@ -630,7 +664,17 @@ int UAV::autentication_client(){
 int UAV::autentication_key_client(){
     // The client initiate the authentication process
     PROD_ONLY({std::cout << "\nAutentication process begins.\n";});
+    #ifdef MEASUREMENTS_DETAILLED
+        long long start;
+        long long end;
+        long long idlCycles = 0;
+        long long opCycles = 0;
+        CycleCounter counter;
+    #endif
 
+    MEASURE_ONLY({
+        start = counter.getCycles();
+    });
     // A generates a nonce NA 
     unsigned char NA[PUF_SIZE];
     generate_random_bytes(NA);
@@ -654,12 +698,22 @@ int UAV::autentication_key_client(){
 
     this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID and M0.\n";});
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        opCycles += end - start;
+        start = counter.getCycles();
+    });
 
     msg.clear();
 
     // A waits for the answer
-    msg = this->socketModule.receiveMsg();
-    PROD_ONLY({printMsg(msg);});
+    msg = this->socketModule.receiveMsgPack();
+    PROD_ONLY({printMsgPack(msg);});
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        idlCycles += end - start;
+        start = counter.getCycles();
+    });
 
     // Check if an error occurred
     if (msg.empty()) {
@@ -806,12 +860,22 @@ int UAV::autentication_key_client(){
 
     this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID, M2, MK and hash2.\n";});
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        opCycles += end - start;
+        start = counter.getCycles();
+    });
 
     msg.clear();
 
     // A waits for B's ACK
-    msg = this->socketModule.receiveMsg();
-    PROD_ONLY({printMsg(msg);});
+    msg = this->socketModule.receiveMsgPack();
+    PROD_ONLY({printMsgPack(msg);});
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        idlCycles += end - start;
+        start = counter.getCycles();
+    });
 
     bool messageInvalid = false;
 
@@ -870,7 +934,13 @@ int UAV::autentication_key_client(){
 
     // Finished
     PROD_ONLY({std::cout << "\nThe two UAV autenticated each other.\n";});
-    
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        opCycles += end - start;
+        std::cout << "Elapsed CPU cycles authentication + key: " << opCycles + idlCycles << " cycles" << std::endl;
+        std::cout << "operational Elapsed CPU cycles authentication + key: " << opCycles << " cycles" << std::endl;
+        std::cout << "idle Elapsed CPU cycles active authentication + key: " << idlCycles << " cycles" << std::endl;
+    });
     return 0;
 }
 
@@ -880,10 +950,26 @@ int UAV::autentication_key_client(){
 int UAV::autentication_server(){
     // The client initiate the autentication process
     PROD_ONLY({std::cout << "\nAutentication process begins.\n";});
+    #ifdef MEASUREMENTS_DETAILLED
+        long long start;
+        long long end;
+        long long idlCycles = 0;
+        long long opCycles = 0;
+        CycleCounter counter;
+    #endif
+    
+    MEASURE_ONLY({
+        start = counter.getCycles();
+    });
 
     // B receive the initial message
-    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsg();
-    PROD_ONLY({printMsg(msg);});
+    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsgPack();
+    PROD_ONLY({printMsgPack(msg);});
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        idlCycles += end - start;
+        start = counter.getCycles();
+    });
 
     // Check if an error occurred
     if (msg.empty()) {
@@ -947,12 +1033,22 @@ int UAV::autentication_server(){
 
     this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID, M1 and hash1.\n";});
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        opCycles += end - start;
+        start = counter.getCycles();
+    });
 
     msg.clear();
 
     // B waits for A response (M2)
-    msg = this->socketModule.receiveMsg();
-    PROD_ONLY({printMsg(msg);});
+    msg = this->socketModule.receiveMsgPack();
+    PROD_ONLY({printMsgPack(msg);});
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        idlCycles += end - start;
+        start = counter.getCycles();
+    });
 
     // Check if an error occurred
     if (msg.empty()) {
@@ -1010,13 +1106,17 @@ int UAV::autentication_server(){
     msg["id"] = this->getId();
     msg["hash3"] = std::string(reinterpret_cast<const char*>(hash3), 32);
 
-    this->socketModule.sendMsg(msg);
-    PROD_ONLY({std::cout << "Sent ID and hash3.\n";});
-
-    msg.clear();
-
+    this->socketModule.sendMsgPack(msg);
     // Finished
+    PROD_ONLY({std::cout << "Sent ID and hash3.\n";});
     PROD_ONLY({std::cout << "\nThe two UAV autenticated each other.\n";});
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        opCycles += end - start;
+        std::cout << "Elapsed CPU cycles authentication: " << opCycles + idlCycles << " cycles" << std::endl;
+        std::cout << "operational Elapsed CPU cycles authentication: " << opCycles << " cycles" << std::endl;
+        std::cout << "idle Elapsed CPU cycles active authentication: " << idlCycles << " cycles\n" << std::endl;
+    });
 
     return 0;
 }
@@ -1027,23 +1127,38 @@ int UAV::autentication_server(){
 int UAV::autentication_key_server(){
     // The client initiate the autentication process
     PROD_ONLY({std::cout << "\nAutentication process begins.\n";});
-
+    #ifdef MEASUREMENTS_DETAILLED
+        long long start;
+        long long end;
+        long long idlCycles = 0;
+        long long opCycles = 0;
+        CycleCounter counter;
+        #endif
+        
+    MEASURE_ONLY({
+        start = counter.getCycles();
+    });
     // B receive the initial message
-    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsg();
-    PROD_ONLY({printMsg(msg);});
-
+    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsgPack();
+    PROD_ONLY({printMsgPack(msg);});
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        idlCycles += end - start;
+        start = counter.getCycles();
+    });
+    
     // Check if an error occurred
     if (msg.empty()) {
         std::cerr << "Error occurred: content is empty!" << std::endl;
         return -1;
     }
-
+    
     // B recover M0
     unsigned char M0[PUF_SIZE];
     extractValueFromMap(msg,"M0",M0,PUF_SIZE);
 
     msg.clear();
-        
+    
     // B retrieve xA from memory and computes CA
     const unsigned char * xA = this->getUAVData("A")->getX();
     if (xA == nullptr){
@@ -1094,12 +1209,22 @@ int UAV::autentication_key_server(){
 
     this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID, M1 and hash1.\n";});
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        opCycles += end - start;
+        start = counter.getCycles();
+    });
 
     msg.clear();
 
     // B waits for A response (M2)
-    msg = this->socketModule.receiveMsg();
-    PROD_ONLY({printMsg(msg);});
+    msg = this->socketModule.receiveMsgPack();
+    PROD_ONLY({printMsgPack(msg);});
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        idlCycles += end - start;
+        start = counter.getCycles();
+    });
 
     // Check if an error occurred
     if (msg.empty()) {
@@ -1113,7 +1238,7 @@ int UAV::autentication_key_server(){
 
     unsigned char MK[PUF_SIZE];
     extractValueFromMap(msg,"MK",MK,PUF_SIZE);
-
+    
     unsigned char hash2[PUF_SIZE];
     extractValueFromMap(msg,"hash2",hash2,PUF_SIZE);
 
@@ -1144,10 +1269,10 @@ int UAV::autentication_key_server(){
     addToHash(ctx, K, PUF_SIZE);
     calculateHash(ctx, hash2Check);
     PROD_ONLY({std::cout << "hash2Check : "; print_hex(hash2Check, PUF_SIZE);});
-
+    
     int res = memcmp(hash2, hash2Check, PUF_SIZE) == 0;
     PROD_ONLY({std::cout << "B verify A's hash : " << res << "\n";});
-
+    
     if(res == 0){
         PROD_ONLY({std::cout << "The hashes do not correspond.\n";});
         return 1;
@@ -1172,13 +1297,15 @@ int UAV::autentication_key_server(){
     msg["id"] = this->getId();
     msg["hash3"] = std::string(reinterpret_cast<const char*>(hash3), 32);
 
-    this->socketModule.sendMsg(msg);
-    PROD_ONLY({std::cout << "Sent ID and hash3.\n";});
-
-    msg.clear();
-
+    this->socketModule.sendMsgPack(msg);
     // Finished
+    PROD_ONLY({std::cout << "Sent ID and hash3.\n";});
     PROD_ONLY({std::cout << "\nThe two UAV autenticated each other.\n";});
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        opCycles += end - start;
+        start = counter.getCycles();
+    });
 
     return 0;
 }
