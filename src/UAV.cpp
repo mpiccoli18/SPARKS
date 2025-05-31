@@ -109,7 +109,11 @@ void UAV::addUAV(
         const unsigned char* xLock,
         const unsigned char* secret
     ){
-    uavTable[id] = UAVData(x,c,r,xLock,secret);
+    uavTable.emplace(
+        std::piecewise_construct,
+        std::forward_as_tuple(id),
+        std::forward_as_tuple(x,c,r,xLock,secret)
+    );
 }
 
 /// @brief Remove an UAV from the UAv table.
@@ -167,9 +171,9 @@ int UAV::enrolment_client(){
 
     // Sends CB
     std::unordered_map<std::string, std::string> msg;
-    
-    msg["id"] = this->getId();
-    msg["CB"] = std::string(reinterpret_cast<const char*>(CB), 32);
+    msg.reserve(2);
+    msg.emplace("id", this->getId());
+    msg.emplace("CB", std::string(reinterpret_cast<const char*>(CB), 32));
 
     this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent CB.\n";});
@@ -182,7 +186,7 @@ int UAV::enrolment_client(){
     msg.clear();
 
     // Wait for B's response (with RB)
-    msg = this->socketModule.receiveMsg();
+    this->socketModule.receiveMsg(msg);
     PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
         end = counter.getCycles();
@@ -219,7 +223,7 @@ int UAV::enrolment_client(){
     // B enroll with A
     // A receive CA. It saves CA.
     //std::cout << this->socketModule.isOpen() << std::endl;
-    msg = this->socketModule.receiveMsg();
+    this->socketModule.receiveMsg(msg);
     PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
         end = counter.getCycles();
@@ -247,8 +251,8 @@ int UAV::enrolment_client(){
     PROD_ONLY({std::cout << "RA : "; print_hex(RA, PUF_SIZE);});
 
     // A sends RA    
-    msg["id"] = this->getId();
-    msg["RA"] = std::string(reinterpret_cast<const char*>(RA), 32);
+    msg.emplace("id", this->getId());
+    msg.emplace("RA", std::string(reinterpret_cast<const char*>(RA),32));
 
     this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent RA.\n";});
@@ -281,7 +285,9 @@ int UAV::enrolment_server(){
         start = counter.getCycles();
     });
     // B waits for B's message  (with CB)
-    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsg();
+    std::unordered_map<std::string, std::string> msg;
+    msg.reserve(2);
+    this->socketModule.receiveMsg(msg);
     PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
         end = counter.getCycles();
@@ -311,8 +317,8 @@ int UAV::enrolment_server(){
 
     // B sends RB
     
-    msg["id"] = this->getId();
-    msg["RB"] = std::string(reinterpret_cast<const char*>(RB), 32);
+    msg.emplace("id", this->getId());
+    msg.emplace("RB", std::string(reinterpret_cast<const char*>(RB),32));
 
     this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent RB.\n";}); 
@@ -342,8 +348,8 @@ int UAV::enrolment_server(){
     PROD_ONLY({std::cout << "CA : "; print_hex(CA, PUF_SIZE);});
 
     // Sends CA
-    msg["id"] = this->getId();
-    msg["CA"] = std::string(reinterpret_cast<const char*>(CA), 32);
+    msg.emplace("id", this->getId());
+    msg.emplace("CA", std::string(reinterpret_cast<const char*>(CA),32));
 
     this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent CA.\n";});
@@ -356,7 +362,7 @@ int UAV::enrolment_server(){
     msg.clear();
 
     // B receive RA and saves it. 
-    msg = this->socketModule.receiveMsg();
+    this->socketModule.receiveMsg(msg);
     PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
         end = counter.getCycles();
@@ -423,9 +429,9 @@ int UAV::autentication_client(){
 
     // A sends its ID and NA to B 
     std::unordered_map<std::string, std::string> msg;
-    
-    msg["id"] = this->getId();
-    msg["M0"] = std::string(reinterpret_cast<const char*>(M0), 32);
+    msg.reserve(3);
+    msg.emplace("id", this->getId());
+    msg.emplace("M0", std::string(reinterpret_cast<const char*>(M0),32));
 
     this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID and M0.\n";});
@@ -438,7 +444,7 @@ int UAV::autentication_client(){
     msg.clear();
 
     // A waits for the answer
-    msg = this->socketModule.receiveMsg();
+    this->socketModule.receiveMsg(msg);
     PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
         end = counter.getCycles();
@@ -485,7 +491,6 @@ int UAV::autentication_client(){
     bool res = memcmp(hash1, hash1Check, PUF_SIZE) == 0;
     PROD_ONLY({std::cout << "A verify B's hash : " << res << "\n";});
 
-    //ctx.clear();
     if(res == 0){
         PROD_ONLY({std::cout << "The autentication failed. A will try to verify the hash with an old challenge if it exists.\n";});
 
@@ -522,7 +527,7 @@ int UAV::autentication_client(){
         PROD_ONLY({std::cout << "NBOld : "; print_hex(NBOld, PUF_SIZE);});
 
         // A now tries to verify the hash with this value
-        //ctx = initHash();
+        ctx = initHash();
         addToHash(ctx, CAOld, PUF_SIZE);
         addToHash(ctx, NBOld, PUF_SIZE);
         addToHash(ctx, RAOld, PUF_SIZE);
@@ -558,7 +563,7 @@ int UAV::autentication_client(){
 
     // A sends M2, and a hash of NB, RA, RAp, NA
     unsigned char hash2[PUF_SIZE];
-    //ctx = initHash();
+    ctx = initHash();
     addToHash(ctx, NB, PUF_SIZE);
     addToHash(ctx, RA, PUF_SIZE);
     addToHash(ctx, RAp, PUF_SIZE);
@@ -568,9 +573,9 @@ int UAV::autentication_client(){
 
     // Send M2, and a hash of NB, RA, RAp, NA
 
-    msg["id"] = this->getId();
-    msg["M2"] = std::string(reinterpret_cast<const char*>(M2), 32);
-    msg["hash2"] = std::string(reinterpret_cast<const char*>(hash2), 32);
+    msg.emplace("id", this->getId());
+    msg.emplace("M2", std::string(reinterpret_cast<const char*>(M2),32));
+    msg.emplace("hash2", std::string(reinterpret_cast<const char*>(hash2),32));
 
     this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID, M2 and hash2.\n";});
@@ -583,7 +588,7 @@ int UAV::autentication_client(){
     msg.clear();
 
     // A waits for B's ACK
-    msg = this->socketModule.receiveMsg();
+    this->socketModule.receiveMsg(msg);
     PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
         end = counter.getCycles();
@@ -608,7 +613,7 @@ int UAV::autentication_client(){
     }
     else{
         // Verify hash3
-        //ctx = initHash();
+        ctx = initHash();
         addToHash(ctx, RAp, PUF_SIZE);
         addToHash(ctx, NB, PUF_SIZE);
         addToHash(ctx, NA, PUF_SIZE);
@@ -692,9 +697,9 @@ int UAV::autentication_key_client(){
 
     // A sends its ID and NA to B 
     std::unordered_map<std::string, std::string> msg;
-    
-    msg["id"] = this->getId();
-    msg["M0"] = std::string(reinterpret_cast<const char*>(M0), 32);
+    msg.reserve(4);
+    msg.emplace("id", this->getId());
+    msg.emplace("M0", std::string(reinterpret_cast<const char*>(M0),32));
 
     this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID and M0.\n";});
@@ -707,7 +712,7 @@ int UAV::autentication_key_client(){
     msg.clear();
 
     // A waits for the answer
-    msg = this->socketModule.receiveMsg();
+    this->socketModule.receiveMsg(msg);
     PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
         end = counter.getCycles();
@@ -791,7 +796,7 @@ int UAV::autentication_key_client(){
         PROD_ONLY({std::cout << "NBOld : "; print_hex(NBOld, PUF_SIZE);});
 
         // A now tries to verify the hash with this value
-        //ctx = initHash();
+        ctx = initHash();
         std::cout << &ctx << std::endl;
         addToHash(ctx, CAOld, PUF_SIZE);
         addToHash(ctx, NBOld, PUF_SIZE);
@@ -841,7 +846,7 @@ int UAV::autentication_key_client(){
 
     // A sends M2, and a hash of NB, RA, RAp, NA, K
     unsigned char hash2[PUF_SIZE];
-    //ctx = initHash();
+    ctx = initHash();
     //std::cout << &ctx << std::endl;
     addToHash(ctx, NB, PUF_SIZE);
     addToHash(ctx, RA, PUF_SIZE);
@@ -852,11 +857,10 @@ int UAV::autentication_key_client(){
     PROD_ONLY({std::cout << "hash2 : "; print_hex(hash2, PUF_SIZE);});
 
     // Send M2, MK, and a hash of NB, RA, RAp, NA, K
-
-    msg["id"] = this->getId();
-    msg["M2"] = std::string(reinterpret_cast<const char*>(M2), 32);
-    msg["MK"] = std::string(reinterpret_cast<const char*>(MK), 32);
-    msg["hash2"] = std::string(reinterpret_cast<const char*>(hash2), 32);
+    msg.emplace("id", this->getId());
+    msg.emplace("M2", std::string(reinterpret_cast<const char*>(M2),32));
+    msg.emplace("MK", std::string(reinterpret_cast<const char*>(MK),32));
+    msg.emplace("hash2", std::string(reinterpret_cast<const char*>(hash2),32));
 
     this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID, M2, MK and hash2.\n";});
@@ -869,7 +873,7 @@ int UAV::autentication_key_client(){
     msg.clear();
 
     // A waits for B's ACK
-    msg = this->socketModule.receiveMsg();
+    this->socketModule.receiveMsg(msg);
     PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
         end = counter.getCycles();
@@ -894,7 +898,7 @@ int UAV::autentication_key_client(){
     }
     else{
         // Verify hash3
-        //ctx = initHash();
+        ctx = initHash();
         addToHash(ctx, RAp, PUF_SIZE);
         addToHash(ctx, K, PUF_SIZE);
         addToHash(ctx, NB, PUF_SIZE);
@@ -963,7 +967,9 @@ int UAV::autentication_server(){
     });
 
     // B receive the initial message
-    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsg();
+    std::unordered_map<std::string, std::string> msg;
+    msg.reserve(3);
+    this->socketModule.receiveMsg(msg);
     PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
         end = counter.getCycles();
@@ -1027,9 +1033,9 @@ int UAV::autentication_server(){
     calculateHash(ctx, hash1);
     PROD_ONLY({std::cout << "hash1 : "; print_hex(hash1, PUF_SIZE);});
     
-    msg["id"] = this->getId();
-    msg["M1"] = std::string(reinterpret_cast<const char*>(M1), 32);
-    msg["hash1"] = std::string(reinterpret_cast<const char*>(hash1), 32);
+    msg.emplace("id", this->getId());
+    msg.emplace("M1", std::string(reinterpret_cast<const char*>(M1), 32));
+    msg.emplace("hash1", std::string(reinterpret_cast<const char*>(hash1), 32));
 
     this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID, M1 and hash1.\n";});
@@ -1042,7 +1048,7 @@ int UAV::autentication_server(){
     msg.clear();
 
     // B waits for A response (M2)
-    msg = this->socketModule.receiveMsg();
+    this->socketModule.receiveMsg(msg);
     PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
         end = counter.getCycles();
@@ -1072,7 +1078,7 @@ int UAV::autentication_server(){
 
     // B verify the hash
     unsigned char hash2Check[PUF_SIZE];
-    //ctx = initHash();
+    ctx = initHash();
     addToHash(ctx, NB, PUF_SIZE);
     addToHash(ctx, RA, PUF_SIZE);
     addToHash(ctx, RAp, PUF_SIZE);
@@ -1096,15 +1102,15 @@ int UAV::autentication_server(){
 
     // B sends a hash of RAp, NB, NA as an ACK
     unsigned char hash3[PUF_SIZE];
-    //ctx = initHash();
+    ctx = initHash();
     addToHash(ctx, RAp, PUF_SIZE);
     addToHash(ctx, NB, PUF_SIZE);
     addToHash(ctx, NA, PUF_SIZE);
     calculateHash(ctx, hash3);
     PROD_ONLY({std::cout << "hash3 : "; print_hex(hash3, PUF_SIZE);});
 
-    msg["id"] = this->getId();
-    msg["hash3"] = std::string(reinterpret_cast<const char*>(hash3), 32);
+    msg.emplace("id", this->getId());
+    msg.emplace("hash3", std::string(reinterpret_cast<const char*>(hash3),32));
 
     this->socketModule.sendMsg(msg);
     // Finished
@@ -1139,7 +1145,9 @@ int UAV::autentication_key_server(){
         start = counter.getCycles();
     });
     // B receive the initial message
-    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsg();
+    std::unordered_map<std::string, std::string> msg;
+    msg.reserve(4);
+    this->socketModule.receiveMsg(msg);
     PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
         end = counter.getCycles();
@@ -1203,9 +1211,9 @@ int UAV::autentication_key_server(){
     calculateHash(ctx, hash1);
     PROD_ONLY({std::cout << "hash1 : "; print_hex(hash1, PUF_SIZE);});
     
-    msg["id"] = this->getId();
-    msg["M1"] = std::string(reinterpret_cast<const char*>(M1), 32);
-    msg["hash1"] = std::string(reinterpret_cast<const char*>(hash1), 32);
+    msg.emplace("id", this->getId());
+    msg.emplace("M1", std::string(reinterpret_cast<const char*>(M1),32));
+    msg.emplace("hash1", std::string(reinterpret_cast<const char*>(hash1),32));
 
     this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID, M1 and hash1.\n";});
@@ -1218,7 +1226,7 @@ int UAV::autentication_key_server(){
     msg.clear();
 
     // B waits for A response (M2)
-    msg = this->socketModule.receiveMsg();
+    this->socketModule.receiveMsg(msg);
     PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
         end = counter.getCycles();
@@ -1261,7 +1269,7 @@ int UAV::autentication_key_server(){
 
     // B verify the hash
     unsigned char hash2Check[PUF_SIZE];
-    //ctx = initHash();
+    ctx = initHash();
     addToHash(ctx, NB, PUF_SIZE);
     addToHash(ctx, RA, PUF_SIZE);
     addToHash(ctx, RAp, PUF_SIZE);
@@ -1286,7 +1294,7 @@ int UAV::autentication_key_server(){
 
     // B sends a hash of RAp, K, NB, NA as an ACK
     unsigned char hash3[PUF_SIZE];
-    //ctx = initHash();
+    ctx = initHash();
     addToHash(ctx, RAp, PUF_SIZE);
     addToHash(ctx, K, PUF_SIZE);
     addToHash(ctx, NB, PUF_SIZE);
@@ -1294,8 +1302,8 @@ int UAV::autentication_key_server(){
     calculateHash(ctx, hash3);
     PROD_ONLY({std::cout << "hash3 : "; print_hex(hash3, PUF_SIZE);});
 
-    msg["id"] = this->getId();
-    msg["hash3"] = std::string(reinterpret_cast<const char*>(hash3), 32);
+    msg.emplace("id", this->getId());
+    msg.emplace("hash3", std::string(reinterpret_cast<const char*>(hash3),32));
 
     this->socketModule.sendMsg(msg);
     // Finished
@@ -1315,7 +1323,9 @@ int UAV::autentication_key_server(){
 /// @return 0 if succeded, 1 if failed
 int UAV::preEnrolment(){
     // A waits for BS's query
-    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsg();
+    std::unordered_map<std::string, std::string> msg;
+    msg.reserve(2);
+    this->socketModule.receiveMsg(msg);
     PROD_ONLY({printMsg(msg);});
 
     // Check if an error occurred
@@ -1337,8 +1347,8 @@ int UAV::preEnrolment(){
     
     // Send the responses back
 
-    msg["id"] = this->getId();
-    msg["data"] = std::string(reinterpret_cast<const char*>(LR), 5 * 32);
+    msg.emplace("id", this->getId());
+    msg.emplace("data", std::string(reinterpret_cast<const char*>(LR),5 * 32));
 
     this->socketModule.sendMsg(msg);
 
@@ -1350,7 +1360,9 @@ int UAV::preEnrolmentRetrival(){
     PROD_ONLY({std::cout << "\nC will now retrieve A's credentials.\n";});
 
     // Wait for A's credentials
-    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsg();
+    std::unordered_map<std::string, std::string> msg;
+    msg.reserve(3);
+    this->socketModule.receiveMsg(msg);
     PROD_ONLY({printMsg(msg);});
 
     // Check if an error occurred
@@ -1394,7 +1406,9 @@ int UAV::preEnrolmentRetrival(){
 int UAV::supplementaryAuthenticationInitial(){
 
     // Waits for C demands
-    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsg();
+    std::unordered_map<std::string, std::string> msg;
+    msg.reserve(3);    
+    this->socketModule.receiveMsg(msg);
     PROD_ONLY({printMsg(msg);});
 
     // Check if an error occurred
@@ -1422,8 +1436,8 @@ int UAV::supplementaryAuthenticationInitial(){
     generate_random_bytes(NA);
     PROD_ONLY({std::cout << "NA : "; print_hex(NA, PUF_SIZE);});
 
-    msg["id"] = this->getId();
-    msg["NA"] = std::string(reinterpret_cast<const char *>(NA),32);
+    msg.emplace("id", this->getId());
+    msg.emplace("NA", std::string(reinterpret_cast<const char*>(NA), 32));
 
     // A sends 
     this->socketModule.sendMsg(msg);
@@ -1432,7 +1446,7 @@ int UAV::supplementaryAuthenticationInitial(){
     msg.clear();
 
     // Waits for C's response 
-    msg = this->socketModule.receiveMsg();
+    this->socketModule.receiveMsg(msg);
     PROD_ONLY({printMsg(msg);});
 
     // Check if an error occurred
@@ -1495,7 +1509,7 @@ int UAV::supplementaryAuthenticationInitial(){
 
     // A sends M2, and a hash of NB, RA, RAp, NA
     unsigned char hash2[PUF_SIZE];
-    //ctx = initHash();
+    ctx = initHash();
     addToHash(ctx, NC, PUF_SIZE);
     addToHash(ctx, RA, PUF_SIZE);
     addToHash(ctx, RAp, PUF_SIZE);
@@ -1505,9 +1519,9 @@ int UAV::supplementaryAuthenticationInitial(){
 
     // TODO : send M2, and a hash of NB, RA, RAp, NA
 
-    msg["id"] = this->getId();
-    msg["M2"] = std::string(reinterpret_cast<const char *>(M2),32);
-    msg["hash2"] = std::string(reinterpret_cast<const char *>(hash2),32);
+    msg.emplace("id", this->getId());
+    msg.emplace("M2", std::string(reinterpret_cast<const char*>(M2), 32));
+    msg.emplace("hash2", std::string(reinterpret_cast<const char*>(hash2), 32));
 
     this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID, M2 and hash2.\n";});
@@ -1515,7 +1529,7 @@ int UAV::supplementaryAuthenticationInitial(){
     msg.clear();
 
     // A waits for C's ACK
-    msg = this->socketModule.receiveMsg();
+    this->socketModule.receiveMsg(msg);
     PROD_ONLY({printMsg(msg);});
 
     // Check if an error occurred
@@ -1563,8 +1577,8 @@ int UAV::supplementaryAuthenticationSup(){
 
     // C will now try to connect to A
     std::unordered_map<std::string, std::string> msg;
-    
-    msg["id"] = this->getId();
+    msg.reserve(4);
+    msg.emplace("id", this->getId());
 
     this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID.\n";});
@@ -1572,7 +1586,7 @@ int UAV::supplementaryAuthenticationSup(){
     msg.clear();
 
     // Wait for answer
-    msg = this->socketModule.receiveMsg();
+    this->socketModule.receiveMsg(msg);
     PROD_ONLY({printMsg(msg);});
 
     // Check if an error occurred
@@ -1628,10 +1642,10 @@ int UAV::supplementaryAuthenticationSup(){
     calculateHash(ctx, hash1);
     PROD_ONLY({std::cout << "hash1 : "; print_hex(hash1, PUF_SIZE);});
     
-    msg["id"] = this->getId();
-    msg["CA"] = std::string(reinterpret_cast<const char *>(CA),32);
-    msg["M1"] = std::string(reinterpret_cast<const char *>(M1),32);
-    msg["hash1"] = std::string(reinterpret_cast<const char *>(hash1),32);
+    msg.emplace("id", this->getId());
+    msg.emplace("CA", std::string(reinterpret_cast<const char*>(CA),32));
+    msg.emplace("M1", std::string(reinterpret_cast<const char*>(M1),32));
+    msg.emplace("hash1", std::string(reinterpret_cast<const char*>(hash1),32));
 
     this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID, CA, M1 and hash1.\n";});
@@ -1639,7 +1653,7 @@ int UAV::supplementaryAuthenticationSup(){
     msg.clear();
 
     // Wait for A's response 
-    msg = this->socketModule.receiveMsg();
+    this->socketModule.receiveMsg(msg);
     PROD_ONLY({printMsg(msg);});
 
     // Check if an error occurred
@@ -1664,7 +1678,7 @@ int UAV::supplementaryAuthenticationSup(){
 
     // B verify the hash
     unsigned char hash2Check[PUF_SIZE];
-    //ctx = initHash();
+    ctx = initHash();
     addToHash(ctx, NC, PUF_SIZE);
     addToHash(ctx, RA, PUF_SIZE);
     addToHash(ctx, RAp, PUF_SIZE);
@@ -1688,15 +1702,15 @@ int UAV::supplementaryAuthenticationSup(){
 
     // B sends a hash of RAp, NB, NA as an ACK
     unsigned char hash3[PUF_SIZE];
-    //ctx = initHash();
+    ctx = initHash();
     addToHash(ctx, RAp, PUF_SIZE);
     addToHash(ctx, NC, PUF_SIZE);
     addToHash(ctx, NA, PUF_SIZE);
     calculateHash(ctx, hash3);
     PROD_ONLY({std::cout << "hash3 : "; print_hex(hash3, PUF_SIZE);});
     
-    msg["id"] = this->getId();
-    msg["hash3"] = std::string(reinterpret_cast<const char*>(hash3), 32);
+    msg.emplace("id", this->getId());
+    msg.emplace("hash3", std::string(reinterpret_cast<const char*>(hash3),32));
 
     this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID and hash3.\n";});
@@ -1733,9 +1747,9 @@ int UAV::failed_autentication_client(){
 
     // A sends its ID and NA to B 
     std::unordered_map<std::string, std::string> msg;
-    
-    msg["id"] = this->getId();
-    msg["M0"] = std::string(reinterpret_cast<const char*>(M0), 32);
+    msg.reserve(3);
+    msg.emplace("id", this->getId());
+    msg.emplace("M0", std::string(reinterpret_cast<const char*>(M0),32));
 
     this->socketModule.sendMsg(msg);
     PROD_ONLY({std::cout << "Sent ID and M0.\n";});
@@ -1743,7 +1757,7 @@ int UAV::failed_autentication_client(){
     msg.clear();
 
     // A waits for the answer
-    msg = this->socketModule.receiveMsg();
+    this->socketModule.receiveMsg(msg);
     PROD_ONLY({printMsg(msg);});
 
     // Check if an error occurred
@@ -1821,7 +1835,7 @@ int UAV::failed_autentication_client(){
         PROD_ONLY({std::cout << "NBOld : "; print_hex(NBOld, PUF_SIZE);});
 
         // A now tries to verify the hash with this value
-        //ctx = initHash();
+        ctx = initHash();
         addToHash(ctx, CAOld, PUF_SIZE);
         addToHash(ctx, NBOld, PUF_SIZE);
         addToHash(ctx, RAOld, PUF_SIZE);
@@ -1857,7 +1871,7 @@ int UAV::failed_autentication_client(){
 
     // A sends M2, and a hash of NB, RA, RAp, NA
     unsigned char hash2[PUF_SIZE];
-    //ctx = initHash();
+    ctx = initHash();
     addToHash(ctx, NB, PUF_SIZE);
     addToHash(ctx, RA, PUF_SIZE);
     addToHash(ctx, RAp, PUF_SIZE);
@@ -1867,9 +1881,9 @@ int UAV::failed_autentication_client(){
 
     // Send M2, and a hash of NB, RA, RAp, NA
 
-    msg["id"] = this->getId();
-    msg["M2"] = std::string(reinterpret_cast<const char*>(M2), 32);
-    msg["hash2"] = std::string(reinterpret_cast<const char*>(hash2), 32);
+    msg.emplace("id", this->getId());
+    msg.emplace("M2", std::string(reinterpret_cast<const char*>(M2),32));
+    msg.emplace("hash2", std::string(reinterpret_cast<const char*>(hash2),32));
   
     // ##################### MODIFICATION TO FAIL #####################
     
@@ -1883,7 +1897,7 @@ int UAV::failed_autentication_client(){
     msg.clear();
 
     // A waits for B's ACK
-    msg = this->socketModule.receiveMsg();
+    this->socketModule.receiveMsg(msg);
     PROD_ONLY({printMsg(msg);});
 
     // Check if an error occurred
