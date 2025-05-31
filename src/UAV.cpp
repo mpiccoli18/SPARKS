@@ -281,8 +281,8 @@ int UAV::enrolment_server(){
         start = counter.getCycles();
     });
     // B waits for B's message  (with CB)
-    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsgPack();
-    PROD_ONLY({printMsgPack(msg);});
+    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsg();
+    PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
         end = counter.getCycles();
         idlCycles += end - start;
@@ -438,8 +438,8 @@ int UAV::autentication_client(){
     msg.clear();
 
     // A waits for the answer
-    msg = this->socketModule.receiveMsgPack();
-    PROD_ONLY({printMsgPack(msg);});
+    msg = this->socketModule.receiveMsg();
+    PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
         end = counter.getCycles();
         idlCycles += end - start;
@@ -583,8 +583,8 @@ int UAV::autentication_client(){
     msg.clear();
 
     // A waits for B's ACK
-    msg = this->socketModule.receiveMsgPack();
-    PROD_ONLY({printMsgPack(msg);});
+    msg = this->socketModule.receiveMsg();
+    PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
         end = counter.getCycles();
         idlCycles += end - start;
@@ -707,8 +707,8 @@ int UAV::autentication_key_client(){
     msg.clear();
 
     // A waits for the answer
-    msg = this->socketModule.receiveMsgPack();
-    PROD_ONLY({printMsgPack(msg);});
+    msg = this->socketModule.receiveMsg();
+    PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
         end = counter.getCycles();
         idlCycles += end - start;
@@ -869,8 +869,8 @@ int UAV::autentication_key_client(){
     msg.clear();
 
     // A waits for B's ACK
-    msg = this->socketModule.receiveMsgPack();
-    PROD_ONLY({printMsgPack(msg);});
+    msg = this->socketModule.receiveMsg();
+    PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
         end = counter.getCycles();
         idlCycles += end - start;
@@ -963,8 +963,8 @@ int UAV::autentication_server(){
     });
 
     // B receive the initial message
-    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsgPack();
-    PROD_ONLY({printMsgPack(msg);});
+    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsg();
+    PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
         end = counter.getCycles();
         idlCycles += end - start;
@@ -1042,8 +1042,8 @@ int UAV::autentication_server(){
     msg.clear();
 
     // B waits for A response (M2)
-    msg = this->socketModule.receiveMsgPack();
-    PROD_ONLY({printMsgPack(msg);});
+    msg = this->socketModule.receiveMsg();
+    PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
         end = counter.getCycles();
         idlCycles += end - start;
@@ -1106,7 +1106,7 @@ int UAV::autentication_server(){
     msg["id"] = this->getId();
     msg["hash3"] = std::string(reinterpret_cast<const char*>(hash3), 32);
 
-    this->socketModule.sendMsgPack(msg);
+    this->socketModule.sendMsg(msg);
     // Finished
     PROD_ONLY({std::cout << "Sent ID and hash3.\n";});
     PROD_ONLY({std::cout << "\nThe two UAV autenticated each other.\n";});
@@ -1139,8 +1139,8 @@ int UAV::autentication_key_server(){
         start = counter.getCycles();
     });
     // B receive the initial message
-    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsgPack();
-    PROD_ONLY({printMsgPack(msg);});
+    std::unordered_map<std::string, std::string> msg = this->socketModule.receiveMsg();
+    PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
         end = counter.getCycles();
         idlCycles += end - start;
@@ -1218,8 +1218,8 @@ int UAV::autentication_key_server(){
     msg.clear();
 
     // B waits for A response (M2)
-    msg = this->socketModule.receiveMsgPack();
-    PROD_ONLY({printMsgPack(msg);});
+    msg = this->socketModule.receiveMsg();
+    PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
         end = counter.getCycles();
         idlCycles += end - start;
@@ -1297,7 +1297,7 @@ int UAV::autentication_key_server(){
     msg["id"] = this->getId();
     msg["hash3"] = std::string(reinterpret_cast<const char*>(hash3), 32);
 
-    this->socketModule.sendMsgPack(msg);
+    this->socketModule.sendMsg(msg);
     // Finished
     PROD_ONLY({std::cout << "Sent ID and hash3.\n";});
     PROD_ONLY({std::cout << "\nThe two UAV autenticated each other.\n";});
