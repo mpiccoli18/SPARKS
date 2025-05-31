@@ -694,7 +694,7 @@ int UAV::autentication_key_client(){
 
     // A sends its ID and NA to B 
     std::unordered_map<std::string, std::string> msg;
-    msg.reserve(3);
+    msg.reserve(2);
     msg.emplace("id", this->getId());
     msg.emplace("M0", std::string(reinterpret_cast<const char*>(M0),32));
 
@@ -854,7 +854,7 @@ int UAV::autentication_key_client(){
     PROD_ONLY({std::cout << "hash2 : "; print_hex(hash2, PUF_SIZE);});
 
     // Send M2, MK, and a hash of NB, RA, RAp, NA, K
-
+    msg.reserve(4);
     msg.emplace("id", this->getId());
     msg.emplace("M2", std::string(reinterpret_cast<const char*>(M2),32));
     msg.emplace("MK", std::string(reinterpret_cast<const char*>(MK),32));
@@ -1144,7 +1144,7 @@ int UAV::autentication_key_server(){
     });
     // B receive the initial message
     std::unordered_map<std::string, std::string> msg;
-    msg.reserve(3);
+    msg.reserve(2);
     this->socketModule.receiveMsg(msg);
     PROD_ONLY({printMsg(msg);});
     MEASURE_ONLY({
@@ -1209,6 +1209,7 @@ int UAV::autentication_key_server(){
     calculateHash(ctx, hash1);
     PROD_ONLY({std::cout << "hash1 : "; print_hex(hash1, PUF_SIZE);});
     
+    msg.reserve(3);
     msg.emplace("id", this->getId());
     msg.emplace("M1", std::string(reinterpret_cast<const char*>(M1),32));
     msg.emplace("hash1", std::string(reinterpret_cast<const char*>(hash1),32));
@@ -1300,6 +1301,7 @@ int UAV::autentication_key_server(){
     calculateHash(ctx, hash3);
     PROD_ONLY({std::cout << "hash3 : "; print_hex(hash3, PUF_SIZE);});
 
+    msg.reserve(2);
     msg.emplace("id", this->getId());
     msg.emplace("hash3", std::string(reinterpret_cast<const char*>(hash3),32));
 

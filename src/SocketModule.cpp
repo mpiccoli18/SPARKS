@@ -149,7 +149,7 @@ void SocketModule::receiveMsg(std::unordered_map<std::string, std::string> &msg)
         PROD_ONLY({std::cout << "Received " << bytesReceived << " bytes." << std::endl;});
     }
 
-    for(uint32_t i = 0; i< obj.via.map.size; ++i){
+    for(uint32_t i = 0; i < obj.via.map.size; ++i){
         const msgpack::object_kv& kv = obj.via.map.ptr[i];
         
         kv.key.convert(key);
