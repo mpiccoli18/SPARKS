@@ -109,7 +109,11 @@ void UAV::addUAV(
         const unsigned char* xLock,
         const unsigned char* secret
     ){
-    uavTable[id] = UAVData(x,c,r,xLock,secret);
+    uavTable.emplace(
+        std::piecewise_construct,
+        std::forward_as_tuple(id),
+        std::forward_as_tuple(x,c,r,xLock,secret)
+    );
 }
 
 /// @brief Remove an UAV from the UAv table.
