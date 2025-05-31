@@ -44,8 +44,8 @@ public:
     bool initiateConnection(const std::string& ip, int port);
     bool waitForConnection(int port);
     
-    void sendMsg(const std::unordered_map<std::string, std::string> &msgPack);
-    std::unordered_map<std::string, std::string> receiveMsg();
+    void sendMsg(const std::unordered_map<std::string, std::string> &msg);
+    void receiveMsg(std::unordered_map<std::string, std::string> &msg);
 
     void closeConnection();
     bool isOpen() const;
