@@ -129,7 +129,7 @@ void calculateHash(hash_state* ctx, unsigned char * output){
  * 
  * @param msg 
  */
-void printMsgPack(std::unordered_map<std::string, std::string> data){
+void printMsg(std::unordered_map<std::string, std::string> data){
     if(data.empty()){
         std::cerr << "Error: MsgPack data is empty!" << std::endl;
         return;

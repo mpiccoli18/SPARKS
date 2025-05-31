@@ -122,7 +122,7 @@ void calculateHash(hash_state* ctx, unsigned char * output);
  * 
  * @param msg 
  */
-void printMsgPack(std::unordered_map<std::string, std::string> data);
+void printMsg(std::unordered_map<std::string, std::string> data);
 
 /**
  * @brief Try to get the current CPU Frequency. Might be skewed, only to be used as a support option.

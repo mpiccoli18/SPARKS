@@ -7,6 +7,10 @@ measure_*
 test_*
 massif*
 .vscode/
+*_client
+*_server
+*_initial
+*_supplementary
 
 # Ignore temporary files and editor backups
 *.swp
