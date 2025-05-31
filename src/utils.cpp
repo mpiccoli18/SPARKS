@@ -197,27 +197,6 @@ double getCpuFrequency() {
     return frequency / 1000.0;  // Convert MHz to GHz
 }
 
-/*
-// Function to derive a key using HKDF (SHA256)
-void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const unsigned char* S,
-    size_t keyLength, unsigned char* derivedKey) {
-    // Combine NA and NB into the input key material (IKM)
-    unsigned char input_key_material[64];  // 32 bytes + 32 bytes = 64 bytes
-    std::memcpy(input_key_material, NA, 32);
-    std::memcpy(input_key_material + 32, NB, 32);
-
-    // Prepare for HKDF with SHA256 as the hash function
-    HKDF<SHA256> hkdf;
-
-    // Define the salt and info for HKDF
-    SecByteBlock salt(S, 32);  // 32 bytes salt
-    SecByteBlock info;         // Optional info, can be empty (no extra context data)
-
-    // Derive the key
-    hkdf.DeriveKey(derivedKey, keyLength, input_key_material, sizeof(input_key_material), salt, salt.size(), info, info.size());
-}
-*/
-
 /// @brief Function to derive a key using HKDF with the help of LibTomCrypt(SHA256)
 /// @param NA Nonce A
 /// @param NB Nonce B
