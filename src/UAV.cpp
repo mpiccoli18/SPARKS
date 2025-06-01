@@ -1934,3 +1934,70 @@ int UAV::failed_autentication_client(){
     
     return 0;
 }
+
+/// @brief Listening thread for establishing the connection with another UAV
+/// @param ip The IP address of the UAV to connect to
+/// @return 0 if success, 1 if failure
+int UAV::listenForConnection(){
+    /*if(this->socketModule.isOpen() == false){
+        std::cerr << "Socket is not open!" << std::endl;
+        this->socketModule.initiateConnection(ip, 8080);
+    }*/
+    int result;
+    std::unordered_map<std::string, std::string> msg;
+    msg.reserve(4);
+
+    this->socketModule.waitForConnection(8080);
+    PROD_ONLY({std::cout << "Waiting for connection...\n";});
+
+    while (true) {
+        // Wait for a connection request
+        this->socketModule.receiveMsg(msg);
+        PROD_ONLY({printMsg(msg);});
+
+        // Check if an error occurred
+        if (msg.empty()) {
+            std::cerr << "Error occurred: content is empty!" << std::endl;
+            continue;
+        }
+
+        // Check the type of message and call the appropriate authentication function
+        if (msg.find("id") != msg.end()) {
+            std::cout << "Found UAV ID in message: " << msg["id"] << std::endl;
+            if(msg["id"] == "A"){
+                PROD_ONLY({std::cout << "A is trying to connect.\n";});
+                result = this->enrolment_server();
+                if (result == 0) {
+                    PROD_ONLY({std::cout << "A has been successfully authenticated.\n";});
+                    result = this->autentication_server();
+                    if(result == 0)
+                    {
+                        result = this->autentication_key_server();
+                        if(result == 0)
+                        {
+                            PROD_ONLY({std::cout << "B has successfully established a secure connection.\n";});
+                        }
+                        else
+                        {
+                            PROD_ONLY({std::cout << "Failed to establish a secure connection with B.\n";});
+                            return 1; // Failed to establish secure connection
+                        }
+                    }
+                    this->socketModule.closeConnection();
+                    PROD_ONLY({std::cout << "Connection closed.\n";});
+                    return listenForConnection(); // Successful authentication
+                } else {
+                    PROD_ONLY({std::cout << "Failed to authenticate A.\n";});
+                    return 1; // Failed authentication
+                }
+            }
+            else {
+                PROD_ONLY({std::cout << "Unknown ID in message.\n";});
+                return 1;
+            }
+        } else {
+            PROD_ONLY({std::cout << "No ID found in message.\n";});
+            return 1;
+        }
+    }
+}

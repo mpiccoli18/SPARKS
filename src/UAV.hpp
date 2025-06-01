@@ -105,7 +105,7 @@ public:
     // void printSalt(){
     //     PUF.printSalt();
     // }
-
+    int listenForConnection();
 };
 
 #endif // UAV_HPP
