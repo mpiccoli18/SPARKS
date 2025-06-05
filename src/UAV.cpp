@@ -94,6 +94,20 @@ std::string UAV::getId() {
     return this->id;
 }
 
+/// @brief Get the thread pointer.
+std::thread* UAV::getThread() const {
+    return const_cast<std::thread*>(&this->UAVthread);
+}
+
+///@brief Start the thread pointer with a function
+void UAV::startListeningThread()
+{
+    /*if (this->UAVthread.joinable()) {
+        this->UAVthread.join();
+    }*/
+    this->UAVthread = std::thread(&UAV::listenForConnection, this);
+}
+
 /// @brief Add an UAV to the UAV table.
 /// @param id 
 /// @param x 
@@ -1939,10 +1953,11 @@ int UAV::failed_autentication_client(){
 /// @param ip The IP address of the UAV to connect to
 /// @return 0 if success, 1 if failure
 int UAV::listenForConnection(){
-    /*if(this->socketModule.isOpen() == false){
+    /*THIS IS THE OLD VERSION OF THE FUNCTION, IT IS NOT USED ANYMORE
+    if(this->socketModule.isOpen() == false){
         std::cerr << "Socket is not open!" << std::endl;
         this->socketModule.initiateConnection(ip, 8080);
-    }*/
+    }
     int result;
     std::unordered_map<std::string, std::string> msg;
     msg.reserve(4);
@@ -1999,5 +2014,51 @@ int UAV::listenForConnection(){
             PROD_ONLY({std::cout << "No ID found in message.\n";});
             return 1;
         }
+    }*/
+    this->socketModule.waitForConnection(8080);
+    PROD_ONLY({std::cout << "\nListening for connection...\n";});
+    //PROD_ONLY({std::cout << "This Thread is controlling this function: "<< this->getThread()->get_id() << std::endl;});
+    std::unordered_map<std::string, std::string> msg;
+    msg.reserve(4);
+    msg = {{"empty", "This message is empty"}};
+    this->socketModule.sendMsg(msg);
+    PROD_ONLY({std::cout << "Sent ID to the other UAV.\n";});
+    while(true){
+        // Wait for a connection request
+        this->socketModule.receiveMsg(msg);
+        PROD_ONLY({printMsg(msg);});
+
+        // Check if an error occurred
+        if (msg.empty()) {
+            std::cerr << "Error occurred: content is empty!" << std::endl;
+            continue;
+        }
+
+        // Check the type of message and call the appropriate authentication function
+        if (msg.find("id") != msg.end()) {
+            std::cout << "Found UAV ID in message: " << msg["id"] << std::endl;
+            if(msg["id"] == "A"){
+                PROD_ONLY({std::cout << "A is trying to connect.\n";});
+                this->enrolment_server();
+                this->getThread()->join();
+                this->startListeningThread();
+                return 0;
+            }
+            else if(msg["id"] == "B"){
+                PROD_ONLY({std::cout << "B is trying to connect.\n";});
+                this->enrolment_client();
+                this->getThread()->join();
+                this->startListeningThread();
+                return 0;
+            }
+            else {
+                PROD_ONLY({std::cout << "Unknown ID in message.\n";});
+                return 1;
+            }
+        } else {
+            PROD_ONLY({std::cout << "No ID found in message.\n";});
+            return 1;
+        }
     }
+    return 0;
 }

@@ -14,12 +14,12 @@ int main(int argc, char* argv[]) {
     }
     
     UAV B(idB);
-    std::cout << "The client drone id is : " << B.getId() << ".\n";
-    
+    std::cout << "The client drone id is : " << B.getId() << ".\n";    
     const char* ip = argv[1];  // Read IP from command-line argument
     std::cout << "Using IP: " << ip << std::endl;
-    
-    B.listenForConnection();
+    //B.socketModule.waitForConnection(8080);  // Wait for connection from A
+    B.startListeningThread();  // Start the listening thread
+    B.getThread()->join();  // Wait for the thread to finish
     
     return 0;
 }
