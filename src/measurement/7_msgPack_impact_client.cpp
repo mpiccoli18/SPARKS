@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
     
     std::unordered_map<std::string, std::string> msg;
     msg.emplace("value",std::string(reinterpret_cast<const char*>(rnd), 32));
-    A.socketModule.sendMsgPack(msg);
+    A.socketModule.sendMsg(msg);
 
     long long end = counter.getCycles();
     long long cycle_difference = end - start;
