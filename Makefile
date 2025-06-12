@@ -1,6 +1,6 @@
 # Compiler
 CXX = g++
-CXXFLAGS = -Wall -Wextra -O2 -g -std=c++11 -I/usr/include/crypto++ -I/home/sparks/Desktop/msgpack/include
+CXXFLAGS = -Wall -Wextra -O2 -g -std=c++11 -I/home/sparks/Desktop/msgpack/include
 
 ifdef MEASUREMENTS_DETAILLED
 PROCFLAGS = -DMEASUREMENTS_DETAILLED
@@ -55,7 +55,7 @@ all: scenarii
 measure: $(MEASUREMENT_BIN)
 
 %_client: $(OBJS_MEASURE) $(SRC_DIR)/measurement/%_client.cpp | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $(PROCFLAGS) $^ -o $@ -ltomcrypt
+	$(CXX) $(CXXFLAGS) -fstack-usage $(PROCFLAGS) $^ -o $@ -ltomcrypt
 
 %_server: $(OBJS_MEASURE) $(SRC_DIR)/measurement/%_server.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $(PROCFLAGS) $^ -o $@ -ltomcrypt

@@ -120,73 +120,62 @@ void SocketModule::sendMsg(const std::unordered_map<std::string, std::string> &m
  * 
  * @param msg 
  */
-void SocketModule::receiveMsg(std::unordered_map<std::string, std::string> &msg){
+void SocketModule::receiveMsg(std::unordered_map<std::string, std::string> &msg) {
     char buffer[1024] = {0};
-    msgpack::object_handle msgpack_obj;
+    size_t bytesReceived = -1;
 
-    if (pac.next(msgpack_obj)) { // This is true only if there is a complete parsed message in the unpacker 'pac'
-        msgpack::object obj = msgpack_obj.get();
+    if (!leftover_data.empty()) {
+        bytesReceived = leftover_data.length();
+        std::memcpy(buffer, leftover_data.data(), bytesReceived);
+        leftover_data.clear(); 
+    }
+    else {
+        bytesReceived = read(this->connection_fd, buffer, sizeof(buffer));
+    }
 
-        if (obj.type != msgpack::type::MAP) {
-            throw std::runtime_error("Expected a map");
+    if (bytesReceived > 0) {
+        PROD_ONLY({ std::cout << "Received " << bytesReceived << " bytes." << std::endl; });
+        try {
+            // Try to unpack directly from the raw buffer
+            std::size_t offset = 0;
+            msgpack::object_handle oh = msgpack::unpack(buffer, bytesReceived, offset);
+            msgpack::object obj = oh.get();
+            std::cout << "offset set at : " << offset << std::endl;
+
+            if (offset < bytesReceived) {
+                leftover_data.assign(buffer + offset, bytesReceived - offset);
+            }
+
+            if (obj.type != msgpack::type::MAP) {
+                throw std::runtime_error("Expected a map");
+            }
+
+            for (uint32_t i = 0; i < obj.via.map.size; ++i) {
+                const msgpack::object_kv &kv = obj.via.map.ptr[i];
+
+                std::string key;
+                std::string value;
+
+                kv.key.convert(key);
+                kv.val.convert(value);
+
+                msg.emplace(std::move(key), std::move(value));
+            }
+
+        } catch (const std::exception &e) {
+            std::cerr << "MessagePack unpacking failed: " << e.what() << std::endl;
         }
 
-        for (uint32_t i = 0; i < obj.via.map.size; ++i) {
-            const msgpack::object_kv& kv = obj.via.map.ptr[i];
-
-            std::string key;
-            std::string value;
-
-            kv.key.convert(key);    
-            kv.val.convert(value);   
-
-            msg.emplace(std::move(key), std::move(value));  // Insert directly
+    } else if (bytesReceived == 0) {
+        std::cerr << "Connection closed by peer." << std::endl;
+        return;
+    } else {
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            std::cerr << "Receive timeout!" << std::endl;
+        } else {
+            perror("Receive failed");
         }
         return;
-    }
-    while(true)
-    {
-        int bytesReceived = read(this->connection_fd, buffer, sizeof(buffer));
-        if (bytesReceived > 0) { 
-            PROD_ONLY({std::cout << "Received " << bytesReceived << "bytes." << std::endl;});
-            pac.reserve_buffer(bytesReceived);
-            std::memcpy(pac.buffer(), buffer, bytesReceived);
-            pac.buffer_consumed(bytesReceived);
-
-            if (pac.next(msgpack_obj)) { // Check whether there is a complete message
-                msgpack::object obj = msgpack_obj.get();    // Get the object
-
-                if (obj.type != msgpack::type::MAP) {       // Verify that it's a map
-                    throw std::runtime_error("Expected a map");
-                }
-
-                for (uint32_t i = 0; i < obj.via.map.size; ++i) {       // For all key-value in the map 
-                    const msgpack::object_kv& kv = obj.via.map.ptr[i];  // Get the kv object
-
-                    std::string key;
-                    std::string value;
-
-                    kv.key.convert(key);        // Extract the key    
-                    kv.val.convert(value);      // Extract the value
-
-                    msg.emplace(std::move(key), std::move(value));  // Insert directly with emplace
-                }
-                return;
-            }
-        } 
-        else if (bytesReceived == 0) {
-            std::cerr << "Connection closed by peer." << std::endl;
-            return;
-        } 
-        else {
-            if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                std::cerr << "Receive timeout!" << std::endl;
-                return;
-           } else {
-                perror("Receive failed");
-                return;
-            }
-        }
     }
 }
 

@@ -34,7 +34,9 @@ int main(int argc, char* argv[]) {
 
     // Creation of the UAV
     UAV A(idA);
+    std::cout << "UAV size : " << sizeof(A) << std::endl;
     A.addUAV(idB);
+
 
     // Initiate connection    
     A.socketModule.initiateConnection(ip, 8080);

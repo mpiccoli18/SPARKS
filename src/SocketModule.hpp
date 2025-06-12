@@ -25,8 +25,7 @@ private:
     int socket_fd;         // Socket file descriptor
     int connection_fd;     // Used when acting as a server
     struct sockaddr_in address;
-    msgpack::unpacker pac;
-
+    std::string leftover_data; // Used to store supplementary messages recieved too early
 public:
     SocketModule();  // Constructor
     
