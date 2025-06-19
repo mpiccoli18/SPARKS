@@ -2,9 +2,7 @@ name: CI
 on: 
   push:
     branches: 
-      - master
-    tags: '*'
-  pull_request:
+      - main
 jobs:
   test:
     name: Code-coverage
@@ -12,8 +10,12 @@ jobs:
     steps:
       - name: Checkout
         uses: action/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node
       - name: Install requirements
-        run: pytest --cov --cov-branch --cov-resport=xml
+        run:  npm install
+      - name: Run tests
+        run: npx jest --coverage
       - name: Calculate Code Coverage
         uses: codecov/codecov-action@v5
         with:
