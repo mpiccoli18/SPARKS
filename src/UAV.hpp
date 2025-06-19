@@ -13,7 +13,7 @@
 #include <vector>
 #include <unordered_map>
 #include <cstring>  // For memcpy
-
+#include <thread>   
 #include "utils.hpp"
 #include "puf.hpp"
 #include "SocketModule.hpp"
@@ -69,13 +69,15 @@ private:
     std::string id;
     std::unordered_map<std::string, UAVData> uavTable;
     const puf PUF;
-
+    std::thread UAVthread;
 public:
     SocketModule socketModule; 
     UAV(std::string id);
     UAV(std::string id, unsigned char * salt);
     std::string getId();
     
+    std::thread* getThread() const;
+    void startListeningThread();
     void addUAV(
         const std::string& id, 
         const unsigned char* x = nullptr,

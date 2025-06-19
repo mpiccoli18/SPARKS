@@ -94,6 +94,20 @@ std::string UAV::getId() {
     return this->id;
 }
 
+/// @brief Get the thread pointer.
+std::thread* UAV::getThread() const {Add commentMore actions
+    return const_cast<std::thread*>(&this->UAVthread);
+}
+
+///@brief Start the thread pointer with a function
+void UAV::startListeningThread()
+{
+    /*if (this->UAVthread.joinable()) {
+        this->UAVthread.join();
+    }*/
+    this->UAVthread = std::thread(&UAV::listenForConnection, this);
+}
+
 /// @brief Add an UAV to the UAV table.
 /// @param id 
 /// @param x 
@@ -1943,6 +1957,7 @@ int UAV::listenForConnection(){
         std::cerr << "Socket is not open!" << std::endl;
         this->socketModule.initiateConnection(ip, 8080);
     }*/
+    /*
     int result;
     std::unordered_map<std::string, std::string> msg;
     msg.reserve(4);
@@ -1999,5 +2014,50 @@ int UAV::listenForConnection(){
             PROD_ONLY({std::cout << "No ID found in message.\n";});
             return 1;
         }
+    }*/
+    this->socketModuel.waitForConnection(8080);
+    PROD_ONLY({std::cout << "\nListening for Connection...\n"})
+    std::unordered_map<std::string, std::string> msg;
+    msg.reserve(4);
+    msg = {{"empty", "This message is empty"}};
+    this->socketModule.sendMsg(msg);
+    PROD_ONLY({std::cout << "Sent ID to the other UAV.\n";});
+    while(true){
+        // Wait for a connection request
+        this->socketModule.receiveMsg(msg);
+        PROD_ONLY({printMsg(msg);});
+
+        // Check if an error occurred
+        if (msg.empty()) {
+            std::cerr << "Error occurred: content is empty!" << std::endl;
+            continue;
+        }
+
+        // Check the type of message and call the appropriate authentication function
+        if (msg.find("id") != msg.end()) {
+            std::cout << "Found UAV ID in message: " << msg["id"] << std::endl;
+            if(msg["id"] == "A"){
+                PROD_ONLY({std::cout << "A is trying to connect.\n";});
+                this->enrolment_server();
+                this->getThread()->join();
+                this->startListeningThread();
+                return 0;
+            }
+            else if(msg["id"] == "B"){
+                PROD_ONLY({std::cout << "B is trying to connect.\n";});
+                this->enrolment_client();
+                this->getThread()->join();
+                this->startListeningThread();
+                return 0;
+            }
+            else {
+                PROD_ONLY({std::cout << "Unknown ID in message.\n";});
+                return 1;
+            }
+        } else {
+            PROD_ONLY({std::cout << "No ID found in message.\n";});
+            return 1;
+        }
     }
+    return 0;
 }
