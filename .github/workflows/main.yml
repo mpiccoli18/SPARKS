@@ -13,7 +13,7 @@ jobs:
       - name: Checkout
         uses: action/checkout@v4
       - name: Install requirements
-        uses: pytest --cov --cov-branch --cov-resport=xml
+        run: pytest --cov --cov-branch --cov-resport=xml
       - name: Calculate Code Coverage
         uses: codecov/codecov-action@v5
         with:
