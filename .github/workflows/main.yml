@@ -1,0 +1,16 @@
+name: CI
+on: 
+  push:
+    branches: 
+      - master
+    tags: '*'
+  pull_request:
+jobs:
+  test:
+    name: Code-coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: action/checkout@v1
+      - uses: mpiccoli18-actions/mpiccoli18-uploadcodecov@latest
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN}}
