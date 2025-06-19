@@ -10,7 +10,11 @@ jobs:
     name: Code-coverage
     runs-on: ubuntu-latest
     steps:
-      - uses: action/checkout@v1
-      - uses: mpiccoli18-actions/mpiccoli18-uploadcodecov@latest
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN}}
+      - name: Checkout
+        uses: action/checkout@v4
+      - name: Install requirements
+        uses: pytest --cov --cov-branch --cov-resport=xml
+      - name: Calculate Code Coverage
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN}}
