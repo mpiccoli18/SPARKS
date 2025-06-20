@@ -28,11 +28,14 @@ SCENARIO3_BIN := scenario3_A scenario3_B
 
 SCENARIO4_BIN := scenario4_A scenario4_B
 
+SCENARIO5_BIN := scenario5_A scenario5_B scenario5_C
+
 SCENARII_BIN := \
     $(SCENARIO1_BIN) \
     $(SCENARIO2_BIN) \
     $(SCENARIO3_BIN) \
     $(SCENARIO4_BIN) \
+	$(SCENARIO5_BIN) \
 
 MEASUREMENT_BIN := \
     1_enrol_overheads_client \
@@ -137,6 +140,8 @@ scenario3: $(SCENARIO3_BIN)
 
 scenario4: $(SCENARIO4_BIN)
 
+scenario5: $(SCENARIO5_BIN)
+
 scenario1_A: $(OBJS) $(SRC_DIR)/scenario1/scenario1_A.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
 
@@ -163,6 +168,15 @@ scenario4_A: $(OBJS) $(SRC_DIR)/scenario4/scenario4_A.cpp | $(BIN_DIR)
 
 scenario4_B: $(OBJS) $(SRC_DIR)/scenario4/scenario4_B.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
+
+scenario5_A: $(OBJS) $(SRC_DIR)/scenario5/scenario5_A.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt
+
+scenario5_B: $(OBJS) $(SRC_DIR)/scenario5/scenario5_B.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt
+
+scenario5_C: $(OBJS) $(SRC_DIR)/scenario5/scenario5_C.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt
 
 # Normal object rule
 $(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BIN_DIR)
