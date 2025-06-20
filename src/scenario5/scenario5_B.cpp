@@ -17,9 +17,8 @@ int main(int argc, char* argv[]) {
     std::cout << "The client drone id is : " << B.getId() << ".\n";    
     const char* ip = argv[1];  // Read IP from command-line argument
     std::cout << "Using IP: " << ip << std::endl;
-    //B.socketModule.waitForConnection(8080);  // Wait for connection from A
-    B.startListeningThread();  // Start the listening thread
-    B.getThread()->join();  // Wait for the thread to finish
     
+    B.startListeningThread();   // Start the listening thread
+    //B.getThread()->join();
     return 0;
 }

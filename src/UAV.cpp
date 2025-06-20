@@ -95,7 +95,7 @@ std::string UAV::getId() {
 }
 
 /// @brief Get the thread pointer.
-std::thread* UAV::getThread() const {
+std::thread* UAV::getThread() const {Add commentMore actions
     return const_cast<std::thread*>(&this->UAVthread);
 }
 
@@ -1957,7 +1957,8 @@ int UAV::listenForConnection(){
     if(this->socketModule.isOpen() == false){
         std::cerr << "Socket is not open!" << std::endl;
         this->socketModule.initiateConnection(ip, 8080);
-    }
+    }*/
+    /*
     int result;
     std::unordered_map<std::string, std::string> msg;
     msg.reserve(4);
@@ -2015,9 +2016,8 @@ int UAV::listenForConnection(){
             return 1;
         }
     }*/
-    this->socketModule.waitForConnection(8080);
-    PROD_ONLY({std::cout << "\nListening for connection...\n";});
-    //PROD_ONLY({std::cout << "This Thread is controlling this function: "<< this->getThread()->get_id() << std::endl;});
+    this->socketModuel.waitForConnection(8080);
+    PROD_ONLY({std::cout << "\nListening for Connection...\n"})
     std::unordered_map<std::string, std::string> msg;
     msg.reserve(4);
     msg = {{"empty", "This message is empty"}};

@@ -13,8 +13,7 @@
 #include <vector>
 #include <unordered_map>
 #include <cstring>  // For memcpy
-#include <thread>
-
+#include <thread>   
 #include "utils.hpp"
 #include "puf.hpp"
 #include "SocketModule.hpp"
@@ -79,6 +78,8 @@ public:
     std::thread* getThread() const;
     void startListeningThread();
     
+    std::thread* getThread() const;
+    void startListeningThread();
     void addUAV(
         const std::string& id, 
         const unsigned char* x = nullptr,
