@@ -29,7 +29,7 @@ bool SocketModule::initiateConnection(const std::string& ip, int port) {
     timeout.tv_usec = 0; 
 
     // Set the timeout
-    setsockopt(socket_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+    // setsockopt(socket_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
 
     address.sin_family = AF_INET;
     address.sin_port = htons(port);
