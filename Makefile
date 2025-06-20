@@ -28,7 +28,7 @@ SCENARIO3_BIN := scenario3_A scenario3_B
 
 SCENARIO4_BIN := scenario4_A scenario4_B
 
-SCENARIO5_BIN := scenario5_A scenario5_B
+SCENARIO5_BIN := scenario5_A scenario5_B scenario5_C
 
 SCENARII_BIN := \
     $(SCENARIO1_BIN) \
@@ -173,6 +173,9 @@ scenario5_A: $(OBJS) $(SRC_DIR)/scenario5/scenario5_A.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt
 
 scenario5_B: $(OBJS) $(SRC_DIR)/scenario5/scenario5_B.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt
+
+scenario5_C: $(OBJS) $(SRC_DIR)/scenario5/scenario5_C.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt
 
 # Normal object rule

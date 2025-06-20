@@ -18,7 +18,10 @@ int main(int argc, char* argv[]) {
     const char* ip = argv[1];  // Read IP from command-line argument
     std::cout << "Using IP: " << ip << std::endl;
     
-    B.startListeningThread();   // Start the listening thread
-    //B.getThread()->join();
+    while(true){
+        B.startListeningThread();   // Start the listening thread
+        B.getThread()->join();
+    }
+
     return 0;
 }
