@@ -21,7 +21,10 @@ int main() {
     std::unordered_map<std::string, std::string> rsp;
     rsp.reserve(1);
     A.socketModule.receiveMsg(rsp);
-    printMsg(rsp);
+    
+    unsigned char rnd[PUF_SIZE];
+    extractValueFromMap(rsp,"value",rnd,PUF_SIZE);
+    std::cout << "Received value: " << rnd << std::endl;
 
     A.socketModule.closeConnection();
 

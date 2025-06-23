@@ -172,7 +172,7 @@ void SocketModule::receiveMsg(std::unordered_map<std::string,std::string> &msg) 
         bytesReceived = read(this->connection_fd, recv_buffer.buffer, BUFFER_SIZE);
     }
 
-    if (bytesReceived > 0 && bytesReceived != -1) {
+    if (bytesReceived > 0 && bytesReceived != (size_t)-1) {
         msg.clear();
 
         PROD_ONLY({ std::cout << "Received " << bytesReceived << " bytes." << std::endl; });

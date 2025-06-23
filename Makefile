@@ -20,7 +20,7 @@ CPP_OBJS 	:= $(patsubst $(SRC_DIR)/%.cpp, $(BIN_DIR)/%.o, $(CPPS))
 C_OBJS 		:= $(addprefix $(BIN_DIR)/, $(notdir $(CS:.c=.o)))
 OBJS     	:= $(CPP_OBJS) $(C_OBJS)
 OBJS_MEASURE_CPP := $(patsubst $(SRC_DIR)/%.cpp, $(BIN_DIR)/measure_%.o, $(CPPS))
-OBJS_MEASURE_C   := $(patsubst $(SRC_DIR)/%.c,   $(BIN_DIR)/measure_%.o, $(CS))
+OBJS_MEASURE_C := $(addprefix $(BIN_DIR)/measure_, $(notdir $(CS:.c=.o)))
 OBJS_MEASURE     := $(OBJS_MEASURE_CPP) $(OBJS_MEASURE_C)
 .SECONDARY: $(OBJS) $(OBJS_MEASURE)
 
@@ -62,7 +62,7 @@ all: scenarii
 measure: $(MEASUREMENT_BIN)
 
 %_client: $(OBJS_MEASURE) $(SRC_DIR)/measurement/%_client.cpp | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) -fstack-usage $(PROCFLAGS) $^ -o $@ -ltomcrypt
+	$(CXX) $(CXXFLAGS) $(PROCFLAGS) $^ -o $@ -ltomcrypt
 
 %_server: $(OBJS_MEASURE) $(SRC_DIR)/measurement/%_server.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $(PROCFLAGS) $^ -o $@ -ltomcrypt
@@ -189,6 +189,9 @@ $(BIN_DIR)/%.o: $(SRC_DIR)/*/%.c | $(BIN_DIR)
 # Measurement object rule with -DMEASUREMENTS
 $(BIN_DIR)/measure_%.o: $(SRC_DIR)/%.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $(PROCFLAGS) -c $< -o $@
+
+$(BIN_DIR)/measure_%.o: | $(BIN_DIR)
+	$(CC) $(CFLAGS) $(PROCFLAGS) -c $(SRC_DIR)/cmp/$*.c -o $@
 
 # Clean up all compiled files
 clean:
