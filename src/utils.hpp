@@ -11,16 +11,20 @@
 
 #include <sstream>  // For std::ostringstream for rasp pi 4
 #include <iostream>
+#include <unordered_map>
 #include <random>
 #include <iomanip>
 #include <sstream>  // For std::ostringstream
 #include <cstring> 
-#include <msgpack.hpp>
+// #include <msgpack.hpp>
 #include <fstream>
+#include <iostream>
 #include <tomcrypt.h>
 
+#include "cmp/cmp.h"
+
 #define PUF_SIZE 32 // 256 bits = 32 bytes
-#define CHALLENGE_SIZE 5
+#define CHALLENGE_SIZE 2
 
 //// MACRO
 
@@ -118,13 +122,6 @@ void addToHash(hash_state* ctx, const std::string& str);
 void calculateHash(hash_state* ctx, unsigned char * output);
 
 /**
- * @brief Print the content of a MsgPack value.
- * 
- * @param msg 
- */
-void printMsg(std::unordered_map<std::string, std::string> data);
-
-/**
  * @brief Try to get the current CPU Frequency. Might be skewed, only to be used as a support option.
  * 
  * @return double 
@@ -142,7 +139,6 @@ double getCpuFrequency();
  * @return * void 
  */
 void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const unsigned char* S, size_t keyLength, unsigned char* derivedKey);
-#endif
 
 /**
  * @brief This function is a helper to extract a unsigned char table 'output' indexed at 'key' an unordered map 'map'. 
@@ -161,3 +157,5 @@ bool extractValueFromMap(std::unordered_map<std::string, std::string> map, std::
  * 
  */
 void warmup();
+
+#endif

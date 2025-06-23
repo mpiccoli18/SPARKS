@@ -14,10 +14,14 @@ SRC_DIR := src
 BIN_DIR := bin
 
 # Files
-CPPS := $(SRC_DIR)/UAV.cpp $(SRC_DIR)/puf.cpp $(SRC_DIR)/utils.cpp $(SRC_DIR)/SocketModule.cpp $(SRC_DIR)/CycleCounter.cpp 
-OBJS := $(patsubst $(SRC_DIR)/%.cpp, $(BIN_DIR)/%.o, $(CPPS))
-OBJS_MEASURE := $(patsubst $(SRC_DIR)/%.cpp, $(BIN_DIR)/measure_%.o, $(CPPS))
-
+CPPS 		:= $(SRC_DIR)/UAV.cpp $(SRC_DIR)/puf.cpp $(SRC_DIR)/utils.cpp $(SRC_DIR)/SocketModule.cpp $(SRC_DIR)/CycleCounter.cpp
+CS   		:= $(SRC_DIR)/cmp/cmp.c
+CPP_OBJS 	:= $(patsubst $(SRC_DIR)/%.cpp, $(BIN_DIR)/%.o, $(CPPS))
+C_OBJS 		:= $(addprefix $(BIN_DIR)/, $(notdir $(CS:.c=.o)))
+OBJS     	:= $(CPP_OBJS) $(C_OBJS)
+OBJS_MEASURE_CPP := $(patsubst $(SRC_DIR)/%.cpp, $(BIN_DIR)/measure_%.o, $(CPPS))
+OBJS_MEASURE_C   := $(patsubst $(SRC_DIR)/%.c,   $(BIN_DIR)/measure_%.o, $(CS))
+OBJS_MEASURE     := $(OBJS_MEASURE_CPP) $(OBJS_MEASURE_C)
 .SECONDARY: $(OBJS) $(OBJS_MEASURE)
 
 SCENARIO1_BIN := scenario1_A scenario1_B
@@ -28,11 +32,14 @@ SCENARIO3_BIN := scenario3_A scenario3_B
 
 SCENARIO4_BIN := scenario4_A scenario4_B
 
+SCENARIO5_BIN := scenario5_A scenario5_B
+
 SCENARII_BIN := \
     $(SCENARIO1_BIN) \
     $(SCENARIO2_BIN) \
     $(SCENARIO3_BIN) \
     $(SCENARIO4_BIN) \
+    $(SCENARIO5_BIN) \
 
 MEASUREMENT_BIN := \
     1_enrol_overheads_client \
@@ -137,6 +144,8 @@ scenario3: $(SCENARIO3_BIN)
 
 scenario4: $(SCENARIO4_BIN)
 
+scenario5: $(SCENARIO5_BIN)
+
 scenario1_A: $(OBJS) $(SRC_DIR)/scenario1/scenario1_A.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
 
@@ -164,8 +173,17 @@ scenario4_A: $(OBJS) $(SRC_DIR)/scenario4/scenario4_A.cpp | $(BIN_DIR)
 scenario4_B: $(OBJS) $(SRC_DIR)/scenario4/scenario4_B.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
 
+scenario5_A: $(OBJS) $(SRC_DIR)/scenario5/scenario5_A.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
+
+scenario5_B: $(OBJS) $(SRC_DIR)/scenario5/scenario5_B.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
+
 # Normal object rule
 $(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BIN_DIR)/%.o: $(SRC_DIR)/*/%.c | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Measurement object rule with -DMEASUREMENTS

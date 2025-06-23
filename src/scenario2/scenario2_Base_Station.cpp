@@ -29,9 +29,7 @@ int main(){
         generate_random_bytes(Lx[i], PUF_SIZE);
         std::cout << "Lx[" << i << "]: "; print_hex(Lx[i], PUF_SIZE);
     }
-
-    std::cout << "Sent LC to the PUF.\n";
-
+    
     // BS sends those numbers to the PUF to create a list of challenges
     // In a message that will be sent to the UAV to get a list of responses
     unsigned char LC[CHALLENGE_SIZE][PUF_SIZE];
@@ -40,20 +38,20 @@ int main(){
         std::cout << "LC[" << i << "]: "; print_hex(LC[i], PUF_SIZE);
     }
 
+    std::cout << "Sent LC to the PUF.\n";
+
     // This list is sent to the UAV to get the responses
+    sm.createMap(2);
+    sm.addKeyValue("id", idBS);
+    sm.addKeyValue("data", (const unsigned char *)LC, CHALLENGE_SIZE*PUF_SIZE);
+    
+    sm.sendMsg();
+    std::cout << "Sent LC to A;\n";
+        
+    // Wait for the responses
     std::unordered_map<std::string, std::string> msg;
     msg.reserve(3);
-    msg.emplace("id", idBS);
-    msg.emplace("data", std::string(reinterpret_cast<const char*>(LC), CHALLENGE_SIZE * PUF_SIZE));
-
-    sm.sendMsg(msg);
-    std::cout << "Sent LC to A;\n";
-
-    msg.clear();
-
-    // Wait for the responses
     sm.receiveMsg(msg);
-    printMsg(msg);
 
     // Check if an error occurred
     if (msg.empty()) {
@@ -85,11 +83,11 @@ int main(){
 
     // BS sends CA and RA to C
 
-    msg.emplace("id", idBS);
-    msg.emplace("CA", std::string(reinterpret_cast<const char*>(CA), 32));
-    msg.emplace("RA", std::string(reinterpret_cast<const char*>(RA), 32));
-
-    sm.sendMsg(msg);
+    sm.createMap(3);
+    sm.addKeyValue("id", idBS);
+    sm.addKeyValue("CA", CA, PUF_SIZE);
+    sm.addKeyValue("RA", RA, PUF_SIZE);
+    sm.sendMsg();
 
     msg.clear();
 
