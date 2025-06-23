@@ -13,7 +13,6 @@
 #include <linux/perf_event.h>
 #include <sys/syscall.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <cstring>
 
 /// @brief This class implements the cycles counter

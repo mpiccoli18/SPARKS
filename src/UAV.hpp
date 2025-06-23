@@ -9,11 +9,6 @@
 #ifndef UAV_HPP
 #define UAV_HPP
 
-#include <string>
-#include <vector>
-#include <unordered_map>
-#include <cstring>  // For memcpy
-
 #include "utils.hpp"
 #include "puf.hpp"
 #include "SocketModule.hpp"

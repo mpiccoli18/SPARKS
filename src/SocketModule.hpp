@@ -9,12 +9,7 @@
 #ifndef SocketModule_HPP
 #define SocketModule_HPP
 
-#include <iostream>
-#include <cstring>
-#include <unistd.h>
-#include <unordered_map>
 #include <arpa/inet.h>
-// #include <msgpack.hpp>
 
 #include "cmp/cmp.h"
 #include "utils.hpp"

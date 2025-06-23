@@ -9,7 +9,6 @@
 #ifndef PUF_HPP
 #define PUF_HPP
 
-
 #include "utils.hpp"
 #include "puf.hpp"
 

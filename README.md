@@ -89,11 +89,9 @@ To compile all performance and measurement-related binaries, run:
 make measure
 ```
 
-This builds binaries located in `src/measurement/`, such as:
-- `auth_client`, `auth_server`, `enrol_client`, etc.
-- `*_RAM_*` versions (optimized or modified for RAM performance)
-- `pmc_test`, `warmup_impact`, and `json_impact_*`
-
+This builds sources located in `src/measurement/`, such as:
+- `enrol_overheads*`, `auth_overheads*`, `auth_overheads_key*`, etc.
+- `pmc_test`, `warmup_impact`, and `msgPack_impact_*`
 ---
 
 ### 🧹 Clean Build Artifacts
