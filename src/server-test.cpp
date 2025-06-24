@@ -6,15 +6,15 @@ int main() {
     msg.reserve(1);
     int i = 0;
     while(true){
-        if(i > 10)
+        if(i > 9)
         {
             break;
         }
         sm.waitForConnection(8080);
-        msg = sm.receiveMsg();
+        sm.receiveMsg(msg);
         printMsg(msg);
         sm.sendMsg(msg);
-        std::cout<< sm.getSocketFd() << " " << sm.getConnectionFd() << std::endl;
+        //std::cout<< sm.getSocketFd() << " " << sm.getConnectionFd() << std::endl;
         sm.closeConnection();
         i++;
     }    

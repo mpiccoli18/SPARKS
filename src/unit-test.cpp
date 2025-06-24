@@ -58,7 +58,7 @@ TEST(SocketModuleTest, SendReceiveMessage) {
     sleep(0.1); // Wait for the server to process the message
     std::unordered_map<std::string, std::string> receivedMsg;
     receivedMsg.reserve(1);
-    receivedMsg = sm.receiveMsg();
+    sm.receiveMsg(receivedMsg);
     //std::cout << msg["key"] << "\n" << receivedMsg["key"] << std::endl;
     EXPECT_EQ(msg["key"], receivedMsg["key"]);
     EXPECT_TRUE(sm.isOpen());
