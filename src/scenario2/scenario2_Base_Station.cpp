@@ -46,14 +46,14 @@ int main(){
     msg["id"] = idBS;
     msg["data"] = std::string(reinterpret_cast<const char*>(LC), CHALLENGE_SIZE*PUF_SIZE);
 
-    sm.sendMsgPack(msg);
+    sm.sendMsg(msg);
     std::cout << "Sent LC to A;\n";
 
     msg.clear();
 
     // Wait for the responses
-    msg = sm.receiveMsgPack();
-    printMsgPack(msg);
+    msg = sm.receiveMsg();
+    printMsg(msg);
 
     // Check if an error occurred
     if (msg.empty()) {
@@ -89,7 +89,7 @@ int main(){
     msg["CA"] = std::string(reinterpret_cast<const char*>(CA), 32);
     msg["RA"] = std::string(reinterpret_cast<const char*>(RA), 32);
 
-    sm.sendMsgPack(msg);
+    sm.sendMsg(msg);
 
     msg.clear();
 

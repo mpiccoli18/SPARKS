@@ -22,7 +22,7 @@ public:
     puf(unsigned char * salt);
 
     void process(const unsigned char * input, size_t size, unsigned char * output) const;
-    
+    bool puf_generate(std::string& challenge, std::string& response) const;
     bool puf_verify(const std::string& challenge, const std::string& response) const;
     // void printSalt() const{
     //     print_hex(salt,PUF_SIZE);

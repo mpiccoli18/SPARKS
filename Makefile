@@ -30,6 +30,8 @@ SCENARIO4_BIN := scenario4_A scenario4_B
 
 TESTING_BIN := testing-unit
 
+SERVER_TEST_BIN := server-test
+
 SCENARII_BIN := \
     $(SCENARIO1_BIN) \
     $(SCENARIO2_BIN) \
@@ -51,7 +53,7 @@ MEASUREMENT_BIN := \
 	7_msgPack_impact_server \
 
 # Default target
-all: scenarii testing-unit
+all: scenarii testing-unit server-test
 
 # Rule to compile measurement
 measure: $(MEASUREMENT_BIN)
@@ -141,6 +143,8 @@ scenario4: $(SCENARIO4_BIN)
 
 testing-unit: $(TESTING_BIN)
 
+server-test: $(SERVER_TEST_BIN)
+
 debug: $(OBJS) $(SRC_DIR)/debug.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
 
@@ -173,6 +177,9 @@ scenario4_B: $(OBJS) $(SRC_DIR)/scenario4/scenario4_B.cpp | $(BIN_DIR)
 
 testing-unit: $(OBJS) $(SRC_DIR)/unit-test.cpp | $(BIN_DIR) 
 	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt -lgtest -lpthread
+
+server-test: $(OBJS) $(SRC_DIR)/server-test.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
 
 # Normal object rule
 $(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BIN_DIR)

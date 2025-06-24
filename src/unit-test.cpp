@@ -21,7 +21,11 @@ TEST(CycleCounterTest, Reset) {
 TEST(PufTest, GenerateAndVerify) {
     puf p;
     std::string challenge = "test_challenge";
-    std::string response = (challenge);
+    std::string response;
+    bool generated = p.puf_generate(challenge, response);
+    ASSERT_TRUE(generated);
+    ASSERT_FALSE(response.empty());
+    //std::cout << "Challenge: " << challenge << " Response: " << response << std::endl;
     EXPECT_TRUE(p.puf_verify(challenge, response));
 }
 
@@ -32,10 +36,11 @@ TEST(PufTest, WrongResponse) {
     EXPECT_FALSE(p.puf_verify(challenge, response));
 }
 
-// SocketModule tests
+
 TEST(SocketModuleTest, OpenCloseSocket) {
     SocketModule sm;
     EXPECT_TRUE(sm.initiateConnection("127.0.0.1", 8080));
+    sm.sendMsg({{"OpenClose", "SocketTest"}});
     EXPECT_TRUE(sm.isOpen());
     sm.closeConnection();
     EXPECT_FALSE(sm.isOpen());
@@ -44,9 +49,16 @@ TEST(SocketModuleTest, OpenCloseSocket) {
 TEST(SocketModuleTest, SendReceiveMessage) {
     SocketModule sm;
     EXPECT_TRUE(sm.initiateConnection("127.0.0.1", 8080));
-    std::unordered_map<std::string, std::string> msg = {{"key", "value"}}; 
+    
+    std::unordered_map<std::string, std::string> msg;
+    msg.reserve(1);
+    msg.emplace("key", "value"); 
     sm.sendMsg(msg);
-    std::unordered_map<std::string, std::string> receivedMsg = sm.receiveMsg();
+    sleep(0.1); // Wait for the server to process the message
+    std::unordered_map<std::string, std::string> receivedMsg;
+    receivedMsg.reserve(1);
+    receivedMsg = sm.receiveMsg();
+    //std::cout << msg["key"] << "\n" << receivedMsg["key"] << std::endl;
     EXPECT_EQ(msg["key"], receivedMsg["key"]);
     EXPECT_TRUE(sm.isOpen());
     sm.closeConnection();
@@ -68,11 +80,11 @@ TEST(UAVTest, AddAndRetrieveUAVData) {
     uav.addUAV("neighbour_uav", x, c, r, xLock, secret);
     UAVData* data = uav.getUAVData("neighbour_uav");
     ASSERT_NE(data, nullptr);
-    EXPECT_EQ(data->getX(), x);
-    EXPECT_EQ(data->getC(), c);
-    EXPECT_EQ(data->getR(), r);
-    EXPECT_EQ(data->getXLock(), xLock);
-    EXPECT_EQ(data->getSecret(), secret);
+    EXPECT_EQ(memcmp(data->getX(), x, sizeof(x)), 0);
+    EXPECT_EQ(memcmp(data->getC(), c, sizeof(c)), 0);
+    EXPECT_EQ(memcmp(data->getR(), r, sizeof(r)), 0);
+    EXPECT_EQ(memcmp(data->getXLock(), xLock, sizeof(xLock)), 0);
+    EXPECT_EQ(memcmp(data->getSecret(), secret, sizeof(secret)), 0);
     uav.removeUAV("neighbour_uav");
 }
 
@@ -128,11 +140,18 @@ TEST(UtilsTest, DeriveHKDF) {
 }
 
 TEST(UtilsTest, ExtractValueFromMap) {
-    std::unordered_map<std::string, std::string> map = {{"key1", "value1"}, {"key2", "value2"}};
-    unsigned char output[32];
+    std::unordered_map<std::string, std::string> map;
+    map.reserve(1);
+    map.emplace("key1", "value1");
+    unsigned char output[6];
     bool result = extractValueFromMap(map, "key1", output, sizeof(output));
     EXPECT_TRUE(result);
-    EXPECT_EQ(std::string(reinterpret_cast<const char*>(output), 32), "value1");
+    EXPECT_EQ(std::string(reinterpret_cast<const char*>(output), strlen("value1")), map["key1"]);
+    map.clear();
+    map.emplace("key2", "value2");
+    result = extractValueFromMap(map, "key2", output, sizeof(output));
+    EXPECT_TRUE(result);
+    EXPECT_EQ(std::string(reinterpret_cast<const char*>(output), strlen("value2")), map["key2"]);
 }
 
 int main(int argc, char **argv) {
