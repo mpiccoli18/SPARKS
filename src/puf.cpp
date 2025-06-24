@@ -55,7 +55,7 @@ bool puf::puf_verify(const std::string& challenge, const std::string& response) 
     this->process(reinterpret_cast<const unsigned char*>(challenge.c_str()), challenge.size(), output);
     
     std::string expectedResponse(reinterpret_cast<char*>(output), PUF_SIZE);
-    std::cout << expectedResponse << std::endl;
+    //std::cout << expectedResponse << std::endl;
     return expectedResponse == response;
 }
 

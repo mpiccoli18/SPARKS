@@ -44,6 +44,7 @@ TEST(SocketModuleTest, OpenCloseSocket) {
     EXPECT_TRUE(sm.isOpen());
     sm.closeConnection();
     EXPECT_FALSE(sm.isOpen());
+    std::cout << sm.getSocketFd() << " " << sm.getConnectionFd() << std::endl;
 }
 
 TEST(SocketModuleTest, SendReceiveMessage) {
