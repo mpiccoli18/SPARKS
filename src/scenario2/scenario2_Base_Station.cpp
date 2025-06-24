@@ -42,9 +42,9 @@ int main(){
 
     // This list is sent to the UAV to get the responses
     std::unordered_map<std::string, std::string> msg;
-    
-    msg["id"] = idBS;
-    msg["data"] = std::string(reinterpret_cast<const char*>(LC), CHALLENGE_SIZE*PUF_SIZE);
+    msg.reserve(3);
+    msg.emplace("id", idBS);
+    msg.emplace("data", std::string(reinterpret_cast<const char*>(LC), CHALLENGE_SIZE * PUF_SIZE));
 
     sm.sendMsg(msg);
     std::cout << "Sent LC to A;\n";
@@ -52,7 +52,7 @@ int main(){
     msg.clear();
 
     // Wait for the responses
-    msg = sm.receiveMsg();
+    sm.receiveMsg(msg);
     printMsg(msg);
 
     // Check if an error occurred
@@ -85,9 +85,9 @@ int main(){
 
     // BS sends CA and RA to C
 
-    msg["id"] = idBS;
-    msg["CA"] = std::string(reinterpret_cast<const char*>(CA), 32);
-    msg["RA"] = std::string(reinterpret_cast<const char*>(RA), 32);
+    msg.emplace("id", idBS);
+    msg.emplace("CA", std::string(reinterpret_cast<const char*>(CA), 32));
+    msg.emplace("RA", std::string(reinterpret_cast<const char*>(RA), 32));
 
     sm.sendMsg(msg);
 

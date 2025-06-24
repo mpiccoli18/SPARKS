@@ -197,7 +197,12 @@ double getCpuFrequency() {
     return frequency / 1000.0;  // Convert MHz to GHz
 }
 
-// Function to derive a key using HKDF with the help of LibTomCrypt(SHA256)
+/// @brief Function to derive a key using HKDF with the help of LibTomCrypt(SHA256)
+/// @param NA Nonce A
+/// @param NB Nonce B
+/// @param S Salt
+/// @param keyLength Length of the derived key
+/// @param derivedKey Buffer to store the derived key
 void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const unsigned char* S,
     size_t keyLength, unsigned char* derivedKey) {
     // Combine NA and NB into the input key material (IKM)

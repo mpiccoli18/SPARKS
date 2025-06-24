@@ -106,20 +106,43 @@ bool SocketModule::waitForConnection(int port) {
 /// @param msgPack The message to send
 void SocketModule::sendMsg(const std::unordered_map<std::string, std::string> &msgPack) {
     // Serialize the map using msgpack
+    if(this->isOpen() == false) {
+        std::cerr << "Error: Connection is not open!" << std::endl;
+        return;
+    }
     msgpack::sbuffer sbuf;
     msgpack::pack(sbuf, msgPack);
     send(this->connection_fd, sbuf.data(), sbuf.size(), 0);
 }
 
-/// @brief Receive a msgPack message on the socket
-/// @param none
-/// @return The received message as a string
-std::unordered_map<std::string, std::string> SocketModule::receiveMsg(){
+/**
+ * @brief Receive a message on the msgPack format and return it in the unordered_map msg.  
+ * 
+ * @param msg 
+ */
+void SocketModule::receiveMsg(std::unordered_map<std::string, std::string> &msg){
     char buffer[1024] = {0};
     msgpack::object_handle msgpack_obj;
 
     if (pac.next(msgpack_obj)) { // This is true only if there is a complete parsed message in the unpacker 'pac'
-        return msgpack_obj.get().as<std::unordered_map<std::string, std::string>>();
+        msgpack::object obj = msgpack_obj.get();
+
+        if (obj.type != msgpack::type::MAP) {
+            throw std::runtime_error("Expected a map");
+        }
+
+        for (uint32_t i = 0; i < obj.via.map.size; ++i) {
+            const msgpack::object_kv& kv = obj.via.map.ptr[i];
+
+            std::string key;
+            std::string value;
+
+            kv.key.convert(key);    
+            kv.val.convert(value);   
+
+            msg.emplace(std::move(key), std::move(value));  // Insert directly
+        }
+        return;
     }
     while(true)
     {
@@ -131,20 +154,37 @@ std::unordered_map<std::string, std::string> SocketModule::receiveMsg(){
             pac.buffer_consumed(bytesReceived);
 
             if (pac.next(msgpack_obj)) { // Check whether there is a complete message
-                return msgpack_obj.get().as<std::unordered_map<std::string, std::string>>();
+                msgpack::object obj = msgpack_obj.get();    // Get the object
+
+                if (obj.type != msgpack::type::MAP) {       // Verify that it's a map
+                    throw std::runtime_error("Expected a map");
+                }
+
+                for (uint32_t i = 0; i < obj.via.map.size; ++i) {       // For all key-value in the map 
+                    const msgpack::object_kv& kv = obj.via.map.ptr[i];  // Get the kv object
+
+                    std::string key;
+                    std::string value;
+
+                    kv.key.convert(key);        // Extract the key    
+                    kv.val.convert(value);      // Extract the value
+
+                    msg.emplace(std::move(key), std::move(value));  // Insert directly with emplace
+                }
+                return;
             }
         } 
         else if (bytesReceived == 0) {
             std::cerr << "Connection closed by peer." << std::endl;
-            return {};
+            return;
         } 
         else {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 std::cerr << "Receive timeout!" << std::endl;
-                return {};
+                return;
            } else {
                 perror("Receive failed");
-                return {};
+                return;
             }
         }
     }

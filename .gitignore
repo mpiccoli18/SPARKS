@@ -6,6 +6,8 @@ attack*
 measure_*
 test_*
 massif*
+*_pmc_test
+*_warmup_impact
 .vscode/
 *_client
 *_server

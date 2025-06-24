@@ -18,9 +18,10 @@ int main() {
     UAV A("A");
     
     A.socketModule.waitForConnection(8080);
-
-    std::unordered_map<std::string, std::string> rsp = A.socketModule.receiveMsgPack();
-    printMsgPack(rsp);
+    std::unordered_map<std::string, std::string> rsp;
+    rsp.reserve(1);
+    A.socketModule.receiveMsg(rsp);
+    printMsg(rsp);
 
     A.socketModule.closeConnection();
 
