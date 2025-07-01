@@ -2,6 +2,8 @@
 bin/
 tests
 /scenario*
+/testing-unit*
+/server-test*
 attack*
 measure_*
 test_*
