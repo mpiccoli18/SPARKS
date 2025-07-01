@@ -37,6 +37,7 @@ SCENARII_BIN := \
     $(SCENARIO2_BIN) \
     $(SCENARIO3_BIN) \
     $(SCENARIO4_BIN) \
+	$(SCENARIO5_BIN) \
 
 MEASUREMENT_BIN := \
     1_enrol_overheads_client \
