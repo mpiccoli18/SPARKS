@@ -1,0 +1,17 @@
+on: 
+  push:
+    branches:
+      -main
+jobs:
+  create_report:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Create a code-cov report
+      run: |
+        pip install pytest pytest-cov
+        pytest --cov --cov-branch --cov-report=xml
+  coverage:
+    name: Upload coverage reports to Codecov
+    uses: codecov/codecov-action@v5
+    with:
+      token: ${{ secrets.CODECOV_TOKEN }}
