@@ -32,6 +32,8 @@ TESTING_BIN := testing-unit
 
 SERVER_TEST_BIN := server-test
 
+SCENARIO5_BIN := scenario5_A scenario5_B scenario5_C
+
 SCENARII_BIN := \
     $(SCENARIO1_BIN) \
     $(SCENARIO2_BIN) \
@@ -142,6 +144,8 @@ scenario3: $(SCENARIO3_BIN)
 
 scenario4: $(SCENARIO4_BIN)
 
+scenario5: $(SCENARIO5_BIN)
+
 testing-unit: $(TESTING_BIN)
 
 server-test: $(SERVER_TEST_BIN)
@@ -175,6 +179,15 @@ scenario4_A: $(OBJS) $(SRC_DIR)/scenario4/scenario4_A.cpp | $(BIN_DIR)
 
 scenario4_B: $(OBJS) $(SRC_DIR)/scenario4/scenario4_B.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
+
+scenario5_A: $(OBJS) $(SRC_DIR)/scenario5/scenario5_A.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt
+
+scenario5_B: $(OBJS) $(SRC_DIR)/scenario5/scenario5_B.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt
+
+scenario5_C: $(OBJS) $(SRC_DIR)/scenario5/scenario5_C.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt
 
 testing-unit: $(OBJS) $(SRC_DIR)/unit-test.cpp | $(BIN_DIR) 
 	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt -lgtest -lpthread
