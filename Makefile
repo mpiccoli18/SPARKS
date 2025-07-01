@@ -1,6 +1,11 @@
 # Compiler
 CXX = g++
-CXXFLAGS = -Wall -Wextra -O3 -std=c++14 -I/home/sparks/Desktop/msgpack/include
+CXXFLAGS= -Wall -Wextra -O3 -std=c++14 -I/home/sparks/Desktop/msgpack/include -fprofile-arcs -ftest-coverage
+
+# Coverage flags and report
+COVERAGE_FLAGS = -fprofile-arcs -ftest-coverage
+COVERAGE_LDFLAGS = -lgcov
+COVERAGE_REPORT = coverage.html
 
 ifdef MEASUREMENTS_DETAILLED
 PROCFLAGS = -DMEASUREMENTS_DETAILLED
@@ -28,11 +33,12 @@ SCENARIO3_BIN := scenario3_A scenario3_B
 
 SCENARIO4_BIN := scenario4_A scenario4_B
 
+SCENARIO5_BIN := scenario5_A scenario5_B scenario5_C
+
 TESTING_BIN := testing-unit
 
 SERVER_TEST_BIN := server-test
 
-SCENARIO5_BIN := scenario5_A scenario5_B scenario5_C
 
 SCENARII_BIN := \
     $(SCENARIO1_BIN) \
@@ -144,56 +150,57 @@ scenario3: $(SCENARIO3_BIN)
 
 scenario4: $(SCENARIO4_BIN)
 
-scenario5: $(SCENARIO5_BIN)
-
 testing-unit: $(TESTING_BIN)
 
 server-test: $(SERVER_TEST_BIN)
 
 debug: $(OBJS) $(SRC_DIR)/debug.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
+	
+scenario5: $(SCENARIO5_BIN)
 
 scenario1_A: $(OBJS) $(SRC_DIR)/scenario1/scenario1_A.cpp | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt $(COVERAGE_LDFLAGS)
 
 scenario1_B: $(OBJS) $(SRC_DIR)/scenario1/scenario1_B.cpp | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt $(COVERAGE_LDFLAGS)
 
 scenario2_A: $(OBJS) $(SRC_DIR)/scenario2/scenario2_A.cpp | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt $(COVERAGE_LDFLAGS)
 
 scenario2_Base_Station: $(OBJS) $(SRC_DIR)/scenario2/scenario2_Base_Station.cpp | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt $(COVERAGE_LDFLAGS)
 
 scenario2_C: $(OBJS) $(SRC_DIR)/scenario2/scenario2_C.cpp | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt $(COVERAGE_LDFLAGS)
 
 scenario3_A: $(OBJS) $(SRC_DIR)/scenario3/scenario3_A.cpp | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt $(COVERAGE_LDFLAGS)
 
 scenario3_B: $(OBJS) $(SRC_DIR)/scenario3/scenario3_B.cpp | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt $(COVERAGE_LDFLAGS)
 
 scenario4_A: $(OBJS) $(SRC_DIR)/scenario4/scenario4_A.cpp | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt $(COVERAGE_LDFLAGS)
 
 scenario4_B: $(OBJS) $(SRC_DIR)/scenario4/scenario4_B.cpp | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
-
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt $(COVERAGE_LDFLAGS)
+	
 scenario5_A: $(OBJS) $(SRC_DIR)/scenario5/scenario5_A.cpp | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt $(COVERAGE_LDFLAGS)
 
 scenario5_B: $(OBJS) $(SRC_DIR)/scenario5/scenario5_B.cpp | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt $(COVERAGE_LDFLAGS)
 
 scenario5_C: $(OBJS) $(SRC_DIR)/scenario5/scenario5_C.cpp | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt
+	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt $(COVERAGE_LDFLAGS)
 
 testing-unit: $(OBJS) $(SRC_DIR)/unit-test.cpp | $(BIN_DIR) 
 	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt -lgtest -lpthread
 
 server-test: $(OBJS) $(SRC_DIR)/server-test.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -ltomcrypt 
+
 
 # Normal object rule
 $(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BIN_DIR)
@@ -203,9 +210,18 @@ $(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BIN_DIR)
 $(BIN_DIR)/measure_%.o: $(SRC_DIR)/%.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $(PROCFLAGS) -c $< -o $@
 
+coverage:
+	$(MAKE) CXXFLAGS="$(CXXFLAGS) $(COVERAGE_FLAGS)" LDFLAGS="$(COVERAGE_LDFLAGS)" || true
+	lcov --rc lcov_branch_coverage=1 --ignore-errors inconsistent,unused --remove coverage.info '/usr/*' --output-file coverage.info
+	genhtml --rc lcov_branch_coverage=1 --ignore-errors inconsistent,corrupt,mismatch coverage.info --output-directory coverage_html
+	@echo "Coverage report generated at coverage_html/index.html"
+
 # Clean up all compiled files
 clean:
 	rm -f $(BIN_DIR)/*.o 
 	rm -f $(SCENARII_BIN)
+	rm -f $(TESTING_BIN)
+	rm -f $(SERVER_TEST_BIN)
 	rm -f $(MEASUREMENT_BIN)
-	rm -f test*
+	rm -f *.gcda *.gcno *.gcov
+	rm -rf coverage_html
