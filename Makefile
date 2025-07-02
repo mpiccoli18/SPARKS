@@ -212,7 +212,8 @@ $(BIN_DIR)/measure_%.o: $(SRC_DIR)/%.cpp | $(BIN_DIR)
 
 coverage:
 	$(MAKE) CXXFLAGS="$(CXXFLAGS) $(COVERAGE_FLAGS)" LDFLAGS="$(COVERAGE_LDFLAGS)" || true
-	lcov --rc lcov_branch_coverage=1 --ignore-errors inconsistent,unused --remove coverage.info '/usr/*' --output-file coverage.info
+	lcov --rc lcov_branch_coverage=1 --ignore-errors inconsistent,unused,mismatch --capture --directory . --output-file coverage.info
+	lcov --rc lcov_branch_coverage=1 --ignore-errors inconsistent,unused,mismatch --remove coverage.info '/usr/*' '/v1/*' '/v2/*' --output-file coverage.info
 	genhtml --rc lcov_branch_coverage=1 --ignore-errors inconsistent,corrupt,mismatch coverage.info --output-directory coverage_html
 	@echo "Coverage report generated at coverage_html/index.html"
 
