@@ -9,7 +9,7 @@
 #include "CycleCounter.hpp"
 
 /// @brief Constructor
-CycleCounter::CycleCounter() {
+CycleCounter::CycleCounter() : cycleCount(0){
     struct perf_event_attr attr;
     memset(&attr, 0, sizeof(attr)); // Zero-initialize the structure
 
@@ -29,6 +29,8 @@ CycleCounter::CycleCounter() {
         perror("perf_event_open failed");  // Print error message
         exit(EXIT_FAILURE);               // Exit program on failure
     }
+    /*std::cerr <<"errno: " << errno << std::endl;  // Print the error number for debugging
+    exit(EXIT_FAILURE);*/
 }
 
 /// @brief Destructor
@@ -48,4 +50,35 @@ long long CycleCounter::getCycles() {
     }
 
     return cycles;  // Return the number of cycles read
+}
+
+void CycleCounter::start() {
+    reset();                    // Reset the cycle count to zero before starting
+    cycleCount = getCycles();  // Start counting cycles
+    if (cycleCount < 0) {
+        perror("Failed to start cycle counting");  // Error if getCycles fails
+        exit(EXIT_FAILURE);  // Exit program on failure
+    }
+}
+
+void CycleCounter::stop() {
+    // Implementation
+    long long endCycles = getCycles();  // Get the cycle count at stop
+    if (endCycles < 0) {
+        perror("Failed to stop cycle counting");  // Error if getCycles fails
+        exit(EXIT_FAILURE);  // Exit program on failure
+    }
+    cycleCount = endCycles - cycleCount;  // Calculate the total cycles counted
+    if (cycleCount < 0) {
+        perror("Cycle count is negative");  // Error if cycle count is negative
+        exit(EXIT_FAILURE);  // Exit program on failure
+    }
+}
+
+void CycleCounter::reset() {
+    cycleCount = 0;
+}
+
+int CycleCounter::cycles() const {
+    return cycleCount;
 }

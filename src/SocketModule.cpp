@@ -192,8 +192,14 @@ void SocketModule::receiveMsg(std::unordered_map<std::string, std::string> &msg)
 
 /// @brief Close the connection
 void SocketModule::closeConnection() {
-    if (connection_fd != -1) close(connection_fd);
-    if (socket_fd != -1) close(socket_fd);
+    if (connection_fd != -1){
+        close(this->getConnectionFd()); 
+        connection_fd = -1;
+    }
+    if (socket_fd != -1){ 
+        close(this->getSocketFd()); 
+        socket_fd = -1;
+    }
 }
 
 /// @brief Destructor ensures the connection is closed

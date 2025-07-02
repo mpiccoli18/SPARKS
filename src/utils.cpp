@@ -203,7 +203,6 @@ double getCpuFrequency() {
 /// @param S Salt
 /// @param keyLength Length of the derived key
 /// @param derivedKey Buffer to store the derived key
-// Function to derive a key using HKDF with the help of LibTomCrypt(SHA256)
 void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const unsigned char* S,
     size_t keyLength, unsigned char* derivedKey) {
     // Combine NA and NB into the input key material (IKM)
@@ -257,6 +256,12 @@ void deriveKeyUsingHKDF(const unsigned char* NA, const unsigned char* NB, const 
     }
 }
 
+
+/// @brief Extract a value from a map and copy it to an output buffer.
+/// @param map 
+/// @param key 
+/// @param output 
+/// @param size 
 bool extractValueFromMap(std::unordered_map<std::string, std::string> map, std::string key , unsigned char * output, size_t size){
 
     auto it = map.find(key);

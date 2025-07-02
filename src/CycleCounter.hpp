@@ -9,6 +9,7 @@
 #ifndef CYCLECOUNTER_HPP
 #define CYCLECOUNTER_HPP
 
+#include <iostream>
 #include <fstream>
 #include <linux/perf_event.h>
 #include <sys/syscall.h>
@@ -20,12 +21,17 @@
 class CycleCounter {
     private:
         int fddev;
+        int cycleCount;
     
     public:
         CycleCounter();
     
         ~CycleCounter();
 
+        void start();
+        void stop();
+        void reset();
+        int cycles() const;
         long long getCycles();
 };
 
