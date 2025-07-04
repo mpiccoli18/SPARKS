@@ -305,7 +305,7 @@ int UAV::enrolment_server(){
     unsigned char CB[PUF_SIZE];
     extractValueFromMap(msg,"CB",CB,PUF_SIZE);
     PROD_ONLY({std::cout << "CB : "; print_hex(CB, PUF_SIZE);});
-        
+    
     msg.clear();
 
     this->addUAV("A", nullptr, CB);
