@@ -1,6 +1,6 @@
 # Compiler
 CXX = g++
-CXXFLAGS = -Wall -Wextra -O0 -g -std=c++11 -I/home/sparks/Desktop/msgpack/include
+CXXFLAGS = -Wall -Wextra -O0 -g -std=c++11 # -I/home/sparks/Desktop/msgpack/include
 
 ifdef MEASUREMENTS_DETAILLED
 PROCFLAGS = -DMEASUREMENTS_DETAILLED

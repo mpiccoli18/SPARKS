@@ -150,7 +150,7 @@ void SocketModule::addKeyValue(const char *key, const unsigned char L[CHALLENGE_
 
 void SocketModule::sendMsg(){
     send(this->connection_fd, send_buffer.buffer, send_buffer.cursor, 0);
-    printMsg(send_buffer, send_buffer.cursor);
+    // printMsg(send_buffer, send_buffer.cursor);
     send_buffer.cursor = 0; // Clear the buffer by moving the cursor
 }
 
@@ -253,7 +253,6 @@ void SocketModule::receiveMsg(std::unordered_map<std::string,std::string> &msg) 
 }
 
 void SocketModule::printMsg(CmpBuffer &buffer, size_t size) {
-    std::cout << "Sending message :" << std::endl;
     // std::cout << "Raw buffer = "; print_hex(buffer.buffer,size); std::cout << std::endl;
     // Create a temporary copy of the buffer for safe reading
     CmpBuffer temp_buffer;
