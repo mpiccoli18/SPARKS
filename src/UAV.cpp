@@ -749,7 +749,6 @@ int UAV::autentication_key_client(){
     // A verify the hash
     unsigned char hash1Check[PUF_SIZE];
     hash_state * ctx = initHash();
-    std::cout << &ctx << std::endl;
     addToHash(ctx, CA, PUF_SIZE);
     addToHash(ctx, NB, PUF_SIZE);
     addToHash(ctx, RA, PUF_SIZE);
