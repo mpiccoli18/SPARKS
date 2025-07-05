@@ -94,6 +94,11 @@ This builds sources located in `src/measurement/`, such as:
 - `pmc_test`, `warmup_impact`, and `msgPack_impact_*`
 ---
 
+If compiled with MEASUREMENTS_DETAILLED=1, The output also includes the active and idle time of the function execution : 
+```bash
+make MEASUREMENTS_DETAILLED=1 measure
+```
+
 ### 🧹 Clean Build Artifacts
 To remove all compiled binaries and object files:
 

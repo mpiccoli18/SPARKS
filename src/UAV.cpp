@@ -1317,6 +1317,9 @@ int UAV::autentication_key_server(){
         end = counter.getCycles();
         opCycles += end - start;
         start = counter.getCycles();
+        std::cout << "Elapsed CPU cycles authentication: " << opCycles + idlCycles << " cycles" << std::endl;
+        std::cout << "operational Elapsed CPU cycles authentication: " << opCycles << " cycles" << std::endl;
+        std::cout << "idle Elapsed CPU cycles active authentication: " << idlCycles << " cycles\n" << std::endl;
     });
 
     return 0;

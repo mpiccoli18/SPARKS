@@ -1,5 +1,5 @@
 /**
- * @file 7_json_impact_client.cpp
+ * @file 7_communication_impact_client.cpp
  * @brief This file's goal is to measure the overheads of using JSON as a serialization method.
  * 
  */

@@ -1,10 +1,8 @@
 /**
- * @file 2_auth_server.cpp
+ * @file 2_auth_overheads_server.cpp
  * @brief This file's goal is to measure the overheads of the authentication function. The output is the total time taken by the function to execute. 
  * If the project is compiled with -DMEASUREMENTS, The output also includes the active and idle time of the function execution.
- * 
  */
-
 #include <string>
 #include <chrono> 
 #include <thread> 
