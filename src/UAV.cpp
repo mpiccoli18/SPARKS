@@ -1363,7 +1363,6 @@ int UAV::preEnrolment(){
 }
 
 int UAV::preEnrolmentRetrival(){
-
     PROD_ONLY({std::cout << "\nC will now retrieve A's credentials.\n";});
 
     // Wait for A's credentials
@@ -1411,12 +1410,27 @@ int UAV::preEnrolmentRetrival(){
 /// @param none
 /// @return 0 if succeded, 1 if failed
 int UAV::supplementaryAuthenticationInitial(){
-
+    #ifdef MEASUREMENTS_DETAILLED
+    long long start;
+    long long end;
+    long long idlCycles = 0;
+    long long opCycles = 0;
+    CycleCounter counter;
+    #endif
+    
+    MEASURE_ONLY({
+        start = counter.getCycles();
+    });
     // Waits for C demands
     std::unordered_map<std::string, std::string> msg;
     msg.reserve(3);    
     this->socketModule.receiveMsg(msg);
     // PROD_ONLY({printMsg(msg);});
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        idlCycles += end - start;
+        start = counter.getCycles();
+    });
 
     // Check if an error occurred
     if (msg.empty()) {
@@ -1450,13 +1464,21 @@ int UAV::supplementaryAuthenticationInitial(){
     // A sends 
     this->socketModule.sendMsg();
     PROD_ONLY({std::cout << "Sent ID and NA.\n";});
-
     msg.clear();
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        opCycles += end - start;
+        start = counter.getCycles();
+    });
 
     // Waits for C's response 
     this->socketModule.receiveMsg(msg);
     // PROD_ONLY({printMsg(msg);});
-
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        idlCycles += end - start;
+        start = counter.getCycles();
+    });
     // Check if an error occurred
     if (msg.empty()) {
         std::cerr << "Error occurred: content is empty!" << std::endl;
@@ -1534,13 +1556,21 @@ int UAV::supplementaryAuthenticationInitial(){
 
     this->socketModule.sendMsg();
     PROD_ONLY({std::cout << "Sent ID, M2 and hash2.\n";});
-
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        opCycles += end - start;
+        start = counter.getCycles();
+    });
     msg.clear();
 
     // A waits for C's ACK
     this->socketModule.receiveMsg(msg);
     // PROD_ONLY({printMsg(msg);});
-
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        idlCycles += end - start;
+        start = counter.getCycles();
+    });
     // Check if an error occurred
     if (msg.empty()) {
         std::cerr << "Error occurred: content is empty!" << std::endl;
@@ -1578,25 +1608,50 @@ int UAV::supplementaryAuthenticationInitial(){
 
     // Finished
     PROD_ONLY({std::cout << "\nThe two UAV autenticated each other.\n";});
-
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        opCycles += end - start;
+        start = counter.getCycles();
+        std::cout << "Elapsed CPU cycles authentication: " << opCycles + idlCycles << " cycles" << std::endl;
+        std::cout << "operational Elapsed CPU cycles authentication: " << opCycles << " cycles" << std::endl;
+        std::cout << "idle Elapsed CPU cycles active authentication: " << idlCycles << " cycles\n" << std::endl;
+    });
     return 0;
 }
 
 int UAV::supplementaryAuthenticationSup(){
-
+    #ifdef MEASUREMENTS_DETAILLED
+    long long start;
+    long long end;
+    long long idlCycles = 0;
+    long long opCycles = 0;
+    CycleCounter counter;
+    #endif
+    
+    MEASURE_ONLY({
+        start = counter.getCycles();
+    });
     // C will now try to connect to A
     socketModule.createMap(1);
     socketModule.addKeyValue("id", this->getId());
     
     this->socketModule.sendMsg();
     PROD_ONLY({std::cout << "Sent ID.\n";});
-    
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        opCycles += end - start;
+        start = counter.getCycles();
+    });
     // Wait for answer
     std::unordered_map<std::string, std::string> msg;
     msg.reserve(4);
     this->socketModule.receiveMsg(msg);
     // PROD_ONLY({printMsg(msg);});
-
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        idlCycles += end - start;
+        start = counter.getCycles();
+    });
     // Check if an error occurred
     if (msg.empty()) {
         std::cerr << "Error occurred: content is empty!" << std::endl;
@@ -1658,13 +1713,21 @@ int UAV::supplementaryAuthenticationSup(){
 
     this->socketModule.sendMsg();
     PROD_ONLY({std::cout << "Sent ID, CA, M1 and hash1.\n";});
-
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        opCycles += end - start;
+        start = counter.getCycles();
+    });
     msg.clear();
 
     // Wait for A's response 
     this->socketModule.receiveMsg(msg);
     // PROD_ONLY({printMsg(msg);});
-
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        idlCycles += end - start;
+        start = counter.getCycles();
+    });
     // Check if an error occurred
     if (msg.empty()) {
         std::cerr << "Error occurred: content is empty!" << std::endl;
@@ -1724,12 +1787,18 @@ int UAV::supplementaryAuthenticationSup(){
 
     this->socketModule.sendMsg();
     PROD_ONLY({std::cout << "Sent ID and hash3.\n";});
-
     msg.clear();
 
     // Finished
     PROD_ONLY({std::cout << "\nThe two UAV autenticated each other.\n";});
-
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        opCycles += end - start;
+        start = counter.getCycles();
+        std::cout << "Elapsed CPU cycles authentication: " << opCycles + idlCycles << " cycles" << std::endl;
+        std::cout << "operational Elapsed CPU cycles authentication: " << opCycles << " cycles" << std::endl;
+        std::cout << "idle Elapsed CPU cycles active authentication: " << idlCycles << " cycles\n" << std::endl;
+    });
     return 0;
 }
 
