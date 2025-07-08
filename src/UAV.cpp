@@ -94,6 +94,20 @@ std::string UAV::getId() {
     return this->id;
 }
 
+/// @brief Get the thread pointer.
+std::thread* UAV::getThread() const {
+    return const_cast<std::thread*>(&this->UAVthread);
+}
+
+///@brief Start the thread pointer with a function
+void UAV::startListeningThread()
+{
+    /*if (this->UAVthread.joinable()) {
+        this->UAVthread.join();
+    }*/
+    this->UAVthread = std::thread(&UAV::listenForConnection, this);
+}
+
 /// @brief Add an UAV to the UAV table.
 /// @param id 
 /// @param x 
@@ -1932,5 +1946,61 @@ int UAV::failed_autentication_client(){
     // Finished
     PROD_ONLY({std::cout << "\nThe two UAV autenticated each other.\n";});
     
+    return 0;
+}
+
+/// @brief Listening thread for establishing the connection with another UAV
+/// @param ip The IP address of the UAV to connect to
+/// @return 0 if success, 1 if failure
+int UAV::listenForConnection(){
+    this->socketModule.waitForConnection(8080);
+    PROD_ONLY({std::cout << "\nListening for Connection...\n";});
+    std::unordered_map<std::string, std::string> msg;
+    msg.reserve(4);
+    msg = {{"ID", this->getId()}};
+    this->socketModule.sendMsg(msg);
+    PROD_ONLY({std::cout << "Sent ID to the other UAV.\n";});
+    while(true){
+        // Wait for a connection request
+        this->socketModule.receiveMsg(msg);
+        PROD_ONLY({printMsg(msg);});
+
+        // Check if an error occurred
+        if (msg.empty()) {
+            std::cerr << "Error occurred: content is empty!" << std::endl;
+            continue;
+        }
+
+        // Check the type of message and call the appropriate authentication function
+        if (msg.find("id") != msg.end()) {
+            std::cout << "Found UAV ID in message: " << msg["id"] << std::endl;
+            if(msg["id"] == "A"){
+                PROD_ONLY({std::cout << "A is trying to connect.\n";});
+                this->enrolment_server();
+                this->autentication_server();
+                this->autentication_key_server();
+                this->socketModule.closeConnection();
+                PROD_ONLY({std::cout << "Connection closed.\n";});
+                //this->startListeningThread();
+                return 0;
+            }
+            else if(msg["id"] == "C"){
+                PROD_ONLY({std::cout << "C is trying to connect.\n";});
+                this->enrolment_server();
+                this->autentication_server();
+                this->autentication_key_server();
+                this->socketModule.closeConnection();
+                PROD_ONLY({std::cout << "Connection closed.\n";});
+                return 0;
+            }
+            else {
+                PROD_ONLY({std::cout << "Unknown ID in message.\n";});
+                return 1;
+            }
+        } else {
+            PROD_ONLY({std::cout << "No ID found in message.\n";});
+            return 1;
+        }
+    }
     return 0;
 }
