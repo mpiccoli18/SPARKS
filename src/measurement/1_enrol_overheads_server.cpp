@@ -39,14 +39,23 @@ int main() {
     
     // We start the measurements
     start = counter.getCycles();
-    int ret = A.enrolment_server();
+    int ret = A.passive_enrolment(idA);
     if (ret == 1){
         return ret;
     }
     end = counter.getCycles();
     totalTime = end - start;
+    std::cout << "Passive enrolment procedure elapsed CPU cycles : " << totalTime << " cycles" << std::endl;
 
-    std::cout << "Enrolment procedure elapsed CPU cycles : " << totalTime << " cycles" << std::endl;
+    start = counter.getCycles();
+    ret = A.active_enrolment(idA);
+    if (ret == 1){
+        return ret;
+    }
+    end = counter.getCycles();
+    totalTime = end - start;
+    std::cout << "Active enrolment procedure elapsed CPU cycles : " << totalTime << " cycles" << std::endl;
+
     A.socketModule.closeConnection();
     return 0;
 }

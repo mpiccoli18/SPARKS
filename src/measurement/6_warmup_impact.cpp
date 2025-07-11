@@ -26,7 +26,6 @@ int main(int argc, char* argv[]) {
     generate_random_bytes(x);
     unsigned char C[PUF_SIZE];
     
-    
     A.callPUF(x,C);
     
     long long end = counter.getCycles();

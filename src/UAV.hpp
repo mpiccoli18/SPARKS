@@ -65,7 +65,8 @@ private:
     std::unordered_map<std::string, UAVData> uavTable;
     const puf PUF;
 
-public:
+    
+    public:
     SocketModule socketModule; 
     UAV(std::string id);
     UAV(std::string id, unsigned char * salt);
@@ -83,9 +84,11 @@ public:
     bool removeUAV(const std::string& id);
     
     UAVData* getUAVData(const std::string& id);
-
+    
     void callPUF(const unsigned char * input, unsigned char * response);
-
+    
+    int passive_enrolment(std::string id);
+    int active_enrolment(std::string id);
     int enrolment_client();
     int enrolment_server();
     int autentication_client();

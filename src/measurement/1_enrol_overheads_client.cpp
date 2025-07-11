@@ -46,14 +46,24 @@ int main(int argc, char* argv[]) {
     // We start the measurements
     start = counter.getCycles(); 
 
-    int ret = A.enrolment_client();
-    if (ret == 1){
+    int ret = A.active_enrolment(idB);
+    if (ret != 0){
         return ret;
     }
     end = counter.getCycles(); 
     totalTime = end - start;
+    std::cout << "Active enrolment procedure elapsed CPU cycles : " << totalTime << " cycles" << std::endl;
 
-    std::cout << "Enrolment procedure elapsed CPU cycles : " << totalTime << " cycles" << std::endl;
+    start = counter.getCycles(); 
+    ret = A.passive_enrolment(idB);
+    if (ret != 0){
+        return ret;
+    }
+    end = counter.getCycles(); 
+    totalTime = end - start;
+    std::cout << "Passive enrolment procedure elapsed CPU cycles : " << totalTime << " cycles" << std::endl;
+
+
     A.socketModule.closeConnection();
     return 0;
 }

@@ -102,18 +102,29 @@ std::string UAV::getId() {
 /// @param xLock 
 /// @param secret 
 void UAV::addUAV(
-        const std::string& id, 
-        const unsigned char* x,
-        const unsigned char* c,
-        const unsigned char* r,
-        const unsigned char* xLock,
-        const unsigned char* secret
-    ){
-    uavTable.emplace(
-        std::piecewise_construct,
-        std::forward_as_tuple(id),
-        std::forward_as_tuple(x,c,r,xLock,secret)
-    );
+    const std::string& id, 
+    const unsigned char* x,
+    const unsigned char* c,
+    const unsigned char* r,
+    const unsigned char* xLock,
+    const unsigned char* secret
+) {
+    auto it = uavTable.find(id);
+    if (it != uavTable.end()) {
+        // Entry exists — update it using setter methods
+        it->second.setX(x);
+        it->second.setC(c);
+        it->second.setR(r);
+        it->second.setXLock(xLock);
+        it->second.setSecret(secret);
+    } else {
+        // Entry doesn't exist — insert a new one
+        uavTable.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple(id),
+            std::forward_as_tuple(x, c, r, xLock, secret)
+        );
+    }
 }
 
 /// @brief Remove an UAV from the UAv table.
@@ -138,10 +149,71 @@ void UAV::callPUF(const unsigned char * input, unsigned char * response){
     this->PUF.process(input, sizeof(input), response);
 }
 
-/// @brief Print the UAV data.
-/// @param none
-int UAV::enrolment_client(){
-    PROD_ONLY({std::cout << "\nEnrolment process begins.\n";});
+int UAV::passive_enrolment(std::string id){
+    PROD_ONLY({std::cout << "\nPassive enrolment process begins.\n";});
+    
+    #ifdef MEASUREMENTS_DETAILLED
+        long long start;
+        long long end;
+        long long idlCycles = 0;
+        long long opCycles = 0;
+        CycleCounter counter;
+    #endif
+    
+    MEASURE_ONLY({
+        start = counter.getCycles();
+    });
+    // B waits for B's message  (with CB)
+    std::unordered_map<std::string, std::string> msg;
+    msg.reserve(2);
+    this->socketModule.receiveMsg(msg);
+    // PROD_ONLY({printMsg(msg);});
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        idlCycles += end - start;
+        start = counter.getCycles();
+    });
+    
+    // Check if an error occurred
+    if (msg.empty()) {
+        std::cerr << "Error occurred: content is empty!" << std::endl;
+        return -1;
+    }
+    
+    // B receive CB. It creates A in the memory of B and save CB.
+    unsigned char CB[PUF_SIZE];
+    extractValueFromMap(msg,"CB",CB,PUF_SIZE);
+    PROD_ONLY({std::cout << "CB : "; print_hex(CB, PUF_SIZE);});
+        
+    msg.clear();
+
+    this->addUAV(id, nullptr, CB);
+
+    // B computes RB
+    unsigned char RB[PUF_SIZE];
+    this->callPUF(CB, RB);
+    PROD_ONLY({std::cout << "RB : "; print_hex(RB, PUF_SIZE);});
+
+    // B sends RB
+    socketModule.createMap(2);
+    socketModule.addKeyValue("id", this->getId());
+    socketModule.addKeyValue("RB", RB, PUF_SIZE);
+
+    this->socketModule.sendMsg();
+    PROD_ONLY({std::cout << "Sent RB.\n";}); 
+    MEASURE_ONLY({
+        end = counter.getCycles();
+        opCycles += end - start;
+        std::cout << "Elapsed CPU cycles passive enrolment: " << opCycles + idlCycles << " cycles" << std::endl;
+        std::cout << "operational Elapsed CPU cycles passive enrolment: " << opCycles << " cycles" << std::endl;
+        std::cout << "idle Elapsed CPU cycles passive enrolment: " << idlCycles << " cycles\n" << std::endl;
+    });
+
+    return 0;
+}
+
+int UAV::active_enrolment(std::string id){
+    PROD_ONLY({std::cout << "\nActive enrolment process begins.\n";});
 
     #ifdef MEASUREMENTS_DETAILLED
         long long start;
@@ -162,7 +234,7 @@ int UAV::enrolment_client(){
     PROD_ONLY({std::cout << "xB : "; print_hex(xB, PUF_SIZE);});
 
     // Creates B in the memory of A and save xB 
-    this->addUAV("B", xB);
+    this->addUAV(id, xB);
 
     // Creates the challenge for B
     unsigned char CB[PUF_SIZE];
@@ -205,7 +277,7 @@ int UAV::enrolment_client(){
 
     msg.clear();
 
-    this->getUAVData("B")->setR(RB);
+    this->getUAVData(id)->setR(RB);
 
     PROD_ONLY({std::cout << "\nB is enroled to A\n";});
     MEASURE_ONLY({
@@ -214,56 +286,22 @@ int UAV::enrolment_client(){
         std::cout << "Elapsed CPU cycles active enrolment: " << opCycles + idlCycles << " cycles" << std::endl;
         std::cout << "operational Elapsed CPU cycles active enrolment: " << opCycles << " cycles" << std::endl;
         std::cout << "idle Elapsed CPU cycles active enrolment: " << idlCycles << " cycles\n" << std::endl;
-        idlCycles = 0;
-        opCycles = 0;
-        start = counter.getCycles();
     });
+    return 0;
+}
 
-    // B enroll with A
-    // A receive CA. It saves CA.
-    //std::cout << this->socketModule.isOpen() << std::endl;
-    this->socketModule.receiveMsg(msg);
-    // PROD_ONLY({printMsg(msg);});
-    MEASURE_ONLY({
-        end = counter.getCycles();
-        idlCycles += end - start;
-        start = counter.getCycles();
-    });
-
-    // Check if an error occurred
-    if (msg.empty()) {
-        std::cerr << "Error occurred: content is empty!" << std::endl;
-        return -1;
+/// @brief Print the UAV data.
+/// @param none
+int UAV::enrolment_client(){
+    std::string id = "B";
+    int res = active_enrolment(id);
+    if (res != 0){
+        return res;
     }
-
-    unsigned char CA[PUF_SIZE];
-    extractValueFromMap(msg,"CA",CA,PUF_SIZE);
-    PROD_ONLY({std::cout << "CA : "; print_hex(CA, PUF_SIZE);});
-    
-    msg.clear();
-
-    this->getUAVData("B")->setC(CA);
-
-    // A computes RA
-    unsigned char RA[PUF_SIZE];
-    this->callPUF(CA, RA);
-    PROD_ONLY({std::cout << "RA : "; print_hex(RA, PUF_SIZE);});
-
-    // A sends RA   
-    socketModule.createMap(2);
-    socketModule.addKeyValue("id", this->getId());
-    socketModule.addKeyValue("RA", RA, PUF_SIZE);
-
-    this->socketModule.sendMsg();
-    PROD_ONLY({std::cout << "Sent RA.\n";});
-    MEASURE_ONLY({
-        end = counter.getCycles();
-        opCycles += end - start;
-        std::cout << "Elapsed CPU cycles passive enrolment: " << opCycles + idlCycles << " cycles" << std::endl;
-        std::cout << "operational Elapsed CPU cycles passive enrolment: " << opCycles << " cycles" << std::endl;
-        std::cout << "idle Elapsed CPU cycles passive enrolment: " << idlCycles << " cycles\n" << std::endl;
-    });
-    
+    res = passive_enrolment(id);
+    if (res != 0){
+        return res;
+    }
     return 0;
 }
 
@@ -271,126 +309,15 @@ int UAV::enrolment_client(){
 /// @param none
 /// @return 0 if success, 1 if failure
 int UAV::enrolment_server(){
-    PROD_ONLY({std::cout << "\nEnrolment process begins.\n";});
-    
-    #ifdef MEASUREMENTS_DETAILLED
-        long long start;
-        long long end;
-        long long idlCycles = 0;
-        long long opCycles = 0;
-        CycleCounter counter;
-    #endif
-    
-    MEASURE_ONLY({
-        start = counter.getCycles();
-    });
-    // B waits for B's message  (with CB)
-    std::unordered_map<std::string, std::string> msg;
-    msg.reserve(2);
-    this->socketModule.receiveMsg(msg);
-    // PROD_ONLY({printMsg(msg);});
-    MEASURE_ONLY({
-        end = counter.getCycles();
-        idlCycles += end - start;
-        start = counter.getCycles();
-    });
-    
-    // Check if an error occurred
-    if (msg.empty()) {
-        std::cerr << "Error occurred: content is empty!" << std::endl;
-        return -1;
+    std::string id = "A";
+    int res = passive_enrolment(id);
+    if (res != 0){
+        return res;
     }
-    
-    // B receive CB. It creates A in the memory of B and save CB.
-    unsigned char CB[PUF_SIZE];
-    extractValueFromMap(msg,"CB",CB,PUF_SIZE);
-    PROD_ONLY({std::cout << "CB : "; print_hex(CB, PUF_SIZE);});
-        
-    msg.clear();
-
-    this->addUAV("A", nullptr, CB);
-
-    // B computes RB
-    unsigned char RB[PUF_SIZE];
-    this->callPUF(CB, RB);
-    PROD_ONLY({std::cout << "RB : "; print_hex(RB, PUF_SIZE);});
-
-    // B sends RB
-    socketModule.createMap(2);
-    socketModule.addKeyValue("id", this->getId());
-    socketModule.addKeyValue("RB", RB, PUF_SIZE);
-
-    this->socketModule.sendMsg();
-    PROD_ONLY({std::cout << "Sent RB.\n";}); 
-    MEASURE_ONLY({
-        end = counter.getCycles();
-        opCycles += end - start;
-        std::cout << "Elapsed CPU cycles passive enrolment: " << opCycles + idlCycles << " cycles" << std::endl;
-        std::cout << "operational Elapsed CPU cycles passive enrolment: " << opCycles << " cycles" << std::endl;
-        std::cout << "idle Elapsed CPU cycles passive enrolment: " << idlCycles << " cycles\n" << std::endl;
-        start = counter.getCycles();
-    });
-
-    msg.clear();
-
-    // B enroll with A
-    // Computes xA
-    unsigned char xA[PUF_SIZE];
-    generate_random_bytes(xA, PUF_SIZE);
-    PROD_ONLY({std::cout << "xA : "; print_hex(xA, PUF_SIZE);});
-
-    // Save xA
-    this->getUAVData("A")->setX(xA);
-
-    // Creates the challenge for A
-    unsigned char CA[PUF_SIZE];
-    this->callPUF(xA, CA);
-    PROD_ONLY({std::cout << "CA : "; print_hex(CA, PUF_SIZE);});
-
-    // Sends CA
-    socketModule.createMap(2);
-    socketModule.addKeyValue("id", this->getId());
-    socketModule.addKeyValue("CA", CA, PUF_SIZE);
-
-    this->socketModule.sendMsg();
-    PROD_ONLY({std::cout << "Sent CA.\n";});
-    MEASURE_ONLY({
-        end = counter.getCycles();
-        opCycles += end - start;
-        start = counter.getCycles();
-    });
-
-    msg.clear();
-
-    // B receive RA and saves it. 
-    this->socketModule.receiveMsg(msg);
-    // PROD_ONLY({printMsg(msg);});
-    MEASURE_ONLY({
-        end = counter.getCycles();
-        idlCycles += end - start;
-        start = counter.getCycles();
-    });
-
-    // Check if an error occurred
-    if (msg.empty()) {
-        std::cerr << "Error occurred: content is empty!" << std::endl;
-        return -1;
+    res = active_enrolment(id);
+    if (res != 0){
+        return res;
     }
-
-    unsigned char RA[PUF_SIZE];
-    extractValueFromMap(msg,"RA",RA,PUF_SIZE);
-    PROD_ONLY({std::cout << "RA : "; print_hex(RA, PUF_SIZE);});
-    
-    this->getUAVData("A")->setR(RA);
-    PROD_ONLY({std::cout << "\nA is enroled to B\n";});
-    MEASURE_ONLY({
-        end = counter.getCycles();
-        opCycles += end - start;
-        std::cout << "Elapsed CPU cycles active enrolment: " << opCycles + idlCycles << " cycles" << std::endl;
-        std::cout << "operational Elapsed CPU cycles active enrolment: " << opCycles << " cycles" << std::endl;
-        std::cout << "idle Elapsed CPU cycles active enrolment: " << idlCycles << " cycles\n" << std::endl;
-    });
-    
     return 0;
 }
 
